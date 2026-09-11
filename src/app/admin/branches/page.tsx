@@ -105,14 +105,14 @@ export default function AdminBranches() {
                     aria-label="Branch name"
                     defaultValue={b.name}
                     onBlur={e => e.target.value.trim() && e.target.value !== b.name && patch(b.id, { name: e.target.value.trim() })}
-                    className="w-full bg-transparent font-display text-2xl uppercase tracking-tightest outline-none focus:text-live"
+                    className="-mx-2 w-[calc(100%+1rem)] rounded-sm bg-transparent px-2 py-1 font-display text-2xl uppercase tracking-tightest outline-none focus:bg-base-raised focus:text-live"
                   />
                   <input
                     aria-label="Branch address"
                     defaultValue={b.address ?? ''}
                     placeholder="Address"
                     onBlur={e => e.target.value !== (b.address ?? '') && patch(b.id, { address: e.target.value.trim() || null })}
-                    className="mt-1 w-full bg-transparent text-sm text-mute outline-none placeholder:text-mute focus:text-chalk"
+                    className="-mx-2 mt-0.5 w-[calc(100%+1rem)] rounded-sm bg-transparent px-2 py-2 text-sm text-mute outline-none placeholder:text-mute focus:bg-base-raised focus:text-chalk"
                   />
                 </div>
                 <div className="text-right">

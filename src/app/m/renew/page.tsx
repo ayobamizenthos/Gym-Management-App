@@ -44,7 +44,7 @@ function PlanRow({ plan, on, onPick }: { plan: Plan; on: boolean; onPick: () => 
               on ? 'border-chalk bg-chalk' : 'border-edge'
             )}
           >
-            {on && <Check size={13} className="text-base" strokeWidth={3} />}
+            {on && <Check size={13} className="text-ink" strokeWidth={3} />}
           </span>
           <span className="font-display text-lg">{plan.name}</span>
         </span>
@@ -248,7 +248,7 @@ export default function RenewPage() {
                 onClick={() => setMethod('card')}
                 className={cn(
                   'flex h-11 items-center justify-center gap-2 rounded-md border text-[15px] font-semibold transition-all',
-                  method === 'card' ? 'border-chalk bg-chalk text-base' : 'border-edge text-chalk hover:bg-base-panel'
+                  method === 'card' ? 'border-chalk bg-chalk text-ink' : 'border-edge text-chalk hover:bg-base-panel'
                 )}
               >
                 <CreditCard size={17} aria-hidden /> Card
@@ -260,7 +260,7 @@ export default function RenewPage() {
               onClick={() => setMethod('transfer')}
               className={cn(
                 'flex h-11 items-center justify-center gap-2 rounded-md border text-[15px] font-semibold transition-all',
-                method === 'transfer' ? 'border-chalk bg-chalk text-base' : 'border-edge text-chalk hover:bg-base-panel'
+                method === 'transfer' ? 'border-chalk bg-chalk text-ink' : 'border-edge text-chalk hover:bg-base-panel'
               )}
             >
               <Landmark size={17} aria-hidden /> Transfer

@@ -40,12 +40,16 @@ export default function ForgotPasswordPage() {
           </label>
           {error && <p className="mt-4 border-l-2 border-out pl-3 text-sm text-out">{error}</p>}
           <button type="submit" disabled={busy} className="btn-primary mt-6 w-full">
-            {busy ? 'Sending' : 'Send reset link'}
+            {busy ? <span className="dots">Sending</span> : 'Send reset link'}
           </button>
         </form>
       )}
 
-      <Link href="/login" className="mt-6 text-sm text-mute underline-offset-4 hover:text-live hover:underline">
+      <p className="mt-6 text-sm text-mute">
+        No email on your account? The front desk can set a new password for you in person.
+      </p>
+
+      <Link href="/login" className="mt-2 inline-flex min-h-[44px] items-center text-sm text-mute underline-offset-4 hover:text-live hover:underline">
         Back to sign in
       </Link>
     </main>

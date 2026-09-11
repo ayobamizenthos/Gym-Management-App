@@ -52,7 +52,7 @@ export default function RegisterMember() {
     return (
       <div className="max-w-md animate-rise">
         <h1 className="text-4xl">Member registered</h1>
-        <p className="mt-3 text-sm text-mute">Give these sign-in details to the member.</p>
+        <p className="mt-3 text-[15px] text-chalk-dim">Give these sign-in details to the member.</p>
         <dl className="mt-6 border border-edge">
           <div className="flex justify-between border-b border-edge px-4 py-3">
             <dt className="text-xs uppercase tracking-[0.2em] text-mute">Email</dt>
@@ -75,29 +75,29 @@ export default function RegisterMember() {
   return (
     <div className="max-w-md animate-rise">
       <h1 className="text-4xl">Register member</h1>
-      <p className="mt-2 text-sm text-mute">From the paper form. Email is optional.</p>
+      <p className="mt-2 text-[15px] text-chalk-dim">From the paper form. Email is optional.</p>
 
       <form onSubmit={submit} className="mt-7 flex flex-col gap-4">
         <label className="block">
-          <span className="text-xs uppercase tracking-[0.2em] text-mute">Full name</span>
-          <input required value={form.full_name} onChange={set('full_name')} className="field mt-2" />
+          <span className="label">Full name</span>
+          <input required value={form.full_name} onChange={set('full_name')} className="field mt-1.5" />
         </label>
         <label className="block">
-          <span className="text-xs uppercase tracking-[0.2em] text-mute">Phone</span>
-          <input required inputMode="tel" value={form.phone} onChange={set('phone')} className="field mt-2" />
+          <span className="label">Phone</span>
+          <input required inputMode="tel" value={form.phone} onChange={set('phone')} className="field mt-1.5" />
         </label>
         <label className="block">
-          <span className="text-xs uppercase tracking-[0.2em] text-mute">Email (optional)</span>
-          <input type="email" value={form.email} onChange={set('email')} className="field mt-2" />
+          <span className="label">Email (optional)</span>
+          <input type="email" value={form.email} onChange={set('email')} className="field mt-1.5" />
         </label>
         <label className="block">
-          <span className="text-xs uppercase tracking-[0.2em] text-mute">Invite name (optional)</span>
-          <input value={form.username} onChange={set('username')} placeholder="yourname" className="field mt-2" />
+          <span className="label">Invite name (optional)</span>
+          <input value={form.username} onChange={set('username')} placeholder="yourname" className="field mt-1.5" />
         </label>
         {branches.length > 1 && (
           <label className="block">
-            <span className="text-xs uppercase tracking-[0.2em] text-mute">Branch</span>
-            <select value={form.branch_id} onChange={set('branch_id')} className="field mt-2">
+            <span className="label">Branch</span>
+            <select value={form.branch_id} onChange={set('branch_id')} className="field mt-1.5">
               {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
           </label>

@@ -31,7 +31,7 @@ export function AdminChrome({ children }: { children: React.ReactNode }) {
             return (
               <Link key={l.href} href={l.href} aria-current={active ? 'page' : undefined}
                 className={cn('flex items-center gap-3 rounded-sm px-3 py-2.5 text-sm font-semibold uppercase tracking-wide transition-colors',
-                  active ? 'bg-live text-chalk' : 'text-mute hover:text-chalk')}>
+                  active ? 'bg-live text-ink' : 'text-mute hover:text-chalk')}>
                 <l.icon size={17} aria-hidden />{l.label}
               </Link>
             )
@@ -54,7 +54,9 @@ export function AdminChrome({ children }: { children: React.ReactNode }) {
           <span className="font-display text-lg uppercase tracking-tightest">
             Zenthos<span className="text-live">Gym</span>
           </span>
-          <button onClick={signOut} aria-label="Sign out" className="text-mute transition-colors hover:text-out"><LogOut size={18} aria-hidden /></button>
+          <button onClick={signOut} aria-label="Sign out" className="-mr-2.5 grid h-11 w-11 place-items-center text-mute transition-colors hover:text-out">
+            <LogOut size={18} aria-hidden />
+          </button>
         </header>
 
         <nav aria-label="Admin" className="no-scrollbar flex gap-1 overflow-x-auto border-b border-edge px-3 py-2 lg:hidden">
@@ -62,8 +64,8 @@ export function AdminChrome({ children }: { children: React.ReactNode }) {
             const active = path === l.href
             return (
               <Link key={l.href} href={l.href} aria-current={active ? 'page' : undefined}
-                className={cn('shrink-0 rounded-sm px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors',
-                  active ? 'bg-live text-chalk' : 'text-mute hover:text-chalk')}>
+                className={cn('flex h-10 shrink-0 items-center rounded-sm px-3.5 text-xs font-semibold uppercase tracking-wide transition-colors',
+                  active ? 'bg-live text-ink' : 'text-mute hover:text-chalk')}>
                 {l.label}
               </Link>
             )

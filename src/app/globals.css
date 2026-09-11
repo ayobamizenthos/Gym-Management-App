@@ -11,7 +11,12 @@
   /* Anton is a poster face - it carries headings and figures, nothing else. */
   h1, h2 { @apply font-display uppercase tracking-tightest leading-[0.95]; }
   h3 { @apply font-body font-semibold; }
-  ::selection { @apply bg-chalk text-base; }
+  ::selection { @apply bg-chalk text-ink; }
+
+  /* Keyboard users get a ring in the palette; pointer users get nothing. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-live ring-offset-2 ring-offset-base;
+  }
 }
 
 @layer components {
@@ -28,7 +33,7 @@
            font-semibold transition-all active:scale-[.985]
            disabled:opacity-40 disabled:pointer-events-none select-none;
   }
-  .btn-primary { @apply btn bg-chalk text-base hover:bg-white; }
+  .btn-primary { @apply btn bg-chalk text-ink hover:bg-white; }
   .btn-quiet   { @apply btn border border-edge text-chalk hover:border-mute hover:bg-base-panel; }
 
   .panel { @apply rounded-lg border border-edge-soft bg-base-panel; }

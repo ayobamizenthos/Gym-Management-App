@@ -91,14 +91,14 @@ export default function LoginPage() {
             )}
 
             <button type="submit" disabled={busy} className="btn-primary mt-7 w-full">
-              {busy ? 'Signing in' : 'Sign in'}
+              {busy ? <span className="dots">Signing in</span> : 'Sign in'}
             </button>
 
-            <div className="mt-5 flex items-center justify-between text-sm">
-              <Link href="/forgot-password" className="text-mute underline-offset-4 hover:text-chalk hover:underline">
+            <div className="mt-3 flex items-center justify-between text-sm">
+              <Link href="/forgot-password" className="inline-flex min-h-[44px] items-center text-mute underline-offset-4 hover:text-chalk hover:underline">
                 Forgot password
               </Link>
-              <Link href="/join" className="text-mute underline-offset-4 hover:text-chalk hover:underline">
+              <Link href="/join" className="inline-flex min-h-[44px] items-center text-mute underline-offset-4 hover:text-chalk hover:underline">
                 Sign up
               </Link>
             </div>

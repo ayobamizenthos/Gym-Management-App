@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { callerProfile, serviceClient } from '@/lib/server-supabase'
+import { readJson } from '@/lib/server-http'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,10 +13,13 @@ export async function POST(request: Request) {
   const caller = await callerProfile(request)
   if (!caller) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
-  const { reference, payment_ids: paymentIds } = (await request.json()) as {
+  const body = await readJson<{
     reference?: string
     payment_ids?: string[]
-  }
+  }>(request)
+  if (!body) return NextResponse.json({ error: 'Malformed request' }, { status: 400 })
+
+  const { reference, payment_ids: paymentIds } = body
   if (!reference || !Array.isArray(paymentIds) || paymentIds.length === 0) {
     return NextResponse.json({ error: 'Missing reference' }, { status: 400 })
   }

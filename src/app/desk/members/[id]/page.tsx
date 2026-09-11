@@ -2,15 +2,17 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, KeyRound, Copy, Check } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToasts } from '@/stores/toast'
 import { playPaid } from '@/lib/sounds'
 import { Avatar } from '@/components/Avatar'
 import { Accordion } from '@/components/Accordion'
 import { Loader } from '@/components/Loader'
+import { Dialog } from '@/components/Dialog'
 import { daysLeft, naira, shortDate, timeOnly } from '@/lib/format'
 import { cn } from '@/lib/cn'
+import { isReachableEmail } from '@/lib/members'
 import type { CheckInRow, Payment, Plan, Profile } from '@/lib/types'
 
 interface PaymentRow extends Payment {
@@ -35,6 +37,9 @@ export default function MemberDetail() {
   const [planId, setPlanId] = useState('')
   const [method, setMethod] = useState<'cash' | 'transfer'>('cash')
   const [busy, setBusy] = useState(false)
+  const [resetting, setResetting] = useState(false)
+  const [issued, setIssued] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
   const load = useCallback(async () => {
     const [m, p, v] = await Promise.all([
@@ -94,6 +99,33 @@ export default function MemberDetail() {
       await load()
     }
     setBusy(false)
+  }
+
+  const resetPassword = async () => {
+    const { data: s } = await supabase.auth.getSession()
+    const res = await fetch('/api/staff/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + s.session?.access_token },
+      body: JSON.stringify({ user_id: id }),
+    })
+    const payload = await res.json()
+    if (!res.ok) {
+      push({ tone: 'bad', title: 'Could not reset', message: payload.error })
+      return
+    }
+    setIssued(payload.password)
+    setCopied(false)
+  }
+
+  const copyPassword = async () => {
+    if (!issued) return
+    try {
+      await navigator.clipboard.writeText(issued)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2200)
+    } catch {
+      push({ tone: 'info', title: 'Copy it by hand', message: 'This browser blocked the clipboard.' })
+    }
   }
 
   if (!member) return <Loader />
@@ -164,7 +196,7 @@ export default function MemberDetail() {
               <p className="text-sm text-due">A joining fee will be added to this payment.</p>
             )}
             <button onClick={take} disabled={busy || !planId} className="btn-primary mt-1 w-full">
-              {busy ? 'Saving' : 'Record payment'}
+              {busy ? <span className="dots">Saving</span> : 'Record payment'}
             </button>
             {method === 'transfer' && (
               <p className="text-sm text-mute">Transfers stay pending until confirmed on the Payments screen.</p>
@@ -188,6 +220,37 @@ export default function MemberDetail() {
               </div>
             ))}
           </dl>
+        </Accordion>
+
+        <Accordion title="Sign-in help">
+          {issued ? (
+            <div className="rounded-sm border border-live p-4">
+              <p className="text-[15px] font-semibold">New password issued</p>
+              <p className="mt-1 text-sm text-chalk-dim">
+                Read it to the member now. It is not shown again.
+              </p>
+              <p className="mt-3 rounded-sm bg-base-raised px-3 py-2 text-center font-mono text-lg tracking-wider">
+                {issued}
+              </p>
+              <div className="mt-3 grid grid-cols-2 gap-2.5">
+                <button onClick={() => void copyPassword()} className="btn-quiet w-full">
+                  {copied ? <><Check size={16} aria-hidden /> Copied</> : <><Copy size={16} aria-hidden /> Copy</>}
+                </button>
+                <button onClick={() => setIssued(null)} className="btn-primary w-full">Done</button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p className="text-[15px] text-chalk-dim">
+                {isReachableEmail(member.email)
+                  ? 'They can reset it themselves by email, or you can hand them a new one now.'
+                  : 'This member has no email on file, so a new password has to come from the desk.'}
+              </p>
+              <button onClick={() => setResetting(true)} className="btn-quiet mt-4 w-full">
+                <KeyRound size={16} aria-hidden /> Issue a new password
+              </button>
+            </>
+          )}
         </Accordion>
 
         <Accordion title="Payment history" count={payments.length}>
@@ -251,6 +314,16 @@ export default function MemberDetail() {
           )}
         </Accordion>
       </div>
+
+      {resetting && (
+        <Dialog
+          title="Issue a new password?"
+          body={'The password ' + (member.full_name ?? 'this member') + ' has now will stop working straight away.'}
+          confirmLabel="Issue"
+          onConfirm={resetPassword}
+          onClose={() => setResetting(false)}
+        />
+      )}
     </div>
   )
 }

@@ -91,7 +91,7 @@ export default function DeskPayments() {
         {(['pending', 'confirmed'] as const).map(t => (
           <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}
             className={cn('h-10 rounded-sm px-5 text-sm font-semibold uppercase tracking-wide transition-colors',
-              tab === t ? 'bg-live text-chalk' : 'border border-edge text-mute hover:text-chalk')}>
+              tab === t ? 'bg-live text-ink' : 'border border-edge text-mute hover:text-chalk')}>
             {t}
           </button>
         ))}

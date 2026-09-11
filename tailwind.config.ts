@@ -8,6 +8,7 @@ export default {
     extend: {
       colors: {
         base:  { DEFAULT: '#0A0A0B', panel: '#141417', raised: '#1C1C21' },
+        ink:   '#0A0A0B',
         edge:  { DEFAULT: '#2A2A31', soft: '#1F1F25' },
         chalk: { DEFAULT: '#F6F6F3', dim: '#C9C9CE' },
         mute:  '#8A8A93',

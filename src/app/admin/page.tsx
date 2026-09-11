@@ -62,8 +62,8 @@ export default function AdminOverview() {
         <div className="flex gap-1">
           {RANGES.map(r => (
             <button key={r.days} onClick={() => setDays(r.days)}
-              className={cn('px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors',
-                days === r.days ? 'bg-live text-chalk' : 'text-mute hover:text-chalk')}>
+              className={cn('flex h-10 items-center rounded-sm px-3.5 text-xs font-semibold uppercase tracking-wide transition-colors',
+                days === r.days ? 'bg-live text-ink' : 'text-mute hover:text-chalk')}>
               {r.label}
             </button>
           ))}
@@ -97,7 +97,7 @@ export default function AdminOverview() {
       <section className="mt-7">
         <div className="flex items-baseline justify-between">
           <h2 className="text-2xl">Expiring next</h2>
-          <Link href="/admin/members" className="text-sm text-live underline-offset-4 hover:underline">All members</Link>
+          <Link href="/admin/members" className="-my-2 py-2 text-sm text-live underline-offset-4 hover:underline">All members</Link>
         </div>
         {due.length === 0 ? (
           <p className="mt-4 text-sm text-mute">Nobody is close to expiring.</p>

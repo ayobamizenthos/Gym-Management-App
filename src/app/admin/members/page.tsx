@@ -74,8 +74,8 @@ export default function AdminMembers() {
       <div className="mt-3 flex flex-wrap gap-2">
         {(['all', 'active', 'due', 'expired'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)}
-            className={cn('h-9 px-4 text-xs font-semibold uppercase tracking-wide transition-colors',
-              filter === f ? 'bg-live text-chalk' : 'border border-edge text-mute hover:text-chalk')}>
+            className={cn('h-10 rounded-sm px-4 text-xs font-semibold uppercase tracking-wide transition-colors',
+              filter === f ? 'bg-live text-ink' : 'border border-edge text-mute hover:text-chalk')}>
             {f === 'due' ? 'Renewals due' : f}
           </button>
         ))}

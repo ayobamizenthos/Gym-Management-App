@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { callerProfile, serviceClient } from '@/lib/server-supabase'
+import { temporaryPassword } from '@/lib/server-credentials'
+import { readJson } from '@/lib/server-http'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,13 +11,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Not permitted' }, { status: 403 })
   }
 
-  const body = (await request.json()) as {
+  const body = await readJson<{
     full_name?: string
     email?: string
     password?: string
     role?: 'receptionist' | 'admin'
     branch_id?: string | null
-  }
+  }>(request)
+  if (!body) return NextResponse.json({ error: 'Malformed request' }, { status: 400 })
 
   const fullName = body.full_name?.trim()
   const email = body.email?.trim().toLowerCase()
@@ -26,7 +29,7 @@ export async function POST(request: Request) {
   }
 
   const admin = serviceClient()
-  const password = body.password?.trim() || 'zg-' + Math.random().toString(36).slice(2, 10)
+  const password = body.password?.trim() || temporaryPassword()
 
   const { data, error } = await admin.auth.admin.createUser({
     email,

@@ -29,7 +29,7 @@ export function DeskChrome({ children }: { children: React.ReactNode }) {
             return (
               <Link key={t.href} href={t.href} aria-current={active ? 'page' : undefined}
                 className={cn('flex items-center gap-3 rounded-sm px-3 py-2.5 text-sm font-semibold uppercase tracking-wide transition-colors',
-                  active ? 'bg-live text-chalk' : 'text-mute hover:text-chalk')}>
+                  active ? 'bg-live text-ink' : 'text-mute hover:text-chalk')}>
                 <t.icon size={17} aria-hidden />{t.label}
               </Link>
             )
@@ -50,7 +50,9 @@ export function DeskChrome({ children }: { children: React.ReactNode }) {
           <span className="font-display text-lg uppercase tracking-tightest">
             Zenthos<span className="text-live">Gym</span>
           </span>
-          <button onClick={signOut} aria-label="Sign out" className="text-mute transition-colors hover:text-out"><LogOut size={18} aria-hidden /></button>
+          <button onClick={signOut} aria-label="Sign out" className="-mr-2.5 grid h-11 w-11 place-items-center text-mute transition-colors hover:text-out">
+            <LogOut size={18} aria-hidden />
+          </button>
         </header>
 
         <main className="pad-nav flex-1 px-4 pt-5 md:px-8 md:pb-8">{children}</main>

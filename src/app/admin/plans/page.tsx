@@ -189,7 +189,7 @@ function Toggle({ on, onClick, label }: { on: boolean; onClick: () => void; labe
       onClick={onClick}
       role="switch"
       aria-checked={on}
-      className="flex items-center gap-2 uppercase tracking-wide text-mute transition-colors hover:text-chalk"
+      className="-my-2 flex min-h-[40px] items-center gap-2 py-2 uppercase tracking-wide text-mute transition-colors hover:text-chalk"
     >
       <span className={cn('relative h-4 w-8 rounded-full transition-colors', on ? 'bg-live' : 'bg-edge')}>
         <span className={cn('absolute top-0.5 h-3 w-3 rounded-full bg-chalk transition-all', on ? 'left-[18px]' : 'left-0.5')} />

@@ -81,8 +81,8 @@ export default function DeskMembers() {
         {([['all', 'All'], ['due', 'Renewals due (' + dueCount + ')'], ['expired', 'Expired']] as const).map(
           ([key, label]) => (
             <button key={key} onClick={() => setFilter(key as Filter)}
-              className={cn('h-9 px-4 text-xs font-semibold uppercase tracking-wide transition-colors',
-                filter === key ? 'bg-live text-chalk' : 'border border-edge text-mute hover:text-chalk')}>
+              className={cn('h-10 rounded-sm px-4 text-xs font-semibold uppercase tracking-wide transition-colors',
+                filter === key ? 'bg-live text-ink' : 'border border-edge text-mute hover:text-chalk')}>
               {label}
             </button>
           )

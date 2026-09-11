@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { serviceClient } from '@/lib/server-supabase'
+import { readJson } from '@/lib/server-http'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,7 +24,9 @@ interface Body {
  * 'member', so this can never mint staff.
  */
 export async function POST(request: Request) {
-  const body = (await request.json()) as Body
+  const body = await readJson<Body>(request)
+  if (!body) return NextResponse.json({ error: 'Malformed request' }, { status: 400 })
+
 
   const fullName = body.full_name?.trim()
   const phone = body.phone?.trim()

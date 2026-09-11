@@ -119,13 +119,13 @@ export default function JoinScreen() {
         )}
 
         <button type="submit" disabled={busy} className="btn-primary mt-2 w-full">
-          {busy ? 'Creating account' : 'Create account'}
+          {busy ? <span className="dots">Creating account</span> : 'Create account'}
         </button>
       </form>
 
-      <p className="mt-6 text-sm text-mute">
+      <p className="mt-4 text-sm text-mute">
         Already a member{' '}
-        <Link href="/login" className="text-live underline-offset-4 hover:underline">
+        <Link href="/login" className="inline-flex min-h-[44px] items-center text-live underline-offset-4 hover:underline">
           Sign in
         </Link>
       </p>

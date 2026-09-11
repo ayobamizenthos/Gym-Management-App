@@ -12,6 +12,7 @@ import { Avatar } from '@/components/Avatar'
 import { forgetAvatar } from '@/lib/avatar'
 import { daysLeft, shortDate } from '@/lib/format'
 import { cn } from '@/lib/cn'
+import { isReachableEmail } from '@/lib/members'
 
 export default function AccountPage() {
   const { profile, refresh, signOut } = useAuth()
@@ -121,22 +122,24 @@ export default function AccountPage() {
         />
         <div className="min-w-0">
           <p className="truncate text-xl font-semibold">{profile.full_name ?? 'Member'}</p>
-          <p className="truncate text-sm text-mute">{profile.email}</p>
+          <p className="truncate text-sm text-mute">
+            {isReachableEmail(profile.email) ? profile.email : profile.phone ?? 'Member'}
+          </p>
           {uploading && <p className="text-xs text-live"><span className="dots">Uploading</span></p>}
         </div>
       </section>
 
       <div
         className={cn(
-          'mt-6 flex items-center justify-between rounded-lg px-4 py-3.5',
-          active ? 'bg-live-tint' : 'bg-out-tint'
+          'mt-6 flex items-center justify-between gap-3 rounded-lg px-4 py-3.5',
+          !profile.expires_at ? 'bg-base-panel' : active ? 'bg-live-tint' : 'bg-out-tint'
         )}
       >
         <span className="text-[15px] font-medium">
           {profile.expires_at ? (active ? 'Active membership' : 'Membership expired') : 'No plan yet'}
         </span>
-        <span className={cn('font-display text-lg', active ? 'text-live' : 'text-out')}>
-          {profile.expires_at ? (active ? left + ' days left' : shortDate(profile.expires_at)) : '--'}
+        <span className={cn('shrink-0 font-display text-lg', !profile.expires_at ? 'text-mute' : active ? 'text-live' : 'text-out')}>
+          {profile.expires_at ? (active ? left + ' days left' : shortDate(profile.expires_at)) : 'Choose a plan'}
         </span>
       </div>
 

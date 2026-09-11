@@ -114,7 +114,7 @@ export default function CheckInScreen() {
         {result!.kind === 'valid' || result!.kind === 'duplicate' ? (
           <Link href="/m" className="btn w-full rounded-md border border-current">Open my membership</Link>
         ) : (
-          <Link href="/m/renew" className="btn w-full rounded-md bg-white text-base">Renew now</Link>
+          <Link href="/m/renew" className="btn w-full rounded-md bg-white text-ink">Renew now</Link>
         )}
       </footer>
     </main>

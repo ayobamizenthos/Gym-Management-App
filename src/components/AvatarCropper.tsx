@@ -210,7 +210,7 @@ export function AvatarCropper({ file, onCancel, onDone }: Props) {
         <button onClick={onCancel} className="btn h-12 flex-1 border border-white/25 text-white">
           Cancel
         </button>
-        <button onClick={apply} disabled={busy || !image} className="btn h-12 flex-1 bg-chalk text-base">
+        <button onClick={apply} disabled={busy || !image} className="btn h-12 flex-1 bg-chalk text-ink">
           {busy ? 'Saving' : 'Use photo'}
         </button>
       </div>

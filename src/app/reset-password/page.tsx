@@ -47,7 +47,7 @@ export default function ResetPasswordPage() {
           <PasswordField label="New password" value={password} onChange={setPassword} autoComplete="new-password" minLength={8} />
           {error && <p className="mt-4 border-l-2 border-out pl-3 text-sm text-out">{error}</p>}
           <button type="submit" disabled={busy} className="btn-primary mt-6 w-full">
-            {busy ? 'Saving' : 'Save password'}
+            {busy ? <span className="dots">Saving</span> : 'Save password'}
           </button>
         </form>
       )}

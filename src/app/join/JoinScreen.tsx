@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { unlockAudio } from '@/lib/sounds'
+import { PasswordField } from '@/components/PasswordField'
 
 export default function JoinScreen() {
   const params = useSearchParams()
@@ -14,6 +15,7 @@ export default function JoinScreen() {
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
+  const [address, setAddress] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -42,6 +44,7 @@ export default function JoinScreen() {
         data: {
           full_name: fullName.trim(),
           phone: phone.trim(),
+          address: address.trim(),
           username: username.trim().toLowerCase(),
           referral,
         },
@@ -61,7 +64,7 @@ export default function JoinScreen() {
         Zenthos<span className="text-volt">Gym</span>
       </span>
 
-      <h1 className="mt-8 text-5xl">Join the gym</h1>
+      <h1 className="mt-10 text-5xl">Sign up</h1>
       {inviter && (
         <p className="mt-3 border-l-2 border-volt pl-3 text-sm">
           <span className="text-volt">{inviter}</span> invited you.
@@ -82,32 +85,37 @@ export default function JoinScreen() {
           <input required type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} className="field mt-2" />
         </label>
         <label className="block">
-          <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Your invite name</span>
+          <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Address</span>
+          <input required value={address} onChange={e => setAddress(e.target.value)} className="field mt-2" />
+        </label>
+        <label className="block">
+          <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Username</span>
           <input
             required
             value={username}
             onChange={e => setUsername(e.target.value)}
             pattern="[A-Za-z0-9_]{3,20}"
-            placeholder="yourname"
             className="field mt-2"
           />
-          <span className="mt-1 block text-xs text-ink-mute">Used for your own referral link.</span>
         </label>
-        <label className="block">
-          <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Password</span>
-          <input required type="password" minLength={8} autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} className="field mt-2" />
-        </label>
+        <PasswordField label="Password" value={password} onChange={setPassword} autoComplete="new-password" minLength={8} />
 
-        {error && <p className="border-l-2 border-alert pl-3 text-sm text-alert">{error}</p>}
+        {error && (
+          <p role="alert" className="border-l-2 border-alert pl-3 text-sm text-alert">
+            {error}
+          </p>
+        )}
 
         <button type="submit" disabled={busy} className="btn-volt mt-2 w-full">
-          {busy ? 'Creating' : 'Create my account'}
+          {busy ? 'Creating account' : 'Create account'}
         </button>
       </form>
 
       <p className="mt-6 text-sm text-ink-mute">
         Already a member{' '}
-        <Link href="/login" className="text-volt underline-offset-4 hover:underline">Sign in</Link>
+        <Link href="/login" className="text-volt underline-offset-4 hover:underline">
+          Sign in
+        </Link>
       </p>
     </main>
   )

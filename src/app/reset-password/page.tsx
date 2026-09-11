@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { PasswordField } from '@/components/PasswordField'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
@@ -43,10 +44,7 @@ export default function ResetPasswordPage() {
         <p className="mt-4 text-sm text-ink-mute">Open this page from the link in your email.</p>
       ) : (
         <form onSubmit={submit} className="mt-6">
-          <label className="block">
-            <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Password</span>
-            <input required type="password" minLength={8} value={password} onChange={e => setPassword(e.target.value)} className="field mt-2" />
-          </label>
+          <PasswordField label="New password" value={password} onChange={setPassword} autoComplete="new-password" minLength={8} />
           {error && <p className="mt-4 border-l-2 border-alert pl-3 text-sm text-alert">{error}</p>}
           <button type="submit" disabled={busy} className="btn-volt mt-6 w-full">
             {busy ? 'Saving' : 'Save password'}

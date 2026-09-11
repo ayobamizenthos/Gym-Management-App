@@ -121,3 +121,13 @@ export function playDeskAlert(kind: 'valid' | 'expired' | 'duplicate' | 'no_memb
   else if (kind === 'duplicate') playRepeat()
   else playNoMembership()
 }
+
+/** A new member just joined - warm, arriving, distinct from a check-in. */
+export function playNewMember() {
+  play([
+    { from: 392, to: 523.25, dur: 0.14, type: 'triangle', gain: 0.2 },
+    { from: 523.25, to: 659.25, dur: 0.14, type: 'triangle', gain: 0.2, at: 0.12 },
+    { from: 659.25, to: 880, dur: 0.3, type: 'triangle', gain: 0.18, at: 0.24 },
+    { from: 1318.51, dur: 0.34, type: 'sine', gain: 0.06, at: 0.24 },
+  ])
+}

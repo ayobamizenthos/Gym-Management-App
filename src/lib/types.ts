@@ -13,6 +13,10 @@ export interface Profile {
   referred_by: string | null
   member_code: string | null
   photo_url: string | null
+  address: string | null
+  email: string | null
+  date_of_birth: string | null
+  emergency_contact: string | null
   registration_paid: boolean
   expires_at: string | null
   created_at: string
@@ -25,6 +29,7 @@ export interface Plan {
   duration_days: number
   counts_for_referral: boolean
   is_addon: boolean
+  requires_registration: boolean
   is_active: boolean
   sort_order: number
 }

@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next'
 import { Barlow, Barlow_Condensed } from 'next/font/google'
 import { AuthProvider } from '@/stores/auth'
 import { ToastHost } from '@/components/ToastHost'
+import { NotificationWatcher } from '@/components/NotificationWatcher'
+import { InstallPrompt } from '@/components/InstallPrompt'
 import './globals.css'
 
 const body = Barlow({
@@ -37,8 +39,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${body.variable} ${display.variable}`}>
       <body>
         <AuthProvider>
+          <NotificationWatcher />
           {children}
           <ToastHost />
+          <InstallPrompt />
         </AuthProvider>
       </body>
     </html>

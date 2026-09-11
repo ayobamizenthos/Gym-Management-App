@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { homeFor } from '@/lib/routes'
 import { unlockAudio } from '@/lib/sounds'
+import { PasswordField } from '@/components/PasswordField'
 import type { Role } from '@/lib/types'
 
 export default function LoginPage() {
@@ -19,7 +20,7 @@ export default function LoginPage() {
     event.preventDefault()
     setBusy(true)
     setError(null)
-    unlockAudio() // first gesture - lets check-in audio fire later without a prompt
+    unlockAudio()
 
     const { data, error: authError } = await supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
@@ -39,25 +40,22 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="grid min-h-dvh lg:grid-cols-[1.1fr_1fr]">
-      {/* Statement panel - asymmetric on purpose, not a centred card */}
+    <main className="grid min-h-dvh lg:grid-cols-[1.15fr_1fr]">
       <section className="relative hidden overflow-hidden bg-ink-soft lg:block">
-        <div className="absolute inset-0 opacity-[0.06]"
-             style={{ backgroundImage: 'repeating-linear-gradient(90deg,#fff 0 1px,transparent 1px 56px)' }} />
+        <div
+          aria-hidden
+          className="absolute inset-0 opacity-[0.05]"
+          style={{ backgroundImage: 'repeating-linear-gradient(90deg,#fff 0 1px,transparent 1px 64px)' }}
+        />
         <div className="relative flex h-full flex-col justify-between p-14">
           <span className="font-display text-2xl uppercase tracking-tightest">
             Zenthos<span className="text-volt">Gym</span>
           </span>
-          <div>
-            <h1 className="text-[5.5rem] leading-[0.85]">
-              Know who<br />is paid.<br /><span className="text-volt">Know who left.</span>
-            </h1>
-            <p className="mt-8 max-w-md text-ink-mute">
-              Memberships, check-in and renewals in one system. Built for gyms that
-              are done guessing.
-            </p>
-          </div>
-          <span className="text-xs uppercase tracking-[0.3em] text-ink-mute">Lagos, Nigeria</span>
+          <h1 className="text-[5.5rem] leading-[0.84]">
+            Know who<br />is paid.<br />
+            <span className="text-volt">Know who left.</span>
+          </h1>
+          <span className="text-xs uppercase tracking-[0.3em] text-ink-mute">Lagos</span>
         </div>
       </section>
 
@@ -66,8 +64,7 @@ export default function LoginPage() {
           <span className="font-display text-2xl uppercase tracking-tightest lg:hidden">
             Zenthos<span className="text-volt">Gym</span>
           </span>
-          <h2 className="mt-8 text-4xl lg:mt-0">Sign in</h2>
-          <p className="mt-2 text-sm text-ink-mute">Members, front desk and management use this same page.</p>
+          <h2 className="mt-10 text-4xl lg:mt-0">Sign in</h2>
 
           <label className="mt-8 block">
             <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Email</span>
@@ -78,24 +75,18 @@ export default function LoginPage() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               className="field mt-2"
-              placeholder="you@example.com"
             />
           </label>
 
-          <label className="mt-4 block">
-            <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Password</span>
-            <input
-              type="password"
-              required
-              autoComplete="current-password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className="field mt-2"
-              placeholder="••••••••"
-            />
-          </label>
+          <div className="mt-4">
+            <PasswordField label="Password" value={password} onChange={setPassword} autoComplete="current-password" />
+          </div>
 
-          {error && <p className="mt-4 border-l-2 border-alert pl-3 text-sm text-alert">{error}</p>}
+          {error && (
+            <p role="alert" className="mt-4 border-l-2 border-alert pl-3 text-sm text-alert">
+              {error}
+            </p>
+          )}
 
           <button type="submit" disabled={busy} className="btn-volt mt-7 w-full">
             {busy ? 'Signing in' : 'Sign in'}
@@ -106,7 +97,7 @@ export default function LoginPage() {
               Forgot password
             </Link>
             <Link href="/join" className="text-ink-mute underline-offset-4 hover:text-volt hover:underline">
-              Join the gym
+              Sign up
             </Link>
           </div>
         </form>

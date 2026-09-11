@@ -144,7 +144,7 @@ export function Scanner({ onResult }: Props) {
         <div className="relative h-56 w-56">
           {['left-0 top-0 border-l-2 border-t-2', 'right-0 top-0 border-r-2 border-t-2',
             'left-0 bottom-0 border-l-2 border-b-2', 'right-0 bottom-0 border-r-2 border-b-2'].map(pos => (
-            <span key={pos} className={`absolute h-8 w-8 border-good ${pos}`} />
+            <span key={pos} className={`absolute h-8 w-8 border-live ${pos}`} />
           ))}
         </div>
       </div>
@@ -153,7 +153,7 @@ export function Scanner({ onResult }: Props) {
         <p className="absolute inset-x-0 bottom-5 text-center text-sm text-white/70">Starting camera</p>
       )}
       {error && (
-        <p className="absolute inset-x-0 bottom-5 px-6 text-center text-sm text-alert">{error}</p>
+        <p className="absolute inset-x-0 bottom-5 px-6 text-center text-sm text-out">{error}</p>
       )}
     </div>
   )

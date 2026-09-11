@@ -35,7 +35,7 @@ export default function EntranceCode() {
   return (
     <div className="animate-rise">
       <div className="flex items-center justify-between print:hidden">
-        <Link href="/admin/branches" className="flex items-center gap-2 text-sm text-mute hover:text-ink">
+        <Link href="/admin/branches" className="flex items-center gap-2 text-sm text-mute hover:text-chalk">
           <ArrowLeft size={16} /> Branches
         </Link>
         <button onClick={() => window.print()} className="btn-primary h-11 px-5 text-sm">
@@ -49,9 +49,9 @@ export default function EntranceCode() {
       </p>
 
       {/* The printable sheet. White so it survives any printer. */}
-      <div className="mx-auto mt-7 w-full max-w-[560px] bg-white p-10 text-center text-ink print:mt-0 print:max-w-none">
+      <div className="mx-auto mt-7 w-full max-w-[560px] bg-white p-10 text-center text-chalk print:mt-0 print:max-w-none">
         <p className="font-display text-4xl uppercase tracking-tightest">
-          Zenthos<span className="text-ink">Gym</span>
+          Zenthos<span className="text-chalk">Gym</span>
         </p>
         <p className="mt-1 text-sm font-semibold uppercase tracking-[0.3em] text-mute">
           {branch.name}

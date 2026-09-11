@@ -18,10 +18,10 @@ interface FeedRow {
 }
 
 const SKIN: Record<CheckInKind, { label: string; accent: string; Icon: typeof CheckCircle2 }> = {
-  valid:         { label: 'Active',        accent: 'text-good  border-good',  Icon: CheckCircle2 },
-  expired:       { label: 'Expired',       accent: 'text-alert border-alert', Icon: AlertTriangle },
-  duplicate:     { label: 'Repeat scan',   accent: 'text-ink border-line', Icon: RotateCcw },
-  no_membership: { label: 'No plan',       accent: 'text-warn  border-warn',  Icon: UserX },
+  valid:         { label: 'Active',        accent: 'text-live  border-live',  Icon: CheckCircle2 },
+  expired:       { label: 'Expired',       accent: 'text-out border-out', Icon: AlertTriangle },
+  duplicate:     { label: 'Repeat scan',   accent: 'text-chalk border-edge', Icon: RotateCcw },
+  no_membership: { label: 'No plan',       accent: 'text-due  border-due',  Icon: UserX },
 }
 
 export default function DeskLive() {
@@ -90,18 +90,18 @@ export default function DeskLive() {
         <div>
           <h1 className="text-4xl md:text-5xl">Live check-in</h1>
           <p className="mt-2 flex items-center gap-2 text-sm text-mute">
-            <span className={cn('h-2 w-2 rounded-full', live ? 'bg-good' : 'bg-mute')} />
+            <span className={cn('h-2 w-2 rounded-full', live ? 'bg-live' : 'bg-mute')} />
             {live ? 'Connected' : 'Reconnecting'}
           </p>
         </div>
         <div className="flex items-center gap-6">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-mute">Visits today</p>
-            <p className="stat text-good">{today.length}</p>
+            <p className="figure text-live">{today.length}</p>
           </div>
           <button
             onClick={() => { setSound(s => !s); unlockAudio() }}
-            className={cn('btn-quiet h-11 px-4', !sound && 'text-alert border-alert')}
+            className={cn('btn-quiet h-11 px-4', !sound && 'text-out border-out')}
             aria-pressed={sound}
           >
             {sound ? <Volume2 size={17} /> : <VolumeX size={17} />}
@@ -124,14 +124,14 @@ export default function DeskLive() {
               <li
                 key={row.id}
                 className={cn(
-                  'flex items-center gap-4 border-l-2 bg-surface-raised px-4 py-3.5',
+                  'flex items-center gap-4 border-l-2 bg-base-panel px-4 py-3.5',
                   skin.accent,
                   i === 0 && 'animate-rise'
                 )}
               >
                 <skin.Icon size={26} className="shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold text-ink">{row.full_name ?? 'Member'}</p>
+                  <p className="truncate font-semibold text-chalk">{row.full_name ?? 'Member'}</p>
                   <p className="truncate text-sm text-mute">
                     {row.phone ?? 'No phone'}
                     {row.expires_at && ` · to ${shortDate(row.expires_at)}`}

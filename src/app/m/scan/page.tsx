@@ -22,7 +22,7 @@ export default function ScanPage() {
   return (
     <div className="-mx-5 -mt-6">
       <div className="flex items-center gap-3 px-5 py-4">
-        <button onClick={() => router.back()} aria-label="Back" className="text-mute hover:text-ink">
+        <button onClick={() => router.back()} aria-label="Back" className="text-mute hover:text-chalk">
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-2xl">Check in</h1>

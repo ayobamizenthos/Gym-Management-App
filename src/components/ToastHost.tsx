@@ -13,17 +13,17 @@ export function ToastHost() {
         <div
           key={t.id}
           className={cn(
-            'pointer-events-auto flex animate-rise items-start gap-3 border bg-surface-raised px-4 py-3',
-            t.tone === 'good' && 'border-good',
-            t.tone === 'bad' && 'border-alert',
-            t.tone === 'info' && 'border-line'
+            'pointer-events-auto flex animate-rise items-start gap-3 border bg-base-panel px-4 py-3',
+            t.tone === 'good' && 'border-live',
+            t.tone === 'bad' && 'border-out',
+            t.tone === 'info' && 'border-edge'
           )}
         >
           <span
             className={cn(
               'mt-1.5 h-2 w-2 shrink-0',
-              t.tone === 'good' && 'bg-good',
-              t.tone === 'bad' && 'bg-alert',
+              t.tone === 'good' && 'bg-live',
+              t.tone === 'bad' && 'bg-out',
               t.tone === 'info' && 'bg-mute'
             )}
           />
@@ -31,7 +31,7 @@ export function ToastHost() {
             <p className="font-semibold leading-tight">{t.title}</p>
             {t.message && <p className="mt-0.5 text-sm text-mute">{t.message}</p>}
           </div>
-          <button onClick={() => dismiss(t.id)} aria-label="Dismiss" className="text-mute hover:text-ink">
+          <button onClick={() => dismiss(t.id)} aria-label="Dismiss" className="text-mute hover:text-chalk">
             <X size={16} />
           </button>
         </div>

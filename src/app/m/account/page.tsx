@@ -90,14 +90,14 @@ export default function AccountPage() {
           type="button"
           onClick={() => fileRef.current?.click()}
           aria-label="Change profile photo"
-          className="relative grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full border border-line bg-surface-raised"
+          className="relative grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full border border-edge bg-base-panel"
         >
           {profile?.photo_url ? (
             <Image src={profile.photo_url} alt="" fill sizes="80px" className="object-cover" unoptimized />
           ) : (
             <span className="font-display text-2xl text-mute">{(profile?.full_name ?? 'M').charAt(0)}</span>
           )}
-          <span className="absolute inset-x-0 bottom-0 grid place-items-center bg-ink/70 py-1">
+          <span className="absolute inset-x-0 bottom-0 grid place-items-center bg-base/70 py-1">
             <Camera size={13} className="text-white" aria-hidden />
           </span>
         </button>
@@ -115,27 +115,27 @@ export default function AccountPage() {
         <div className="min-w-0">
           <p className="truncate text-xl font-semibold">{profile?.full_name ?? 'Member'}</p>
           <p className="truncate text-sm text-mute">{profile?.email}</p>
-          {uploading && <p className="text-xs text-good">Uploading</p>}
+          {uploading && <p className="text-xs text-live">Uploading</p>}
         </div>
       </section>
 
       <div
         className={cn(
           'mt-6 flex items-center justify-between rounded-lg px-4 py-3.5',
-          active ? 'bg-good-tint' : 'bg-alert-tint'
+          active ? 'bg-live-tint' : 'bg-out-tint'
         )}
       >
         <span className="text-[15px] font-medium">
           {profile?.expires_at ? (active ? 'Active membership' : 'Membership expired') : 'No plan yet'}
         </span>
-        <span className={cn('font-display text-lg', active ? 'text-good' : 'text-alert')}>
+        <span className={cn('font-display text-lg', active ? 'text-live' : 'text-out')}>
           {profile?.expires_at ? (active ? left + ' days left' : shortDate(profile.expires_at)) : '--'}
         </span>
       </div>
 
       <Link
         href="/m/history"
-        className="mt-3 flex items-center justify-between rounded-lg border border-line px-4 py-3.5 transition-colors hover:bg-surface-raised"
+        className="mt-3 flex items-center justify-between rounded-lg border border-edge px-4 py-3.5 transition-colors hover:bg-base-panel"
       >
         <span className="text-[15px] font-medium">Payment history</span>
         <ChevronRight size={18} className="text-mute" aria-hidden />
@@ -172,7 +172,7 @@ export default function AccountPage() {
           await signOut()
           router.replace('/login')
         }}
-        className="mt-9 flex w-full items-center justify-center gap-2 py-3 text-[15px] font-semibold text-alert"
+        className="mt-9 flex w-full items-center justify-center gap-2 py-3 text-[15px] font-semibold text-out"
       >
         <LogOut size={17} aria-hidden /> Sign out
       </button>

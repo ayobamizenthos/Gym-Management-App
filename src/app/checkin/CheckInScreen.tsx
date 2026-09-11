@@ -23,22 +23,22 @@ const SKIN: Record<CheckInKind, {
   valid: {
     label: 'You are in',
     note: r => `${r.days_left} day${r.days_left === 1 ? '' : 's'} left on your membership`,
-    bg: 'bg-good', fg: 'text-white', Icon: CheckCircle2, motion: 'animate-pop',
+    bg: 'bg-live', fg: 'text-white', Icon: CheckCircle2, motion: 'animate-pop',
   },
   expired: {
     label: 'Membership expired',
     note: r => `Ran out ${shortDate(r.expires_at)}. Renew to train today.`,
-    bg: 'bg-alert', fg: 'text-white', Icon: AlertTriangle, motion: 'animate-shake',
+    bg: 'bg-out', fg: 'text-white', Icon: AlertTriangle, motion: 'animate-shake',
   },
   duplicate: {
     label: 'Already checked in',
     note: r => (r.is_active ? `You scanned earlier today. ${r.days_left} days left.` : 'You scanned earlier today.'),
-    bg: 'bg-surface-raised', fg: 'text-ink', Icon: RotateCcw, motion: 'animate-pop',
+    bg: 'bg-base-panel', fg: 'text-chalk', Icon: RotateCcw, motion: 'animate-pop',
   },
   no_membership: {
     label: 'No active plan',
     note: () => 'Pick a plan to start training.',
-    bg: 'bg-warn', fg: 'text-white', Icon: UserX, motion: 'animate-pop',
+    bg: 'bg-due', fg: 'text-white', Icon: UserX, motion: 'animate-pop',
   },
 }
 
@@ -114,7 +114,7 @@ export default function CheckInScreen() {
         {result!.kind === 'valid' || result!.kind === 'duplicate' ? (
           <Link href="/m" className="btn w-full rounded-md border border-current">Open my membership</Link>
         ) : (
-          <Link href="/m/renew" className="btn w-full bg-ink text-ink">Renew now</Link>
+          <Link href="/m/renew" className="btn w-full bg-chalk text-chalk">Renew now</Link>
         )}
       </footer>
     </main>

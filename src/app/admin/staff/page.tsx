@@ -61,10 +61,10 @@ export default function AdminStaff() {
 
       <ul className="mt-5 flex flex-col gap-2">
         {rows.map(r => (
-          <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 bg-surface-raised px-4 py-3.5">
+          <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 bg-base-panel px-4 py-3.5">
             <span className="min-w-0">
               <span className="flex items-center gap-2 font-semibold">
-                {r.role === 'admin' && <Shield size={15} className="text-good" />}
+                {r.role === 'admin' && <Shield size={15} className="text-live" />}
                 {r.full_name ?? 'Staff'}
               </span>
               <span className="block text-sm text-mute">{r.role === 'admin' ? 'Administrator' : 'Front desk'}</span>
@@ -85,7 +85,7 @@ export default function AdminStaff() {
       <div className="rule mt-8" />
 
       {created ? (
-        <section className="mt-6 border border-good p-4">
+        <section className="mt-6 border border-live p-4">
           <h2 className="text-2xl">Account created</h2>
           <p className="mt-2 text-sm text-mute">Share these details with the staff member.</p>
           <p className="mt-3 text-sm">Email: <span className="font-mono">{created.email}</span></p>

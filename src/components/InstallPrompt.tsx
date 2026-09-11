@@ -79,13 +79,13 @@ export function InstallPrompt() {
 
   return (
     <div className="animate-rise fixed bottom-[calc(74px+env(safe-area-inset-bottom))] left-3 z-50 max-w-[calc(100vw-1.5rem)] md:bottom-6 md:left-6">
-      <div className="flex items-center border border-line bg-surface/95 backdrop-blur-md">
+      <div className="flex items-center border border-edge bg-base/95 backdrop-blur-md">
         <button
           type="button"
           onClick={collapsed ? () => setCollapsed(false) : undefined}
           aria-label={collapsed ? 'Show install option' : 'Zenthos Gym'}
           className={cn(
-            'grid h-12 w-12 shrink-0 place-items-center font-display text-xl uppercase tracking-tightest text-good',
+            'grid h-12 w-12 shrink-0 place-items-center font-display text-xl uppercase tracking-tightest text-live',
             collapsed && 'transition-transform active:scale-95'
           )}
         >
@@ -112,7 +112,7 @@ export function InstallPrompt() {
                 <button
                   type="button"
                   onClick={() => void install()}
-                  className="flex h-9 shrink-0 items-center bg-good px-4 text-[13px] font-bold uppercase text-ink"
+                  className="flex h-9 shrink-0 items-center bg-live px-4 text-[13px] font-bold uppercase text-chalk"
                 >
                   Install
                 </button>
@@ -122,7 +122,7 @@ export function InstallPrompt() {
                 type="button"
                 onClick={() => setCollapsed(true)}
                 aria-label="Collapse"
-                className="flex h-9 w-9 shrink-0 items-center justify-center text-mute transition-colors hover:text-ink"
+                className="flex h-9 w-9 shrink-0 items-center justify-center text-mute transition-colors hover:text-chalk"
               >
                 <X size={16} aria-hidden />
               </button>

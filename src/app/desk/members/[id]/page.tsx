@@ -71,7 +71,7 @@ export default function MemberDetail() {
 
   return (
     <div className="max-w-3xl animate-rise">
-      <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-mute hover:text-ink">
+      <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-mute hover:text-chalk">
         <ArrowLeft size={16} /> Members
       </button>
 
@@ -85,7 +85,7 @@ export default function MemberDetail() {
         <div className="text-right">
           {member.expires_at ? (
             <>
-              <p className={cn('font-display text-5xl tabular-nums', active ? 'text-good' : 'text-alert')}>{left}</p>
+              <p className={cn('font-display text-5xl tabular-nums', active ? 'text-live' : 'text-out')}>{left}</p>
               <p className="text-[11px] uppercase tracking-[0.2em] text-mute">
                 {active ? 'days left · to ' + shortDate(member.expires_at) : 'expired ' + shortDate(member.expires_at)}
               </p>
@@ -99,7 +99,7 @@ export default function MemberDetail() {
       <div className="rule mt-6" />
 
       <section className="mt-6">
-        <h2 className="flex items-center gap-2 text-2xl"><Banknote size={20} className="text-good" /> Take payment</h2>
+        <h2 className="flex items-center gap-2 text-2xl"><Banknote size={20} className="text-live" /> Take payment</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto_auto]">
           <select value={planId} onChange={e => setPlanId(e.target.value)} className="field">
             {plans.map(p => (
@@ -115,7 +115,7 @@ export default function MemberDetail() {
           </button>
         </div>
         {chosen && !member.registration_paid && !chosen.is_addon && (
-          <p className="mt-2 text-xs text-warn">
+          <p className="mt-2 text-xs text-due">
             Registration fee will be added — this is their first membership payment.
           </p>
         )}
@@ -135,12 +135,12 @@ export default function MemberDetail() {
         ) : (
           <ul className="mt-4 flex flex-col gap-1.5">
             {visits.map(v => (
-              <li key={v.id} className="flex items-center justify-between border-l-2 border-line bg-surface-raised px-4 py-2.5 text-sm">
+              <li key={v.id} className="flex items-center justify-between border-l-2 border-edge bg-base-panel px-4 py-2.5 text-sm">
                 <span>{shortDate(v.created_at)}</span>
                 <span className="flex items-center gap-3">
                   <span className="tabular-nums text-mute">{timeOnly(v.created_at)}</span>
                   <span className={cn('text-xs font-semibold uppercase tracking-wide',
-                    v.kind === 'valid' ? 'text-good' : v.kind === 'expired' ? 'text-alert' : 'text-mute')}>
+                    v.kind === 'valid' ? 'text-live' : v.kind === 'expired' ? 'text-out' : 'text-mute')}>
                     {v.kind.replace('_', ' ')}
                   </span>
                 </span>

@@ -146,7 +146,7 @@ export function AvatarCropper({ file, onCancel, onDone }: Props) {
   }
 
   return (
-    <div role="dialog" aria-modal="true" aria-label="Adjust photo" className="fixed inset-0 z-[95] flex flex-col bg-ink">
+    <div role="dialog" aria-modal="true" aria-label="Adjust photo" className="fixed inset-0 z-[95] flex flex-col bg-base">
       <div className="flex items-center justify-between px-5 py-4">
         <button onClick={onCancel} aria-label="Cancel" className="text-white/70 hover:text-white">
           <X size={22} />
@@ -208,7 +208,7 @@ export function AvatarCropper({ file, onCancel, onDone }: Props) {
         <button onClick={onCancel} className="btn h-12 flex-1 border border-white/25 text-white">
           Cancel
         </button>
-        <button onClick={apply} disabled={busy || !image} className="btn h-12 flex-1 bg-white text-ink">
+        <button onClick={apply} disabled={busy || !image} className="btn h-12 flex-1 bg-chalk text-base">
           {busy ? 'Saving' : 'Use photo'}
         </button>
       </div>

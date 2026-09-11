@@ -12,9 +12,9 @@ interface Row extends Payment {
 }
 
 const TONE: Record<Payment['status'], string> = {
-  confirmed: 'text-good',
-  pending: 'text-warn',
-  rejected: 'text-alert',
+  confirmed: 'text-live',
+  pending: 'text-due',
+  rejected: 'text-out',
 }
 
 const WORD: Record<Payment['status'], string> = {
@@ -51,7 +51,7 @@ export default function HistoryPage() {
 
       <ul className="mt-6 flex flex-col gap-2">
         {rows.map(row => (
-          <li key={row.id} className="flex items-center justify-between border-l-2 border-line bg-surface-raised px-4 py-4">
+          <li key={row.id} className="flex items-center justify-between border-l-2 border-edge bg-base-panel px-4 py-4">
             <span className="min-w-0">
               <span className="block font-display text-xl uppercase tracking-tightest">
                 {row.plan?.name ?? 'Payment'}

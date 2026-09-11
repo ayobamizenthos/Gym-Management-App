@@ -61,7 +61,7 @@ export default function AdminPlans() {
 
       <ul className="mt-5 flex flex-col gap-2">
         {plans.map(plan => (
-          <li key={plan.id} className={cn('bg-surface-raised p-4 transition-opacity', !plan.is_active && 'opacity-50')}>
+          <li key={plan.id} className={cn('bg-base-panel p-4 transition-opacity', !plan.is_active && 'opacity-50')}>
             <div className="grid gap-3 sm:grid-cols-[1.4fr_1fr_1fr_auto] sm:items-center">
               <input
                 defaultValue={plan.name}
@@ -84,7 +84,7 @@ export default function AdminPlans() {
                   className="field h-11"
                 />
               </label>
-              <button onClick={() => remove(plan)} aria-label="Remove" className="grid h-11 w-11 place-items-center text-mute hover:text-alert">
+              <button onClick={() => remove(plan)} aria-label="Remove" className="grid h-11 w-11 place-items-center text-mute hover:text-out">
                 <Trash2 size={17} />
               </button>
             </div>
@@ -92,7 +92,7 @@ export default function AdminPlans() {
               <Toggle on={plan.is_active} onClick={() => patch(plan.id, { is_active: !plan.is_active })} label="Active" />
               <Toggle on={plan.counts_for_referral} onClick={() => patch(plan.id, { counts_for_referral: !plan.counts_for_referral })} label="Counts for referrals" />
               <Toggle on={plan.is_addon} onClick={() => patch(plan.id, { is_addon: !plan.is_addon })} label="Add-on (no days)" />
-              <span className="ml-auto self-center font-display text-lg tabular-nums text-good">{naira(plan.price)}</span>
+              <span className="ml-auto self-center font-display text-lg tabular-nums text-live">{naira(plan.price)}</span>
             </div>
           </li>
         ))}
@@ -119,9 +119,9 @@ export default function AdminPlans() {
 
 function Toggle({ on, onClick, label }: { on: boolean; onClick: () => void; label: string }) {
   return (
-    <button onClick={onClick} className="flex items-center gap-2 uppercase tracking-wide text-mute hover:text-ink">
-      <span className={cn('relative h-4 w-8 transition-colors', on ? 'bg-good' : 'bg-line')}>
-        <span className={cn('absolute top-0.5 h-3 w-3 bg-ink transition-all', on ? 'left-[18px]' : 'left-0.5')} />
+    <button onClick={onClick} className="flex items-center gap-2 uppercase tracking-wide text-mute hover:text-chalk">
+      <span className={cn('relative h-4 w-8 transition-colors', on ? 'bg-live' : 'bg-edge')}>
+        <span className={cn('absolute top-0.5 h-3 w-3 bg-chalk transition-all', on ? 'left-[18px]' : 'left-0.5')} />
       </span>
       {label}
     </button>

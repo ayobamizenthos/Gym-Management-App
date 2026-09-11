@@ -73,7 +73,7 @@ export default function DeskPayments() {
         {(['pending', 'confirmed'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={cn('h-10 px-5 text-sm font-semibold uppercase tracking-wide transition-colors',
-              tab === t ? 'bg-good text-ink' : 'border border-line text-mute hover:text-ink')}>
+              tab === t ? 'bg-live text-chalk' : 'border border-edge text-mute hover:text-chalk')}>
             {t}
           </button>
         ))}
@@ -86,7 +86,7 @@ export default function DeskPayments() {
       ) : (
         <ul className="mt-5 flex flex-col gap-2">
           {rows.map(row => (
-            <li key={row.id} className="border-l-2 border-line bg-surface-raised p-4">
+            <li key={row.id} className="border-l-2 border-edge bg-base-panel p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="font-semibold">{row.member?.full_name ?? 'Member'}</p>
@@ -94,10 +94,10 @@ export default function DeskPayments() {
                     {row.member?.phone} · {row.plan?.name ?? 'Payment'} · {shortDate(row.created_at)}
                   </p>
                   {row.includes_registration && (
-                    <p className="mt-1 text-xs uppercase tracking-[0.18em] text-warn">Includes registration</p>
+                    <p className="mt-1 text-xs uppercase tracking-[0.18em] text-due">Includes registration</p>
                   )}
                 </div>
-                <p className="font-display text-3xl tabular-nums text-good">{naira(row.amount)}</p>
+                <p className="font-display text-3xl tabular-nums text-live">{naira(row.amount)}</p>
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
@@ -112,7 +112,7 @@ export default function DeskPayments() {
                       <Check size={16} /> Confirm
                     </button>
                     <button disabled={busy === row.id} onClick={() => void reject(row.id)}
-                      className="btn h-10 border border-alert px-4 text-sm text-alert">
+                      className="btn h-10 border border-out px-4 text-sm text-out">
                       <X size={16} /> Reject
                     </button>
                   </>
@@ -124,7 +124,7 @@ export default function DeskPayments() {
       )}
 
       {proofUrl && (
-        <div className="fixed inset-0 z-[80] grid place-items-center bg-ink/90 p-5" onClick={() => setProofUrl(null)}>
+        <div className="fixed inset-0 z-[80] grid place-items-center bg-base/90 p-5" onClick={() => setProofUrl(null)}>
           <img src={proofUrl} alt="Proof of payment" className="max-h-[85vh] max-w-full object-contain" />
         </div>
       )}

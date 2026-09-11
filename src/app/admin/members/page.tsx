@@ -71,7 +71,7 @@ export default function AdminMembers() {
         {(['all', 'active', 'due', 'expired'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)}
             className={cn('h-9 px-4 text-xs font-semibold uppercase tracking-wide transition-colors',
-              filter === f ? 'bg-good text-ink' : 'border border-line text-mute hover:text-ink')}>
+              filter === f ? 'bg-live text-chalk' : 'border border-edge text-mute hover:text-chalk')}>
             {f === 'due' ? 'Renewals due' : f}
           </button>
         ))}
@@ -86,9 +86,9 @@ export default function AdminMembers() {
           return (
             <li key={m.id}>
               <Link href={'/desk/members/' + m.id}
-                className={cn('flex items-center justify-between gap-4 border-l-2 bg-surface-raised px-4 py-3.5 hover:bg-surface-sunk',
-                  state === 'ok' && 'border-good', state === 'due' && 'border-warn',
-                  state === 'expired' && 'border-alert', state === 'none' && 'border-line')}>
+                className={cn('flex items-center justify-between gap-4 border-l-2 bg-base-panel px-4 py-3.5 hover:bg-base-raised',
+                  state === 'ok' && 'border-live', state === 'due' && 'border-due',
+                  state === 'expired' && 'border-out', state === 'none' && 'border-edge')}>
                 <span className="min-w-0">
                   <span className="block truncate font-semibold">{m.full_name ?? 'Member'}</span>
                   <span className="block truncate text-sm text-mute">
@@ -99,7 +99,7 @@ export default function AdminMembers() {
                 <span className="shrink-0 text-right">
                   {m.expires_at ? (
                     <span className={cn('font-display text-2xl tabular-nums',
-                      state === 'ok' ? 'text-good' : state === 'due' ? 'text-warn' : 'text-alert')}>{left}</span>
+                      state === 'ok' ? 'text-live' : state === 'due' ? 'text-due' : 'text-out')}>{left}</span>
                   ) : (
                     <span className="text-xs uppercase tracking-[0.18em] text-mute">No plan</span>
                   )}

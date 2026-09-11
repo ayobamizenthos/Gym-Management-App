@@ -61,13 +61,13 @@ export default function JoinScreen() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-6 py-12">
       <span className="font-display text-2xl uppercase tracking-tightest">
-        Zenthos<span className="text-good">Gym</span>
+        Zenthos<span className="text-live">Gym</span>
       </span>
 
       <h1 className="mt-10 text-5xl">Sign up</h1>
       {inviter && (
-        <p className="mt-3 border-l-2 border-good pl-3 text-sm">
-          <span className="text-good">{inviter}</span> invited you.
+        <p className="mt-3 border-l-2 border-live pl-3 text-sm">
+          <span className="text-live">{inviter}</span> invited you.
         </p>
       )}
 
@@ -101,7 +101,7 @@ export default function JoinScreen() {
         <PasswordField label="Password" value={password} onChange={setPassword} autoComplete="new-password" minLength={8} />
 
         {error && (
-          <p role="alert" className="border-l-2 border-alert pl-3 text-sm text-alert">
+          <p role="alert" className="border-l-2 border-out pl-3 text-sm text-out">
             {error}
           </p>
         )}
@@ -113,7 +113,7 @@ export default function JoinScreen() {
 
       <p className="mt-6 text-sm text-mute">
         Already a member{' '}
-        <Link href="/login" className="text-good underline-offset-4 hover:underline">
+        <Link href="/login" className="text-live underline-offset-4 hover:underline">
           Sign in
         </Link>
       </p>

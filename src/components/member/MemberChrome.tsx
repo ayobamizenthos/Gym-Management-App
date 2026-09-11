@@ -19,7 +19,7 @@ export function MemberChrome({ children }: { children: React.ReactNode }) {
       <main className="flex-1 px-5 pb-28 pt-6">{children}</main>
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-40 mx-auto grid max-w-2xl grid-cols-4 border-t border-line bg-ink"
+        className="fixed inset-x-0 bottom-0 z-40 mx-auto grid max-w-2xl grid-cols-4 border-t border-edge bg-base"
       >
         {TABS.map(tab => {
           const active = path === tab.href
@@ -30,7 +30,7 @@ export function MemberChrome({ children }: { children: React.ReactNode }) {
               aria-current={active ? 'page' : undefined}
               className={cn(
                 'flex flex-col items-center gap-1 py-3 text-[11px] font-semibold uppercase tracking-wide transition-colors',
-                active ? 'text-good' : 'text-mute hover:text-ink'
+                active ? 'text-live' : 'text-mute hover:text-chalk'
               )}
             >
               <tab.icon size={19} aria-hidden />

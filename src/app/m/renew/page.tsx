@@ -166,7 +166,7 @@ export default function RenewPage() {
     return (
       <div className="space-y-2" aria-busy="true" aria-label="Loading plans">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-14 animate-pulse rounded-md bg-surface-raised" />
+          <div key={i} className="h-14 animate-pulse rounded-md bg-base-panel" />
         ))}
       </div>
     )
@@ -180,7 +180,7 @@ export default function RenewPage() {
         onClick={onPick}
         className={cn(
           'flex w-full items-center justify-between rounded-md border px-4 py-3.5 text-left transition-all',
-          on ? 'border-ink bg-surface-raised' : 'border-line hover:border-mute'
+          on ? 'border-chalk bg-base-panel' : 'border-edge hover:border-mute'
         )}
       >
         <span className="flex items-center gap-3">
@@ -188,10 +188,10 @@ export default function RenewPage() {
             aria-hidden
             className={cn(
               'grid h-5 w-5 shrink-0 place-items-center rounded-sm border transition-colors',
-              on ? 'border-ink bg-ink' : 'border-line'
+              on ? 'border-chalk bg-chalk' : 'border-edge'
             )}
           >
-            {on && <Check size={13} className="text-white" strokeWidth={3} />}
+            {on && <Check size={13} className="text-base" strokeWidth={3} />}
           </span>
           <span className="font-display text-lg">{plan.name}</span>
         </span>
@@ -234,7 +234,7 @@ export default function RenewPage() {
               onClick={() => setMethod('card')}
               className={cn(
                 'flex h-11 items-center justify-center gap-2 rounded-md border text-[15px] font-semibold transition-all',
-                method === 'card' ? 'border-ink bg-ink text-white' : 'border-line text-ink hover:bg-surface-raised'
+                method === 'card' ? 'border-chalk bg-chalk text-base' : 'border-edge text-chalk hover:bg-base-panel'
               )}
             >
               <CreditCard size={17} aria-hidden /> Card
@@ -245,7 +245,7 @@ export default function RenewPage() {
               onClick={() => setMethod('transfer')}
               className={cn(
                 'flex h-11 items-center justify-center gap-2 rounded-md border text-[15px] font-semibold transition-all',
-                method === 'transfer' ? 'border-ink bg-ink text-white' : 'border-line text-ink hover:bg-surface-raised'
+                method === 'transfer' ? 'border-chalk bg-chalk text-base' : 'border-edge text-chalk hover:bg-base-panel'
               )}
             >
               <Landmark size={17} aria-hidden /> Transfer
@@ -257,14 +257,14 @@ export default function RenewPage() {
               <label htmlFor="proof" className="text-sm font-semibold text-mute">
                 Proof of transfer
               </label>
-              <div className="mt-2 flex items-center gap-3 rounded-md border border-dashed border-line px-4 py-3">
+              <div className="mt-2 flex items-center gap-3 rounded-md border border-dashed border-edge px-4 py-3">
                 <Upload size={17} className="shrink-0 text-mute" aria-hidden />
                 <input
                   id="proof"
                   type="file"
                   accept="image/*,application/pdf"
                   onChange={e => setProof(e.target.files?.[0] ?? null)}
-                  className="min-w-0 flex-1 text-sm text-mute file:mr-3 file:rounded file:border-0 file:bg-surface-sunk file:px-3 file:py-1.5 file:text-ink"
+                  className="min-w-0 flex-1 text-sm text-mute file:mr-3 file:rounded file:border-0 file:bg-base-raised file:px-3 file:py-1.5 file:text-chalk"
                 />
               </div>
             </div>
@@ -273,7 +273,7 @@ export default function RenewPage() {
       )}
 
       {chosen && (
-        <div className="fixed inset-x-0 bottom-[68px] z-30 mx-auto max-w-2xl border-t border-line bg-surface px-5 pb-4 pt-3">
+        <div className="fixed inset-x-0 bottom-[68px] z-30 mx-auto max-w-2xl border-t border-edge bg-base px-5 pb-4 pt-3">
           <div className="flex items-baseline justify-between">
             <span className="text-sm font-semibold text-mute">Total</span>
             <span className="font-display text-2xl tabular-nums">{naira(total)}</span>

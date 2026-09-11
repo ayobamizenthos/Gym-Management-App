@@ -78,7 +78,7 @@ export default function ReferralsPage() {
       </p>
 
       {!profile?.username ? (
-        <section className="mt-7 border border-line p-4">
+        <section className="mt-7 border border-edge p-4">
           <p className="text-sm">Pick your link name first.</p>
           <div className="mt-3 flex gap-2">
             <input
@@ -96,9 +96,9 @@ export default function ReferralsPage() {
       ) : (
         <section className="mt-7">
           <p className="text-xs uppercase tracking-[0.2em] text-mute">Your link</p>
-          <div className="mt-2 flex items-stretch border border-line">
+          <div className="mt-2 flex items-stretch border border-edge">
             <span className="min-w-0 flex-1 truncate px-4 py-3.5 text-sm">{link}</span>
-            <button onClick={copy} className="flex items-center gap-2 border-l border-line px-4 text-sm font-semibold uppercase text-good">
+            <button onClick={copy} className="flex items-center gap-2 border-l border-edge px-4 text-sm font-semibold uppercase text-live">
               {copied ? <Check size={16} /> : <Copy size={16} />}
               {copied ? 'Copied' : 'Copy'}
             </button>
@@ -123,11 +123,11 @@ export default function ReferralsPage() {
         </div>
         <div className="mt-3 flex gap-1.5">
           {Array.from({ length: target }).map((_, i) => (
-            <span key={i} className={cn('h-2 flex-1 transition-colors', i < counted ? 'bg-good' : 'bg-line')} />
+            <span key={i} className={cn('h-2 flex-1 transition-colors', i < counted ? 'bg-live' : 'bg-edge')} />
           ))}
         </div>
         {earned > 0 && (
-          <p className="mt-3 text-sm text-good">
+          <p className="mt-3 text-sm text-live">
             {Math.floor(earned / target) * reward} free days earned so far.
           </p>
         )}
@@ -142,13 +142,13 @@ export default function ReferralsPage() {
         ) : (
           <ul className="mt-4 flex flex-col gap-2">
             {rows.map(r => (
-              <li key={r.id} className="flex items-center justify-between border-l-2 border-line bg-surface-raised px-4 py-3">
+              <li key={r.id} className="flex items-center justify-between border-l-2 border-edge bg-base-panel px-4 py-3">
                 <span className="min-w-0">
                   <span className="block truncate font-semibold">{r.referred?.full_name ?? 'New member'}</span>
                   <span className="block text-xs text-mute">Joined {shortDate(r.created_at)}</span>
                 </span>
                 <span className={cn('text-xs font-semibold uppercase tracking-wide',
-                  r.rewarded_at ? 'text-good' : r.qualified_at ? 'text-good' : 'text-mute')}>
+                  r.rewarded_at ? 'text-live' : r.qualified_at ? 'text-live' : 'text-mute')}>
                   {r.rewarded_at ? 'Rewarded' : r.qualified_at ? 'Counted' : 'Not yet paid'}
                 </span>
               </li>

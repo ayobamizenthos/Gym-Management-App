@@ -80,7 +80,7 @@ export default function DeskMembers() {
           ([key, label]) => (
             <button key={key} onClick={() => setFilter(key as Filter)}
               className={cn('h-9 px-4 text-xs font-semibold uppercase tracking-wide transition-colors',
-                filter === key ? 'bg-good text-ink' : 'border border-line text-mute hover:text-ink')}>
+                filter === key ? 'bg-live text-chalk' : 'border border-edge text-mute hover:text-chalk')}>
               {label}
             </button>
           )
@@ -100,11 +100,11 @@ export default function DeskMembers() {
           return (
             <li key={m.id}>
               <Link href={'/desk/members/' + m.id}
-                className={cn('flex items-center justify-between gap-4 border-l-2 bg-surface-raised px-4 py-3.5 transition-colors hover:bg-surface-sunk',
-                  state === 'ok' && 'border-good',
-                  state === 'due' && 'border-warn',
-                  state === 'expired' && 'border-alert',
-                  state === 'none' && 'border-line')}>
+                className={cn('flex items-center justify-between gap-4 border-l-2 bg-base-panel px-4 py-3.5 transition-colors hover:bg-base-raised',
+                  state === 'ok' && 'border-live',
+                  state === 'due' && 'border-due',
+                  state === 'expired' && 'border-out',
+                  state === 'none' && 'border-edge')}>
                 <span className="min-w-0">
                   <span className="block truncate font-semibold">{m.full_name ?? 'Member'}</span>
                   <span className="block truncate text-sm text-mute">
@@ -115,7 +115,7 @@ export default function DeskMembers() {
                   {m.expires_at ? (
                     <>
                       <span className={cn('block font-display text-2xl tabular-nums',
-                        state === 'ok' ? 'text-good' : state === 'due' ? 'text-warn' : 'text-alert')}>
+                        state === 'ok' ? 'text-live' : state === 'due' ? 'text-due' : 'text-out')}>
                         {left}
                       </span>
                       <span className="block text-[11px] uppercase tracking-[0.18em] text-mute">

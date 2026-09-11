@@ -53,8 +53,8 @@ export default function RegisterMember() {
       <div className="max-w-md animate-rise">
         <h1 className="text-4xl">Member registered</h1>
         <p className="mt-3 text-sm text-mute">Give these sign-in details to the member.</p>
-        <dl className="mt-6 border border-line">
-          <div className="flex justify-between border-b border-line px-4 py-3">
+        <dl className="mt-6 border border-edge">
+          <div className="flex justify-between border-b border-edge px-4 py-3">
             <dt className="text-xs uppercase tracking-[0.2em] text-mute">Email</dt>
             <dd className="text-sm">{created.email}</dd>
           </div>

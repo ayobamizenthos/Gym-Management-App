@@ -63,7 +63,7 @@ export default function AdminOverview() {
           {RANGES.map(r => (
             <button key={r.days} onClick={() => setDays(r.days)}
               className={cn('px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors',
-                days === r.days ? 'bg-good text-ink' : 'text-mute hover:text-ink')}>
+                days === r.days ? 'bg-live text-chalk' : 'text-mute hover:text-chalk')}>
               {r.label}
             </button>
           ))}
@@ -73,7 +73,7 @@ export default function AdminOverview() {
       {/* Revenue leads. No card chrome - the number is the design. */}
       <section className="mt-8">
         <p className="text-xs uppercase tracking-[0.28em] text-mute">Revenue · last {days} days</p>
-        <p className="mt-2 font-display text-[4.5rem] leading-none tabular-nums text-good lg:text-[6rem]">
+        <p className="mt-2 font-display text-[4.5rem] leading-none tabular-nums text-live lg:text-[6rem]">
           {naira(data.revenue)}
         </p>
         <p className="mt-1 text-sm text-mute">{naira(data.revenue_all)} all time</p>
@@ -97,7 +97,7 @@ export default function AdminOverview() {
       <section className="mt-7">
         <div className="flex items-baseline justify-between">
           <h2 className="text-2xl">Expiring next</h2>
-          <Link href="/admin/members" className="text-sm text-good underline-offset-4 hover:underline">All members</Link>
+          <Link href="/admin/members" className="text-sm text-live underline-offset-4 hover:underline">All members</Link>
         </div>
         {due.length === 0 ? (
           <p className="mt-4 text-sm text-mute">Nobody is close to expiring.</p>
@@ -106,13 +106,13 @@ export default function AdminOverview() {
             {due.map(m => {
               const left = daysLeft(m.expires_at)
               return (
-                <li key={m.id} className={cn('flex items-center justify-between border-l-2 bg-surface-raised px-4 py-3',
-                  (left ?? 99) <= 5 ? 'border-warn' : 'border-line')}>
+                <li key={m.id} className={cn('flex items-center justify-between border-l-2 bg-base-panel px-4 py-3',
+                  (left ?? 99) <= 5 ? 'border-due' : 'border-edge')}>
                   <span className="min-w-0">
                     <span className="block truncate font-semibold">{m.full_name ?? 'Member'}</span>
                     <span className="block text-sm text-mute">{m.phone ?? 'No phone'}</span>
                   </span>
-                  <span className={cn('font-display text-2xl tabular-nums', (left ?? 99) <= 5 ? 'text-warn' : 'text-ink')}>
+                  <span className={cn('font-display text-2xl tabular-nums', (left ?? 99) <= 5 ? 'text-due' : 'text-chalk')}>
                     {left}
                   </span>
                 </li>
@@ -134,8 +134,8 @@ function Metric({ label, value, tone, href }: {
   const body = (
     <>
       <p className={cn('font-display text-5xl leading-none tabular-nums',
-        tone === 'good' && 'text-good', tone === 'warn' && 'text-warn',
-        tone === 'alert' && 'text-alert', tone === 'plain' && 'text-ink')}>
+        tone === 'good' && 'text-live', tone === 'warn' && 'text-due',
+        tone === 'alert' && 'text-out', tone === 'plain' && 'text-chalk')}>
         {value}
       </p>
       <p className="mt-2 flex items-center gap-1 text-xs uppercase tracking-[0.2em] text-mute">

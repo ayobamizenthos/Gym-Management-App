@@ -48,10 +48,9 @@ export default function LoginPage() {
         <div aria-hidden className="absolute inset-0 bg-gradient-to-tr from-base via-base/60 to-transparent" />
         <div className="relative flex h-full flex-col justify-between p-14">
           <span className="font-display text-2xl uppercase tracking-tightest">Zenthos Gym</span>
-          <h1 className="max-w-[10ch] text-[6rem]">
-            Know who is paid
+          <h1 className="max-w-[9ch] text-[6rem]">
+            Show up<span className="text-live">.</span> Every day<span className="text-live">.</span>
           </h1>
-          <span className="text-xs uppercase tracking-[0.3em] text-mute">Lagos</span>
         </div>
       </section>
 

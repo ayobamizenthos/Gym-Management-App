@@ -1,0 +1,136 @@
+'use client'
+
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
+import { Search, UserPlus } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { daysLeft, shortDate } from '@/lib/format'
+import { cn } from '@/lib/cn'
+import type { Profile, Settings } from '@/lib/types'
+
+type Filter = 'all' | 'due' | 'expired'
+
+export default function DeskMembers() {
+  const [rows, setRows] = useState<Profile[]>([])
+  const [settings, setSettings] = useState<Settings | null>(null)
+  const [query, setQuery] = useState('')
+  const [filter, setFilter] = useState<Filter>('all')
+  const [ready, setReady] = useState(false)
+
+  const load = useCallback(async () => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('role', 'member')
+      .order('expires_at', { ascending: true, nullsFirst: false })
+      .limit(2000)
+    setRows((data ?? []) as Profile[])
+    setReady(true)
+  }, [])
+
+  useEffect(() => { void load() }, [load])
+  useEffect(() => {
+    void supabase.from('settings').select('*').maybeSingle().then(({ data }) => setSettings(data as Settings))
+  }, [])
+
+  const notice = settings?.expiry_notice_days ?? 5
+
+  const shown = useMemo(() => {
+    const needle = query.trim().toLowerCase()
+    return rows.filter(r => {
+      const left = daysLeft(r.expires_at)
+      if (filter === 'due' && !(left !== null && left > 0 && left <= notice)) return false
+      if (filter === 'expired' && !(r.expires_at !== null && (left ?? 0) <= 0)) return false
+      if (!needle) return true
+      return [r.full_name, r.phone, r.member_code]
+        .filter(Boolean)
+        .some(v => String(v).toLowerCase().includes(needle))
+    })
+  }, [rows, query, filter, notice])
+
+  const dueCount = rows.filter(r => {
+    const l = daysLeft(r.expires_at)
+    return l !== null && l > 0 && l <= notice
+  }).length
+
+  return (
+    <div>
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-4xl md:text-5xl">Members</h1>
+          <p className="mt-2 text-sm text-ink-mute">{rows.length} on file</p>
+        </div>
+        <Link href="/desk/members/new" className="btn-volt h-11 px-5 text-sm">
+          <UserPlus size={17} /> Register
+        </Link>
+      </header>
+
+      <div className="relative mt-6">
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-mute" />
+        <input
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          placeholder="Name, phone or member code"
+          className="field pl-11"
+        />
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        {([['all', 'All'], ['due', 'Renewals due (' + dueCount + ')'], ['expired', 'Expired']] as const).map(
+          ([key, label]) => (
+            <button key={key} onClick={() => setFilter(key as Filter)}
+              className={cn('h-9 px-4 text-xs font-semibold uppercase tracking-wide transition-colors',
+                filter === key ? 'bg-volt text-ink' : 'border border-ink-line text-ink-mute hover:text-paper')}>
+              {label}
+            </button>
+          )
+        )}
+      </div>
+
+      <div className="rule mt-5" />
+
+      {ready && shown.length === 0 && (
+        <p className="py-20 text-center text-ink-mute">No members match.</p>
+      )}
+
+      <ul className="mt-5 flex flex-col gap-2">
+        {shown.map(m => {
+          const left = daysLeft(m.expires_at)
+          const state = m.expires_at === null ? 'none' : (left ?? 0) <= 0 ? 'expired' : left! <= notice ? 'due' : 'ok'
+          return (
+            <li key={m.id}>
+              <Link href={'/desk/members/' + m.id}
+                className={cn('flex items-center justify-between gap-4 border-l-2 bg-ink-soft px-4 py-3.5 transition-colors hover:bg-ink-line/40',
+                  state === 'ok' && 'border-volt',
+                  state === 'due' && 'border-warn',
+                  state === 'expired' && 'border-alert',
+                  state === 'none' && 'border-ink-line')}>
+                <span className="min-w-0">
+                  <span className="block truncate font-semibold">{m.full_name ?? 'Member'}</span>
+                  <span className="block truncate text-sm text-ink-mute">
+                    {m.member_code}{m.phone ? ' · ' + m.phone : ''}
+                  </span>
+                </span>
+                <span className="shrink-0 text-right">
+                  {m.expires_at ? (
+                    <>
+                      <span className={cn('block font-display text-2xl tabular-nums',
+                        state === 'ok' ? 'text-volt' : state === 'due' ? 'text-warn' : 'text-alert')}>
+                        {left}
+                      </span>
+                      <span className="block text-[11px] uppercase tracking-[0.18em] text-ink-mute">
+                        {state === 'expired' ? 'expired' : 'days left'}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-xs uppercase tracking-[0.18em] text-ink-mute">No plan</span>
+                  )}
+                </span>
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
+}

@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-tap-highlight-color: transparent; }
+  body {
+    @apply bg-ink text-paper font-body antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  /* Headings are condensed and shouty on purpose - this is a gym, not a SaaS. */
+  h1, h2, h3 { @apply font-display uppercase tracking-tightest leading-[0.92]; }
+  ::selection { @apply bg-volt text-ink; }
+}
+
+@layer components {
+  .rule { @apply border-t border-ink-line; }
+
+  .field {
+    @apply w-full bg-ink-soft border border-ink-line px-4 h-12 text-paper
+           outline-none transition-colors placeholder:text-ink-mute
+           focus:border-volt;
+  }
+
+  .btn {
+    @apply inline-flex h-12 items-center justify-center gap-2 px-6 font-semibold
+           uppercase tracking-wide transition-transform active:scale-[.98]
+           disabled:opacity-40 disabled:pointer-events-none select-none;
+  }
+  .btn-volt  { @apply btn bg-volt text-ink hover:bg-volt-dark; }
+  .btn-ghost { @apply btn border border-ink-line text-paper hover:border-volt hover:text-volt; }
+
+  /* Numbers carry the interface. Tabular so they never jitter when they change. */
+  .stat { @apply font-display text-5xl leading-none tabular-nums; }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Zenthos Gym",
+  "short_name": "Zenthos Gym",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B0B0C",
+  "theme_color": "#0B0B0C",
+  "icons": []
+}

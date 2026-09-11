@@ -2,38 +2,70 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Banknote } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToasts } from '@/stores/toast'
 import { playPaid } from '@/lib/sounds'
+import { Avatar } from '@/components/Avatar'
+import { Accordion } from '@/components/Accordion'
+import { Loader } from '@/components/Loader'
 import { daysLeft, naira, shortDate, timeOnly } from '@/lib/format'
 import { cn } from '@/lib/cn'
-import { Loader } from '@/components/Loader'
-import type { Plan, Profile, CheckInRow } from '@/lib/types'
+import type { CheckInRow, Payment, Plan, Profile } from '@/lib/types'
+
+interface PaymentRow extends Payment {
+  plan: { name: string } | null
+}
+
+const STATUS_TONE: Record<Payment['status'], string> = {
+  confirmed: 'text-live',
+  pending: 'text-due',
+  rejected: 'text-out',
+}
 
 export default function MemberDetail() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const push = useToasts(s => s.push)
+
   const [member, setMember] = useState<Profile | null>(null)
   const [plans, setPlans] = useState<Plan[]>([])
+  const [payments, setPayments] = useState<PaymentRow[]>([])
   const [visits, setVisits] = useState<CheckInRow[]>([])
   const [planId, setPlanId] = useState('')
   const [method, setMethod] = useState<'cash' | 'transfer'>('cash')
   const [busy, setBusy] = useState(false)
 
   const load = useCallback(async () => {
-    const [m, v] = await Promise.all([
+    const [m, p, v] = await Promise.all([
       supabase.from('profiles').select('*').eq('id', id).maybeSingle(),
-      supabase.from('check_ins').select('*').eq('user_id', id).order('created_at', { ascending: false }).limit(10),
+      supabase
+        .from('payments')
+        .select('*, plan:plan_id(name)')
+        .eq('user_id', id)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('check_ins')
+        .select('*')
+        .eq('user_id', id)
+        .order('created_at', { ascending: false })
+        .limit(20),
     ])
     setMember(m.data as Profile)
+    setPayments((p.data ?? []) as unknown as PaymentRow[])
     setVisits((v.data ?? []) as CheckInRow[])
   }, [id])
 
-  useEffect(() => { void load() }, [load])
   useEffect(() => {
-    void supabase.from('plans').select('*').eq('is_active', true).order('sort_order')
+    void load()
+  }, [load])
+
+  useEffect(() => {
+    void supabase
+      .from('plans')
+      .select('*')
+      .eq('is_active', true)
+      .order('sort_order')
       .then(({ data }) => {
         const list = (data ?? []) as Plan[]
         setPlans(list)
@@ -50,13 +82,14 @@ export default function MemberDetail() {
       p_reference: null,
       p_auto_confirm: method === 'cash',
     })
-    if (error) push({ tone: 'bad', title: 'Could not record', message: error.message })
-    else {
+    if (error) {
+      push({ tone: 'bad', title: 'Could not record', message: error.message })
+    } else {
       if (method === 'cash') playPaid()
       push({
         tone: 'good',
         title: method === 'cash' ? 'Payment recorded' : 'Logged as pending',
-        message: method === 'cash' ? 'Days added immediately.' : 'Confirm it once the transfer lands.',
+        message: method === 'cash' ? 'Days added immediately.' : 'Confirm once the transfer lands.',
       })
       await load()
     }
@@ -68,87 +101,156 @@ export default function MemberDetail() {
   const left = daysLeft(member.expires_at)
   const active = left !== null && left > 0
   const chosen = plans.find(p => p.id === planId)
+  const totalPaid = payments
+    .filter(p => p.status === 'confirmed')
+    .reduce((sum, p) => sum + Number(p.amount), 0)
 
   return (
-    <div className="max-w-3xl animate-rise">
-      <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-mute hover:text-chalk">
-        <ArrowLeft size={16} /> Members
+    <div className="mx-auto max-w-2xl animate-rise">
+      <button
+        onClick={() => router.back()}
+        className="flex items-center gap-2 text-sm text-mute transition-colors hover:text-chalk"
+      >
+        <ArrowLeft size={16} aria-hidden /> Back
       </button>
 
-      <header className="mt-5 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-4xl">{member.full_name ?? 'Member'}</h1>
-          <p className="mt-1 text-sm text-mute">
-            {member.phone ?? 'No phone on file'}
-          </p>
-        </div>
-        <div className="text-right">
-          {member.expires_at ? (
-            <>
-              <p className={cn('font-display text-5xl tabular-nums', active ? 'text-live' : 'text-out')}>{left}</p>
-              <p className="text-[11px] uppercase tracking-[0.2em] text-mute">
-                {active ? 'days left · to ' + shortDate(member.expires_at) : 'expired ' + shortDate(member.expires_at)}
-              </p>
-            </>
-          ) : (
-            <p className="text-sm uppercase tracking-[0.2em] text-mute">No plan yet</p>
-          )}
+      <header className="mt-5 flex items-start gap-4">
+        <Avatar path={member.photo_url} name={member.full_name} size={64} />
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate text-3xl">{member.full_name ?? 'Member'}</h1>
+          <p className="mt-1 truncate text-[15px] text-chalk-dim">{member.phone ?? 'No phone on file'}</p>
         </div>
       </header>
 
-      <div className="rule mt-6" />
+      <div
+        className={cn(
+          'mt-5 flex items-center justify-between rounded-lg px-4 py-3.5',
+          !member.expires_at ? 'bg-base-panel' : active ? 'bg-live-tint' : 'bg-out-tint'
+        )}
+      >
+        <span className="text-[15px] font-medium">
+          {member.expires_at ? (active ? 'Active' : 'Expired') : 'No plan yet'}
+        </span>
+        <span className={cn('figure text-2xl', active ? 'text-live' : 'text-out')}>
+          {member.expires_at ? (active ? left + ' days' : shortDate(member.expires_at)) : '--'}
+        </span>
+      </div>
 
-      <section className="mt-6">
-        <h2 className="flex items-center gap-2 text-2xl"><Banknote size={20} className="text-live" /> Take payment</h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto_auto]">
-          <select value={planId} onChange={e => setPlanId(e.target.value)} className="field">
-            {plans.map(p => (
-              <option key={p.id} value={p.id}>{p.name} — {naira(p.price)}</option>
+      <div className="mt-8">
+        <Accordion title="Take payment" defaultOpen>
+          <div className="flex flex-col gap-2.5">
+            <label className="block">
+              <span className="label">Plan</span>
+              <select value={planId} onChange={e => setPlanId(e.target.value)} className="field mt-1.5">
+                {plans.map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} — {naira(p.price)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="label">Method</span>
+              <select
+                value={method}
+                onChange={e => setMethod(e.target.value as 'cash' | 'transfer')}
+                className="field mt-1.5"
+              >
+                <option value="cash">Cash</option>
+                <option value="transfer">Transfer</option>
+              </select>
+            </label>
+            {chosen && chosen.requires_registration && !member.registration_paid && (
+              <p className="text-sm text-due">A joining fee will be added to this payment.</p>
+            )}
+            <button onClick={take} disabled={busy || !planId} className="btn-primary mt-1 w-full">
+              {busy ? 'Saving' : 'Record payment'}
+            </button>
+            {method === 'transfer' && (
+              <p className="text-sm text-mute">Transfers stay pending until confirmed on the Payments screen.</p>
+            )}
+          </div>
+        </Accordion>
+
+        <Accordion title="Details">
+          <dl className="divide-y divide-edge-soft">
+            {[
+              ['Email', member.email],
+              ['Phone', member.phone],
+              ['Address', member.address],
+              ['Emergency contact', member.emergency_contact],
+              ['Joined', shortDate(member.created_at)],
+              ['Joining fee', member.registration_paid ? 'Paid' : 'Not paid'],
+            ].map(([label, value]) => (
+              <div key={label as string} className="flex items-baseline justify-between gap-4 py-2.5">
+                <dt className="label shrink-0">{label}</dt>
+                <dd className="truncate text-right text-[15px]">{value || '--'}</dd>
+              </div>
             ))}
-          </select>
-          <select value={method} onChange={e => setMethod(e.target.value as 'cash' | 'transfer')} className="field sm:w-40">
-            <option value="cash">Cash</option>
-            <option value="transfer">Transfer</option>
-          </select>
-          <button onClick={take} disabled={busy || !planId} className="btn-primary sm:px-8">
-            {busy ? 'Saving' : 'Record'}
-          </button>
-        </div>
-        {chosen && !member.registration_paid && !chosen.is_addon && (
-          <p className="mt-2 text-xs text-due">
-            Registration fee will be added — this is their first membership payment.
-          </p>
-        )}
-        {method === 'transfer' && (
-          <p className="mt-2 text-xs text-mute">
-            Transfers stay pending until confirmed on the Payments screen.
-          </p>
-        )}
-      </section>
+          </dl>
+        </Accordion>
 
-      <div className="rule mt-8" />
+        <Accordion title="Payment history" count={payments.length}>
+          {payments.length === 0 ? (
+            <p className="text-sm text-mute">No payments recorded.</p>
+          ) : (
+            <>
+              <p className="mb-3 text-sm text-mute">
+                Total paid <span className="font-semibold text-chalk">{naira(totalPaid)}</span>
+              </p>
+              <ul role="list" className="flex flex-col gap-1.5">
+                {payments.map(row => (
+                  <li
+                    key={row.id}
+                    className="flex items-center justify-between gap-3 rounded-sm bg-base-panel px-3.5 py-2.5"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-[15px]">{row.plan?.name ?? 'Payment'}</span>
+                      <span className="block text-xs text-mute">
+                        {shortDate(row.created_at)} · {row.method}
+                      </span>
+                    </span>
+                    <span className="shrink-0 text-right">
+                      <span className="block text-[15px] font-semibold tabular-nums">{naira(row.amount)}</span>
+                      <span className={cn('block text-xs font-semibold', STATUS_TONE[row.status])}>
+                        {row.status}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </Accordion>
 
-      <section className="mt-6">
-        <h2 className="text-2xl">Recent visits</h2>
-        {visits.length === 0 ? (
-          <p className="mt-3 text-sm text-mute">No check-ins recorded.</p>
-        ) : (
-          <ul className="mt-4 flex flex-col gap-1.5">
-            {visits.map(v => (
-              <li key={v.id} className="flex items-center justify-between border-l-2 border-edge bg-base-panel px-4 py-2.5 text-sm">
-                <span>{shortDate(v.created_at)}</span>
-                <span className="flex items-center gap-3">
-                  <span className="tabular-nums text-mute">{timeOnly(v.created_at)}</span>
-                  <span className={cn('text-xs font-semibold uppercase tracking-wide',
-                    v.kind === 'valid' ? 'text-live' : v.kind === 'expired' ? 'text-out' : 'text-mute')}>
-                    {v.kind.replace('_', ' ')}
+        <Accordion title="Visits" count={visits.length}>
+          {visits.length === 0 ? (
+            <p className="text-sm text-mute">No check-ins recorded.</p>
+          ) : (
+            <ul role="list" className="flex flex-col gap-1.5">
+              {visits.map(v => (
+                <li
+                  key={v.id}
+                  className="flex items-center justify-between rounded-sm bg-base-panel px-3.5 py-2.5 text-[15px]"
+                >
+                  <span>{shortDate(v.created_at)}</span>
+                  <span className="flex items-center gap-3">
+                    <span className="tabular-nums text-mute">{timeOnly(v.created_at)}</span>
+                    <span
+                      className={cn(
+                        'text-xs font-semibold',
+                        v.kind === 'valid' ? 'text-live' : v.kind === 'expired' ? 'text-out' : 'text-mute'
+                      )}
+                    >
+                      {v.kind.replace('_', ' ')}
+                    </span>
                   </span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Accordion>
+      </div>
     </div>
   )
 }

@@ -37,21 +37,33 @@ export default function JoinScreen() {
     setBusy(true)
     setError(null)
     unlockAudio()
-    const { error: signUpError } = await supabase.auth.signUp({
+    // Created server side, already confirmed, so nobody waits on an email.
+    const res = await fetch('/api/join', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        full_name: fullName,
+        phone,
+        email,
+        address,
+        username,
+        password,
+        referral,
+      }),
+    })
+    const payload = await res.json()
+    if (!res.ok) {
+      setError(payload.error ?? 'Could not create your account')
+      setBusy(false)
+      return
+    }
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
       password,
-      options: {
-        data: {
-          full_name: fullName.trim(),
-          phone: phone.trim(),
-          address: address.trim(),
-          username: username.trim().toLowerCase(),
-          referral,
-        },
-      },
     })
-    if (signUpError) {
-      setError(signUpError.message)
+    if (signInError) {
+      setError(signInError.message)
       setBusy(false)
       return
     }

@@ -3,12 +3,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Camera, LogOut, ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/stores/auth'
 import { useToasts } from '@/stores/toast'
 import { AvatarCropper } from '@/components/AvatarCropper'
+import { Avatar } from '@/components/Avatar'
+import { forgetAvatar } from '@/lib/avatar'
 import { daysLeft, shortDate } from '@/lib/format'
 import { cn } from '@/lib/cn'
 
@@ -65,9 +66,8 @@ export default function AccountPage() {
         .from('avatars')
         .upload(path, blob, { upsert: true, contentType: 'image/jpeg' })
       if (error) throw error
-      const { data } = supabase.storage.from('avatars').getPublicUrl(path)
-      const url = data.publicUrl + '?v=' + Date.now()
-      const { error: saveError } = await supabase.from('profiles').update({ photo_url: url }).eq('id', profile.id)
+      forgetAvatar(path)
+      const { error: saveError } = await supabase.from('profiles').update({ photo_url: path }).eq('id', profile.id)
       if (saveError) throw saveError
       await refresh()
       push({ tone: 'good', title: 'Photo updated' })
@@ -90,13 +90,9 @@ export default function AccountPage() {
           type="button"
           onClick={() => fileRef.current?.click()}
           aria-label="Change profile photo"
-          className="relative grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full border border-edge bg-base-panel"
+          className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full border border-edge"
         >
-          {profile?.photo_url ? (
-            <Image src={profile.photo_url} alt="" fill sizes="80px" className="object-cover" unoptimized />
-          ) : (
-            <span className="font-display text-2xl text-mute">{(profile?.full_name ?? 'M').charAt(0)}</span>
-          )}
+          <Avatar path={profile?.photo_url} name={profile?.full_name} size={80} />
           <span className="absolute inset-x-0 bottom-0 grid place-items-center bg-base/70 py-1">
             <Camera size={13} className="text-white" aria-hidden />
           </span>

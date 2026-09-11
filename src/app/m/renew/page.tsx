@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, Upload, CreditCard, Landmark } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -35,6 +35,8 @@ export default function RenewPage() {
   const [method, setMethod] = useState<Method>('card')
   const [proof, setProof] = useState<File | null>(null)
   const [busy, setBusy] = useState(false)
+  const barRef = useRef<HTMLDivElement>(null)
+  const [barHeight, setBarHeight] = useState(0)
 
   useEffect(() => {
     void Promise.all([
@@ -56,6 +58,20 @@ export default function RenewPage() {
     document.body.appendChild(script)
   }, [])
 
+  // The bar grows when the joining fee line appears, so its height is measured
+  // rather than guessed - the pay options must never sit underneath it.
+  useLayoutEffect(() => {
+    const element = barRef.current
+    if (!element) {
+      setBarHeight(0)
+      return
+    }
+    const observer = new ResizeObserver(() => setBarHeight(element.offsetHeight))
+    observer.observe(element)
+    setBarHeight(element.offsetHeight)
+    return () => observer.disconnect()
+  })
+
   const memberships = plans.filter(p => !p.is_addon)
   const extras = plans.filter(p => p.is_addon)
   const chosen = memberships.find(p => p.id === planId) ?? null
@@ -76,19 +92,14 @@ export default function RenewPage() {
     setAddOns(current => (current.includes(id) ? current.filter(x => x !== id) : [...current, id]))
 
   const createPending = async (proofPath: string | null) => {
-    const ids: string[] = []
-    for (const id of [chosen!.id, ...addOns]) {
-      const { data, error } = await supabase.rpc('request_payment', {
-        p_plan: id,
-        p_method: method === 'card' ? 'paystack' : 'transfer',
-        p_reference: null,
-        p_proof: proofPath,
-        p_branch: profile!.branch_id,
-      })
-      if (error) throw error
-      ids.push(data as string)
-    }
-    return ids
+    const { data, error } = await supabase.rpc('request_payments', {
+      p_plans: [chosen!.id, ...addOns],
+      p_method: method === 'card' ? 'paystack' : 'transfer',
+      p_proof: proofPath,
+      p_branch: profile!.branch_id,
+    })
+    if (error) throw error
+    return (data ?? []) as string[]
   }
 
   const payByTransfer = async () => {
@@ -201,7 +212,7 @@ export default function RenewPage() {
   )
 
   return (
-    <div className="animate-rise pb-48">
+    <div className="animate-rise" style={{ paddingBottom: barHeight + 28 }}>
       <h1 className="text-3xl">Renew</h1>
 
       <fieldset className="mt-6">
@@ -273,7 +284,7 @@ export default function RenewPage() {
       )}
 
       {chosen && (
-        <div className="fixed inset-x-0 bottom-[68px] z-30 mx-auto max-w-2xl border-t border-edge bg-base px-5 pb-4 pt-3">
+        <div ref={barRef} className="fixed inset-x-0 bottom-[68px] z-30 mx-auto max-w-2xl border-t border-edge bg-base px-5 pb-4 pt-3">
           <div className="flex items-baseline justify-between">
             <span className="text-sm font-semibold text-mute">Total</span>
             <span className="font-display text-2xl tabular-nums">{naira(total)}</span>
@@ -282,7 +293,13 @@ export default function RenewPage() {
             <p className="mt-0.5 text-right text-xs text-mute">includes {naira(joiningFee)} joining fee</p>
           )}
           <button onClick={submit} disabled={busy} className="btn-primary mt-3 w-full">
-            {busy ? 'Working' : method === 'card' ? 'Pay ' + naira(total) : 'I have transferred'}
+            {busy ? (
+              <span className="dots">Processing</span>
+            ) : method === 'card' ? (
+              'Pay ' + naira(total)
+            ) : (
+              'I have transferred'
+            )}
           </button>
         </div>
       )}

@@ -101,6 +101,56 @@ const attack = (wasBlocked, description) => (wasBlocked ? blocked.push(descripti
     const removal = await asMember('/rest/v1/payments?user_id=neq.' + uid, { method: 'DELETE' })
     attack(removal.status >= 400, 'deleting other members payment history')
 
+
+    // ---- multi-plan checkout: the amount must be re-derived server side ----
+    const allPlans = await serviceJson('/rest/v1/plans?select=id,name,price,is_addon,requires_registration&is_active=eq.true')
+    const membership = allPlans.find(p => !p.is_addon)
+    const addon = allPlans.find(p => p.is_addon)
+
+    // stacking several membership plans in one checkout must be refused
+    const stacked = await asMemberJson('/rest/v1/rpc/request_payments', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_plans: allPlans.filter(p => !p.is_addon).slice(0, 2).map(p => p.id),
+        p_method: 'transfer',
+      }),
+    })
+    attack(Boolean(stacked && (stacked.code || stacked.message)), 'stacking two membership plans in one checkout')
+
+    // an add-on with no membership must be refused
+    if (addon) {
+      const addonOnly = await asMemberJson('/rest/v1/rpc/request_payments', {
+        method: 'POST',
+        body: JSON.stringify({ p_plans: [addon.id], p_method: 'transfer' }),
+      })
+      attack(Boolean(addonOnly && (addonOnly.code || addonOnly.message)), 'buying an add-on with no membership')
+    }
+
+    // a legitimate checkout must price itself from the plan, not the client
+    const legit = await asMemberJson('/rest/v1/rpc/request_payments', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_plans: addon ? [membership.id, addon.id] : [membership.id],
+        p_method: 'transfer',
+      }),
+    })
+    if (Array.isArray(legit) && legit.length > 0) {
+      const created = await serviceJson('/rest/v1/payments?id=in.(' + legit.join(',') + ')&select=id,amount,status,includes_registration')
+      const joiningFee = Number((await serviceJson('/rest/v1/settings?select=registration_fee'))[0].registration_fee)
+      const expected =
+        Number(membership.price) +
+        (addon ? Number(addon.price) : 0) +
+        (membership.requires_registration ? joiningFee : 0)
+      const charged = created.reduce((sum, r) => sum + Number(r.amount), 0)
+      attack(charged === expected, 'checkout priced at ' + charged + ' instead of ' + expected)
+      attack(created.every(r => r.status === 'pending'), 'checkout rows created already confirmed')
+      const feeRows = created.filter(r => r.includes_registration).length
+      attack(feeRows <= 1, 'joining fee applied ' + feeRows + ' times in one checkout')
+      await service('/rest/v1/payments?id=in.(' + legit.join(',') + ')', { method: 'DELETE' })
+    } else {
+      problems.push('LEGIT: a valid checkout was rejected')
+    }
+
     console.log('Verified (' + blocked.length + '):')
     blocked.forEach(item => console.log('  - ' + item))
     if (problems.length > 0) {

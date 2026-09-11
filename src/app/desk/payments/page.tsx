@@ -11,7 +11,7 @@ import type { Payment } from '@/lib/types'
 
 interface Row extends Payment {
   plan: { name: string } | null
-  member: { full_name: string | null; member_code: string | null } | null
+  member: { full_name: string | null; phone: string | null } | null
 }
 
 export default function DeskPayments() {
@@ -24,7 +24,7 @@ export default function DeskPayments() {
   const load = useCallback(async () => {
     const { data } = await supabase
       .from('payments')
-      .select('*, plan:plan_id(name), member:user_id(full_name, member_code)')
+      .select('*, plan:plan_id(name), member:user_id(full_name, phone)')
       .eq('status', tab)
       .order('created_at', { ascending: false })
       .limit(100)
@@ -73,7 +73,7 @@ export default function DeskPayments() {
         {(['pending', 'confirmed'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={cn('h-10 px-5 text-sm font-semibold uppercase tracking-wide transition-colors',
-              tab === t ? 'bg-volt text-ink' : 'border border-ink-line text-ink-mute hover:text-paper')}>
+              tab === t ? 'bg-good text-ink' : 'border border-line text-mute hover:text-ink')}>
             {t}
           </button>
         ))}
@@ -82,33 +82,33 @@ export default function DeskPayments() {
       <div className="rule mt-5" />
 
       {rows.length === 0 ? (
-        <p className="py-20 text-center text-ink-mute">Nothing {tab} right now.</p>
+        <p className="py-20 text-center text-mute">Nothing {tab} right now.</p>
       ) : (
         <ul className="mt-5 flex flex-col gap-2">
           {rows.map(row => (
-            <li key={row.id} className="border-l-2 border-ink-line bg-ink-soft p-4">
+            <li key={row.id} className="border-l-2 border-line bg-surface-raised p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="font-semibold">{row.member?.full_name ?? 'Member'}</p>
-                  <p className="text-sm text-ink-mute">
-                    {row.member?.member_code} · {row.plan?.name ?? 'Payment'} · {shortDate(row.created_at)}
+                  <p className="text-sm text-mute">
+                    {row.member?.phone} · {row.plan?.name ?? 'Payment'} · {shortDate(row.created_at)}
                   </p>
                   {row.includes_registration && (
                     <p className="mt-1 text-xs uppercase tracking-[0.18em] text-warn">Includes registration</p>
                   )}
                 </div>
-                <p className="font-display text-3xl tabular-nums text-volt">{naira(row.amount)}</p>
+                <p className="font-display text-3xl tabular-nums text-good">{naira(row.amount)}</p>
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
                 {row.proof_url && (
-                  <button onClick={() => void openProof(row.proof_url!)} className="btn-ghost h-10 px-4 text-sm">
+                  <button onClick={() => void openProof(row.proof_url!)} className="btn-quiet h-10 px-4 text-sm">
                     <FileText size={16} /> View proof
                   </button>
                 )}
                 {row.status === 'pending' && (
                   <>
-                    <button disabled={busy === row.id} onClick={() => void confirm(row.id)} className="btn-volt h-10 px-4 text-sm">
+                    <button disabled={busy === row.id} onClick={() => void confirm(row.id)} className="btn-primary h-10 px-4 text-sm">
                       <Check size={16} /> Confirm
                     </button>
                     <button disabled={busy === row.id} onClick={() => void reject(row.id)}
@@ -124,7 +124,7 @@ export default function DeskPayments() {
       )}
 
       {proofUrl && (
-        <div className="fixed inset-0 z-[80] grid place-items-center bg-ink/95 p-5" onClick={() => setProofUrl(null)}>
+        <div className="fixed inset-0 z-[80] grid place-items-center bg-ink/90 p-5" onClick={() => setProofUrl(null)}>
           <img src={proofUrl} alt="Proof of payment" className="max-h-[85vh] max-w-full object-contain" />
         </div>
       )}

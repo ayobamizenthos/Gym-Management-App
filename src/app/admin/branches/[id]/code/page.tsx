@@ -35,15 +35,15 @@ export default function EntranceCode() {
   return (
     <div className="animate-rise">
       <div className="flex items-center justify-between print:hidden">
-        <Link href="/admin/branches" className="flex items-center gap-2 text-sm text-ink-mute hover:text-paper">
+        <Link href="/admin/branches" className="flex items-center gap-2 text-sm text-mute hover:text-ink">
           <ArrowLeft size={16} /> Branches
         </Link>
-        <button onClick={() => window.print()} className="btn-volt h-11 px-5 text-sm">
+        <button onClick={() => window.print()} className="btn-primary h-11 px-5 text-sm">
           <Printer size={17} /> Print
         </button>
       </div>
 
-      <p className="mt-6 max-w-lg text-sm text-ink-mute print:hidden">
+      <p className="mt-6 max-w-lg text-sm text-mute print:hidden">
         Print this and mount it at the entrance. Members scan it on the way in and see
         their membership status instantly. The front desk hears the result.
       </p>
@@ -51,9 +51,9 @@ export default function EntranceCode() {
       {/* The printable sheet. White so it survives any printer. */}
       <div className="mx-auto mt-7 w-full max-w-[560px] bg-white p-10 text-center text-ink print:mt-0 print:max-w-none">
         <p className="font-display text-4xl uppercase tracking-tightest">
-          Zenthos<span className="text-volt-dark">Gym</span>
+          Zenthos<span className="text-ink">Gym</span>
         </p>
-        <p className="mt-1 text-sm font-semibold uppercase tracking-[0.3em] text-ink-mute">
+        <p className="mt-1 text-sm font-semibold uppercase tracking-[0.3em] text-mute">
           {branch.name}
         </p>
 

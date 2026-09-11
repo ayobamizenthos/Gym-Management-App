@@ -13,14 +13,14 @@ interface FeedRow {
   kind: CheckInKind
   created_at: string
   full_name: string | null
-  member_code: string | null
+  phone: string | null
   expires_at: string | null
 }
 
 const SKIN: Record<CheckInKind, { label: string; accent: string; Icon: typeof CheckCircle2 }> = {
-  valid:         { label: 'Active',        accent: 'text-volt  border-volt',  Icon: CheckCircle2 },
+  valid:         { label: 'Active',        accent: 'text-good  border-good',  Icon: CheckCircle2 },
   expired:       { label: 'Expired',       accent: 'text-alert border-alert', Icon: AlertTriangle },
-  duplicate:     { label: 'Repeat scan',   accent: 'text-paper border-ink-line', Icon: RotateCcw },
+  duplicate:     { label: 'Repeat scan',   accent: 'text-ink border-line', Icon: RotateCcw },
   no_membership: { label: 'No plan',       accent: 'text-warn  border-warn',  Icon: UserX },
 }
 
@@ -37,7 +37,7 @@ export default function DeskLive() {
     const hydrate = async () => {
       const { data } = await supabase
         .from('check_ins')
-        .select('id, kind, created_at, profiles(full_name, member_code, expires_at)')
+        .select('id, kind, created_at, profiles(full_name, phone, expires_at)')
         .order('created_at', { ascending: false })
         .limit(40)
       if (cancelled || !data) return
@@ -49,7 +49,7 @@ export default function DeskLive() {
             kind: r.kind as CheckInKind,
             created_at: r.created_at as string,
             full_name: (p.full_name as string) ?? null,
-            member_code: (p.member_code as string) ?? null,
+            phone: (p.phone as string) ?? null,
             expires_at: (p.expires_at as string) ?? null,
           }
         })
@@ -63,7 +63,7 @@ export default function DeskLive() {
         const row = payload.new as { id: string; kind: CheckInKind; created_at: string; user_id: string }
         const { data: p } = await supabase
           .from('profiles')
-          .select('full_name, member_code, expires_at')
+          .select('full_name, phone, expires_at')
           .eq('id', row.user_id)
           .maybeSingle()
         const entry: FeedRow = {
@@ -71,7 +71,7 @@ export default function DeskLive() {
           kind: row.kind,
           created_at: row.created_at,
           full_name: p?.full_name ?? null,
-          member_code: p?.member_code ?? null,
+          phone: p?.phone ?? null,
           expires_at: p?.expires_at ?? null,
         }
         setFeed(prev => [entry, ...prev].slice(0, 40))
@@ -89,19 +89,19 @@ export default function DeskLive() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-4xl md:text-5xl">Live check-in</h1>
-          <p className="mt-2 flex items-center gap-2 text-sm text-ink-mute">
-            <span className={cn('h-2 w-2 rounded-full', live ? 'bg-volt' : 'bg-ink-mute')} />
+          <p className="mt-2 flex items-center gap-2 text-sm text-mute">
+            <span className={cn('h-2 w-2 rounded-full', live ? 'bg-good' : 'bg-mute')} />
             {live ? 'Connected' : 'Reconnecting'}
           </p>
         </div>
         <div className="flex items-center gap-6">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-ink-mute">Visits today</p>
-            <p className="stat text-volt">{today.length}</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-mute">Visits today</p>
+            <p className="stat text-good">{today.length}</p>
           </div>
           <button
             onClick={() => { setSound(s => !s); unlockAudio() }}
-            className={cn('btn-ghost h-11 px-4', !sound && 'text-alert border-alert')}
+            className={cn('btn-quiet h-11 px-4', !sound && 'text-alert border-alert')}
             aria-pressed={sound}
           >
             {sound ? <Volume2 size={17} /> : <VolumeX size={17} />}
@@ -113,7 +113,7 @@ export default function DeskLive() {
       <div className="rule mt-6" />
 
       {feed.length === 0 ? (
-        <p className="py-24 text-center text-ink-mute">
+        <p className="py-24 text-center text-mute">
           Waiting for the first scan of the day.
         </p>
       ) : (
@@ -124,16 +124,16 @@ export default function DeskLive() {
               <li
                 key={row.id}
                 className={cn(
-                  'flex items-center gap-4 border-l-2 bg-ink-soft px-4 py-3.5',
+                  'flex items-center gap-4 border-l-2 bg-surface-raised px-4 py-3.5',
                   skin.accent,
                   i === 0 && 'animate-rise'
                 )}
               >
                 <skin.Icon size={26} className="shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold text-paper">{row.full_name ?? 'Member'}</p>
-                  <p className="truncate text-sm text-ink-mute">
-                    {row.member_code}
+                  <p className="truncate font-semibold text-ink">{row.full_name ?? 'Member'}</p>
+                  <p className="truncate text-sm text-mute">
+                    {row.phone ?? 'No phone'}
                     {row.expires_at && ` · to ${shortDate(row.expires_at)}`}
                   </p>
                 </div>
@@ -141,7 +141,7 @@ export default function DeskLive() {
                   <p className={cn('text-sm font-semibold uppercase tracking-wide', skin.accent.split(' ')[0])}>
                     {skin.label}
                   </p>
-                  <p className="text-sm tabular-nums text-ink-mute">{timeOnly(row.created_at)}</p>
+                  <p className="text-sm tabular-nums text-mute">{timeOnly(row.created_at)}</p>
                 </div>
               </li>
             )

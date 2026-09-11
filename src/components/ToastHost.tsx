@@ -13,25 +13,25 @@ export function ToastHost() {
         <div
           key={t.id}
           className={cn(
-            'pointer-events-auto flex animate-rise items-start gap-3 border bg-ink-soft px-4 py-3',
-            t.tone === 'good' && 'border-volt',
+            'pointer-events-auto flex animate-rise items-start gap-3 border bg-surface-raised px-4 py-3',
+            t.tone === 'good' && 'border-good',
             t.tone === 'bad' && 'border-alert',
-            t.tone === 'info' && 'border-ink-line'
+            t.tone === 'info' && 'border-line'
           )}
         >
           <span
             className={cn(
               'mt-1.5 h-2 w-2 shrink-0',
-              t.tone === 'good' && 'bg-volt',
+              t.tone === 'good' && 'bg-good',
               t.tone === 'bad' && 'bg-alert',
-              t.tone === 'info' && 'bg-ink-mute'
+              t.tone === 'info' && 'bg-mute'
             )}
           />
           <div className="min-w-0 flex-1">
             <p className="font-semibold leading-tight">{t.title}</p>
-            {t.message && <p className="mt-0.5 text-sm text-ink-mute">{t.message}</p>}
+            {t.message && <p className="mt-0.5 text-sm text-mute">{t.message}</p>}
           </div>
-          <button onClick={() => dismiss(t.id)} aria-label="Dismiss" className="text-ink-mute hover:text-paper">
+          <button onClick={() => dismiss(t.id)} aria-label="Dismiss" className="text-mute hover:text-ink">
             <X size={16} />
           </button>
         </div>

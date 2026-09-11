@@ -23,7 +23,7 @@ const SKIN: Record<CheckInKind, {
   valid: {
     label: 'You are in',
     note: r => `${r.days_left} day${r.days_left === 1 ? '' : 's'} left on your membership`,
-    bg: 'bg-volt', fg: 'text-ink', Icon: CheckCircle2, motion: 'animate-pop',
+    bg: 'bg-good', fg: 'text-white', Icon: CheckCircle2, motion: 'animate-pop',
   },
   expired: {
     label: 'Membership expired',
@@ -33,12 +33,12 @@ const SKIN: Record<CheckInKind, {
   duplicate: {
     label: 'Already checked in',
     note: r => (r.is_active ? `You scanned earlier today. ${r.days_left} days left.` : 'You scanned earlier today.'),
-    bg: 'bg-paper', fg: 'text-ink', Icon: RotateCcw, motion: 'animate-pop',
+    bg: 'bg-surface-raised', fg: 'text-ink', Icon: RotateCcw, motion: 'animate-pop',
   },
   no_membership: {
     label: 'No active plan',
     note: () => 'Pick a plan to start training.',
-    bg: 'bg-warn', fg: 'text-ink', Icon: UserX, motion: 'animate-pop',
+    bg: 'bg-warn', fg: 'text-white', Icon: UserX, motion: 'animate-pop',
   },
 }
 
@@ -82,8 +82,8 @@ export default function CheckInScreen() {
       <main className="grid min-h-dvh place-items-center px-6 text-center">
         <div>
           <h1 className="text-4xl">Could not check you in</h1>
-          <p className="mt-3 text-ink-mute">{error}</p>
-          <button onClick={() => void run()} className="btn-volt mt-8">Try again</button>
+          <p className="mt-3 text-mute">{error}</p>
+          <button onClick={() => void run()} className="btn-primary mt-8">Try again</button>
         </div>
       </main>
     )
@@ -97,7 +97,7 @@ export default function CheckInScreen() {
       <section className="flex flex-col items-center justify-center px-6 text-center">
         <span className={cn('relative grid h-28 w-28 place-items-center', skin.motion)}>
           {result!.kind === 'valid' && (
-            <span className="absolute inset-0 animate-ring rounded-full border-4 border-ink/30" />
+            <span className="absolute inset-0 animate-ring rounded-full border-4 border-white/40" />
           )}
           <Icon size={104} strokeWidth={1.6} />
         </span>
@@ -107,16 +107,14 @@ export default function CheckInScreen() {
 
         <div className="mt-10 flex items-center gap-3 text-sm uppercase tracking-[0.25em] opacity-70">
           <span>{result!.full_name ?? 'Member'}</span>
-          <span className="h-3 w-px bg-current opacity-40" />
-          <span>{result!.member_code}</span>
         </div>
       </section>
 
       <footer className="p-6">
         {result!.kind === 'valid' || result!.kind === 'duplicate' ? (
-          <Link href="/m" className="btn w-full border border-current">Open my membership</Link>
+          <Link href="/m" className="btn w-full rounded-md border border-current">Open my membership</Link>
         ) : (
-          <Link href="/m/renew" className="btn w-full bg-ink text-paper">Renew now</Link>
+          <Link href="/m/renew" className="btn w-full bg-ink text-ink">Renew now</Link>
         )}
       </footer>
     </main>

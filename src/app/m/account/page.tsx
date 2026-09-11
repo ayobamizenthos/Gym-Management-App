@@ -4,10 +4,11 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Camera, LogOut, Check } from 'lucide-react'
+import { Camera, LogOut, ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/stores/auth'
 import { useToasts } from '@/stores/toast'
+import { AvatarCropper } from '@/components/AvatarCropper'
 import { daysLeft, shortDate } from '@/lib/format'
 import { cn } from '@/lib/cn'
 
@@ -21,6 +22,7 @@ export default function AccountPage() {
   const [dirty, setDirty] = useState(false)
   const [busy, setBusy] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [pending, setPending] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
@@ -53,13 +55,15 @@ export default function AccountPage() {
     await refresh()
   }
 
-  const pickPhoto = async (file: File) => {
+  const upload = async (blob: Blob) => {
     if (!profile) return
+    setPending(null)
     setUploading(true)
     try {
-      const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
-      const path = profile.id + '/avatar.' + ext
-      const { error } = await supabase.storage.from('avatars').upload(path, file, { upsert: true })
+      const path = profile.id + '/avatar.jpg'
+      const { error } = await supabase.storage
+        .from('avatars')
+        .upload(path, blob, { upsert: true, contentType: 'image/jpeg' })
       if (error) throw error
       const { data } = supabase.storage.from('avatars').getPublicUrl(path)
       const url = data.publicUrl + '?v=' + Date.now()
@@ -78,25 +82,23 @@ export default function AccountPage() {
   const active = left !== null && left > 0
 
   return (
-    <div className="animate-rise pb-8">
-      <h1 className="text-4xl">Account</h1>
+    <div className="animate-rise pb-10">
+      <h1 className="text-3xl">Account</h1>
 
-      <section className="mt-7 flex items-center gap-4">
+      <section className="mt-6 flex items-center gap-4">
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
           aria-label="Change profile photo"
-          className="relative grid h-20 w-20 shrink-0 place-items-center overflow-hidden border border-ink-line bg-ink-soft"
+          className="relative grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full border border-line bg-surface-raised"
         >
           {profile?.photo_url ? (
             <Image src={profile.photo_url} alt="" fill sizes="80px" className="object-cover" unoptimized />
           ) : (
-            <span className="font-display text-3xl uppercase text-ink-mute">
-              {(profile?.full_name ?? 'M').charAt(0)}
-            </span>
+            <span className="font-display text-2xl text-mute">{(profile?.full_name ?? 'M').charAt(0)}</span>
           )}
-          <span className="absolute inset-x-0 bottom-0 grid place-items-center bg-ink/80 py-1">
-            <Camera size={13} className="text-volt" aria-hidden />
+          <span className="absolute inset-x-0 bottom-0 grid place-items-center bg-ink/70 py-1">
+            <Camera size={13} className="text-white" aria-hidden />
           </span>
         </button>
         <input
@@ -106,65 +108,61 @@ export default function AccountPage() {
           className="hidden"
           onChange={e => {
             const file = e.target.files?.[0]
-            if (file) void pickPhoto(file)
+            if (file) setPending(file)
+            e.target.value = ''
           }}
         />
         <div className="min-w-0">
-          <p className="truncate font-display text-2xl uppercase tracking-tightest">
-            {profile?.full_name ?? 'Member'}
-          </p>
-          <p className="truncate text-sm text-ink-mute">{profile?.member_code}</p>
-          {uploading && <p className="text-xs text-volt">Uploading</p>}
+          <p className="truncate text-xl font-semibold">{profile?.full_name ?? 'Member'}</p>
+          <p className="truncate text-sm text-mute">{profile?.email}</p>
+          {uploading && <p className="text-xs text-good">Uploading</p>}
         </div>
       </section>
 
-      <dl className="mt-8 divide-y divide-ink-line border-y border-ink-line">
-        <div className="flex items-baseline justify-between py-3.5">
-          <dt className="text-xs uppercase tracking-[0.2em] text-ink-mute">Membership</dt>
-          <dd className={cn('font-display text-xl', active ? 'text-volt' : 'text-alert')}>
-            {profile?.expires_at ? (active ? left + ' days left' : 'Expired') : 'No plan'}
-          </dd>
-        </div>
-        {profile?.expires_at && (
-          <div className="flex items-baseline justify-between py-3.5">
-            <dt className="text-xs uppercase tracking-[0.2em] text-ink-mute">Runs to</dt>
-            <dd className="text-sm">{shortDate(profile.expires_at)}</dd>
-          </div>
+      <div
+        className={cn(
+          'mt-6 flex items-center justify-between rounded-lg px-4 py-3.5',
+          active ? 'bg-good-tint' : 'bg-alert-tint'
         )}
-        <div className="flex items-baseline justify-between py-3.5">
-          <dt className="text-xs uppercase tracking-[0.2em] text-ink-mute">Email</dt>
-          <dd className="truncate pl-4 text-sm">{profile?.email ?? '--'}</dd>
-        </div>
-        <div className="flex items-baseline justify-between py-3.5">
-          <dt className="text-xs uppercase tracking-[0.2em] text-ink-mute">Joined</dt>
-          <dd className="text-sm">{shortDate(profile?.created_at ?? null)}</dd>
-        </div>
-      </dl>
+      >
+        <span className="text-[15px] font-medium">
+          {profile?.expires_at ? (active ? 'Active membership' : 'Membership expired') : 'No plan yet'}
+        </span>
+        <span className={cn('font-display text-lg', active ? 'text-good' : 'text-alert')}>
+          {profile?.expires_at ? (active ? left + ' days left' : shortDate(profile.expires_at)) : '--'}
+        </span>
+      </div>
 
-      <Link href="/m/history" className="btn-ghost mt-6 w-full">Payment history</Link>
+      <Link
+        href="/m/history"
+        className="mt-3 flex items-center justify-between rounded-lg border border-line px-4 py-3.5 transition-colors hover:bg-surface-raised"
+      >
+        <span className="text-[15px] font-medium">Payment history</span>
+        <ChevronRight size={18} className="text-mute" aria-hidden />
+      </Link>
 
       <section className="mt-8">
-        <h2 className="text-2xl">Your details</h2>
+        <h2 className="text-xl">Your details</h2>
         <div className="mt-4 flex flex-col gap-4">
           <label className="block">
-            <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Full name</span>
-            <input value={form.full_name} onChange={set('full_name')} className="field mt-2" />
+            <span className="text-sm font-medium text-mute">Full name</span>
+            <input value={form.full_name} onChange={set('full_name')} className="field mt-1.5" />
           </label>
           <label className="block">
-            <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Phone</span>
-            <input inputMode="tel" value={form.phone} onChange={set('phone')} className="field mt-2" />
+            <span className="text-sm font-medium text-mute">Phone</span>
+            <input inputMode="tel" value={form.phone} onChange={set('phone')} className="field mt-1.5" />
           </label>
           <label className="block">
-            <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Address</span>
-            <input value={form.address} onChange={set('address')} className="field mt-2" />
+            <span className="text-sm font-medium text-mute">Address</span>
+            <input value={form.address} onChange={set('address')} className="field mt-1.5" />
           </label>
           <label className="block">
-            <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Emergency contact</span>
-            <input value={form.emergency_contact} onChange={set('emergency_contact')} className="field mt-2" />
+            <span className="text-sm font-medium text-mute">Emergency contact</span>
+            <input value={form.emergency_contact} onChange={set('emergency_contact')} className="field mt-1.5" />
           </label>
         </div>
 
-        <button onClick={save} disabled={!dirty || busy} className="btn-volt mt-6 w-full">
+        <button onClick={save} disabled={!dirty || busy} className="btn-primary mt-5 w-full">
           {saved ? 'Saved' : busy ? 'Saving' : 'Save changes'}
         </button>
       </section>
@@ -174,10 +172,14 @@ export default function AccountPage() {
           await signOut()
           router.replace('/login')
         }}
-        className="mt-10 flex w-full items-center justify-center gap-2 py-3 text-sm font-semibold uppercase tracking-wide text-alert"
+        className="mt-9 flex w-full items-center justify-center gap-2 py-3 text-[15px] font-semibold text-alert"
       >
         <LogOut size={17} aria-hidden /> Sign out
       </button>
+
+      {pending && (
+        <AvatarCropper file={pending} onCancel={() => setPending(null)} onDone={blob => void upload(blob)} />
+      )}
     </div>
   )
 }

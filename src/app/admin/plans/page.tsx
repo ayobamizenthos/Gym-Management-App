@@ -55,13 +55,13 @@ export default function AdminPlans() {
   return (
     <div className="max-w-4xl animate-rise">
       <h1 className="text-4xl lg:text-5xl">Plans &amp; pricing</h1>
-      <p className="mt-2 text-sm text-ink-mute">Edit prices here. Nothing needs a developer.</p>
+      <p className="mt-2 text-sm text-mute">Edit prices here. Nothing needs a developer.</p>
 
       <div className="rule mt-6" />
 
       <ul className="mt-5 flex flex-col gap-2">
         {plans.map(plan => (
-          <li key={plan.id} className={cn('bg-ink-soft p-4 transition-opacity', !plan.is_active && 'opacity-50')}>
+          <li key={plan.id} className={cn('bg-surface-raised p-4 transition-opacity', !plan.is_active && 'opacity-50')}>
             <div className="grid gap-3 sm:grid-cols-[1.4fr_1fr_1fr_auto] sm:items-center">
               <input
                 defaultValue={plan.name}
@@ -69,7 +69,7 @@ export default function AdminPlans() {
                 className="field h-11"
               />
               <label className="block">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-ink-mute">Price</span>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-mute">Price</span>
                 <input
                   type="number" min="0" defaultValue={Number(plan.price)}
                   onBlur={e => patch(plan.id, { price: e.target.value as unknown as string })}
@@ -77,14 +77,14 @@ export default function AdminPlans() {
                 />
               </label>
               <label className="block">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-ink-mute">Days</span>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-mute">Days</span>
                 <input
                   type="number" min="0" defaultValue={plan.duration_days}
                   onBlur={e => patch(plan.id, { duration_days: Number(e.target.value) })}
                   className="field h-11"
                 />
               </label>
-              <button onClick={() => remove(plan)} aria-label="Remove" className="grid h-11 w-11 place-items-center text-ink-mute hover:text-alert">
+              <button onClick={() => remove(plan)} aria-label="Remove" className="grid h-11 w-11 place-items-center text-mute hover:text-alert">
                 <Trash2 size={17} />
               </button>
             </div>
@@ -92,7 +92,7 @@ export default function AdminPlans() {
               <Toggle on={plan.is_active} onClick={() => patch(plan.id, { is_active: !plan.is_active })} label="Active" />
               <Toggle on={plan.counts_for_referral} onClick={() => patch(plan.id, { counts_for_referral: !plan.counts_for_referral })} label="Counts for referrals" />
               <Toggle on={plan.is_addon} onClick={() => patch(plan.id, { is_addon: !plan.is_addon })} label="Add-on (no days)" />
-              <span className="ml-auto self-center font-display text-lg tabular-nums text-volt">{naira(plan.price)}</span>
+              <span className="ml-auto self-center font-display text-lg tabular-nums text-good">{naira(plan.price)}</span>
             </div>
           </li>
         ))}
@@ -106,7 +106,7 @@ export default function AdminPlans() {
           <input placeholder="Name" value={draft.name} onChange={e => setDraft({ ...draft, name: e.target.value })} className="field" />
           <input placeholder="Price" type="number" value={draft.price} onChange={e => setDraft({ ...draft, price: e.target.value })} className="field" />
           <input placeholder="Days" type="number" value={draft.duration_days} onChange={e => setDraft({ ...draft, duration_days: e.target.value })} className="field" />
-          <button onClick={add} disabled={busy} className="btn-volt px-6"><Plus size={17} /> Add</button>
+          <button onClick={add} disabled={busy} className="btn-primary px-6"><Plus size={17} /> Add</button>
         </div>
         <div className="mt-3 flex gap-4 text-xs">
           <Toggle on={draft.counts_for_referral} onClick={() => setDraft({ ...draft, counts_for_referral: !draft.counts_for_referral })} label="Counts for referrals" />
@@ -119,8 +119,8 @@ export default function AdminPlans() {
 
 function Toggle({ on, onClick, label }: { on: boolean; onClick: () => void; label: string }) {
   return (
-    <button onClick={onClick} className="flex items-center gap-2 uppercase tracking-wide text-ink-mute hover:text-paper">
-      <span className={cn('relative h-4 w-8 transition-colors', on ? 'bg-volt' : 'bg-ink-line')}>
+    <button onClick={onClick} className="flex items-center gap-2 uppercase tracking-wide text-mute hover:text-ink">
+      <span className={cn('relative h-4 w-8 transition-colors', on ? 'bg-good' : 'bg-line')}>
         <span className={cn('absolute top-0.5 h-3 w-3 bg-ink transition-all', on ? 'left-[18px]' : 'left-0.5')} />
       </span>
       {label}

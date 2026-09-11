@@ -71,27 +71,27 @@ export default function MemberDetail() {
 
   return (
     <div className="max-w-3xl animate-rise">
-      <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-ink-mute hover:text-paper">
+      <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-mute hover:text-ink">
         <ArrowLeft size={16} /> Members
       </button>
 
       <header className="mt-5 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-4xl">{member.full_name ?? 'Member'}</h1>
-          <p className="mt-1 text-sm text-ink-mute">
-            {member.member_code}{member.phone ? ' · ' + member.phone : ''}
+          <p className="mt-1 text-sm text-mute">
+            {member.phone ?? 'No phone on file'}
           </p>
         </div>
         <div className="text-right">
           {member.expires_at ? (
             <>
-              <p className={cn('font-display text-5xl tabular-nums', active ? 'text-volt' : 'text-alert')}>{left}</p>
-              <p className="text-[11px] uppercase tracking-[0.2em] text-ink-mute">
+              <p className={cn('font-display text-5xl tabular-nums', active ? 'text-good' : 'text-alert')}>{left}</p>
+              <p className="text-[11px] uppercase tracking-[0.2em] text-mute">
                 {active ? 'days left · to ' + shortDate(member.expires_at) : 'expired ' + shortDate(member.expires_at)}
               </p>
             </>
           ) : (
-            <p className="text-sm uppercase tracking-[0.2em] text-ink-mute">No plan yet</p>
+            <p className="text-sm uppercase tracking-[0.2em] text-mute">No plan yet</p>
           )}
         </div>
       </header>
@@ -99,7 +99,7 @@ export default function MemberDetail() {
       <div className="rule mt-6" />
 
       <section className="mt-6">
-        <h2 className="flex items-center gap-2 text-2xl"><Banknote size={20} className="text-volt" /> Take payment</h2>
+        <h2 className="flex items-center gap-2 text-2xl"><Banknote size={20} className="text-good" /> Take payment</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto_auto]">
           <select value={planId} onChange={e => setPlanId(e.target.value)} className="field">
             {plans.map(p => (
@@ -110,7 +110,7 @@ export default function MemberDetail() {
             <option value="cash">Cash</option>
             <option value="transfer">Transfer</option>
           </select>
-          <button onClick={take} disabled={busy || !planId} className="btn-volt sm:px-8">
+          <button onClick={take} disabled={busy || !planId} className="btn-primary sm:px-8">
             {busy ? 'Saving' : 'Record'}
           </button>
         </div>
@@ -120,7 +120,7 @@ export default function MemberDetail() {
           </p>
         )}
         {method === 'transfer' && (
-          <p className="mt-2 text-xs text-ink-mute">
+          <p className="mt-2 text-xs text-mute">
             Transfers stay pending until confirmed on the Payments screen.
           </p>
         )}
@@ -131,16 +131,16 @@ export default function MemberDetail() {
       <section className="mt-6">
         <h2 className="text-2xl">Recent visits</h2>
         {visits.length === 0 ? (
-          <p className="mt-3 text-sm text-ink-mute">No check-ins recorded.</p>
+          <p className="mt-3 text-sm text-mute">No check-ins recorded.</p>
         ) : (
           <ul className="mt-4 flex flex-col gap-1.5">
             {visits.map(v => (
-              <li key={v.id} className="flex items-center justify-between border-l-2 border-ink-line bg-ink-soft px-4 py-2.5 text-sm">
+              <li key={v.id} className="flex items-center justify-between border-l-2 border-line bg-surface-raised px-4 py-2.5 text-sm">
                 <span>{shortDate(v.created_at)}</span>
                 <span className="flex items-center gap-3">
-                  <span className="tabular-nums text-ink-mute">{timeOnly(v.created_at)}</span>
+                  <span className="tabular-nums text-mute">{timeOnly(v.created_at)}</span>
                   <span className={cn('text-xs font-semibold uppercase tracking-wide',
-                    v.kind === 'valid' ? 'text-volt' : v.kind === 'expired' ? 'text-alert' : 'text-ink-mute')}>
+                    v.kind === 'valid' ? 'text-good' : v.kind === 'expired' ? 'text-alert' : 'text-mute')}>
                     {v.kind.replace('_', ' ')}
                   </span>
                 </span>

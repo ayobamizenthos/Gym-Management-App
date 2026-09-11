@@ -61,35 +61,35 @@ export default function JoinScreen() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-6 py-12">
       <span className="font-display text-2xl uppercase tracking-tightest">
-        Zenthos<span className="text-volt">Gym</span>
+        Zenthos<span className="text-good">Gym</span>
       </span>
 
       <h1 className="mt-10 text-5xl">Sign up</h1>
       {inviter && (
-        <p className="mt-3 border-l-2 border-volt pl-3 text-sm">
-          <span className="text-volt">{inviter}</span> invited you.
+        <p className="mt-3 border-l-2 border-good pl-3 text-sm">
+          <span className="text-good">{inviter}</span> invited you.
         </p>
       )}
 
       <form onSubmit={submit} className="mt-8 flex flex-col gap-4">
         <label className="block">
-          <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Full name</span>
+          <span className="text-xs uppercase tracking-[0.2em] text-mute">Full name</span>
           <input required value={fullName} onChange={e => setFullName(e.target.value)} className="field mt-2" />
         </label>
         <label className="block">
-          <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Phone</span>
+          <span className="text-xs uppercase tracking-[0.2em] text-mute">Phone</span>
           <input required inputMode="tel" value={phone} onChange={e => setPhone(e.target.value)} className="field mt-2" />
         </label>
         <label className="block">
-          <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Email</span>
+          <span className="text-xs uppercase tracking-[0.2em] text-mute">Email</span>
           <input required type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} className="field mt-2" />
         </label>
         <label className="block">
-          <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Address</span>
+          <span className="text-xs uppercase tracking-[0.2em] text-mute">Address</span>
           <input required value={address} onChange={e => setAddress(e.target.value)} className="field mt-2" />
         </label>
         <label className="block">
-          <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Username</span>
+          <span className="text-xs uppercase tracking-[0.2em] text-mute">Username</span>
           <input
             required
             value={username}
@@ -106,14 +106,14 @@ export default function JoinScreen() {
           </p>
         )}
 
-        <button type="submit" disabled={busy} className="btn-volt mt-2 w-full">
+        <button type="submit" disabled={busy} className="btn-primary mt-2 w-full">
           {busy ? 'Creating account' : 'Create account'}
         </button>
       </form>
 
-      <p className="mt-6 text-sm text-ink-mute">
+      <p className="mt-6 text-sm text-mute">
         Already a member{' '}
-        <Link href="/login" className="text-volt underline-offset-4 hover:underline">
+        <Link href="/login" className="text-good underline-offset-4 hover:underline">
           Sign in
         </Link>
       </p>

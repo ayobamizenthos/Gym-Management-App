@@ -40,7 +40,7 @@ export default function AdminSettings() {
   return (
     <div className="max-w-xl animate-rise">
       <h1 className="text-4xl lg:text-5xl">Settings</h1>
-      <p className="mt-2 text-sm text-ink-mute">These rules drive the whole system.</p>
+      <p className="mt-2 text-sm text-mute">These rules drive the whole system.</p>
 
       <div className="rule mt-6" />
 
@@ -65,7 +65,7 @@ export default function AdminSettings() {
         </Field>
       </div>
 
-      <button onClick={save} disabled={busy} className="btn-volt mt-8 w-full">
+      <button onClick={save} disabled={busy} className="btn-primary mt-8 w-full">
         {saved ? <><Check size={18} /> Saved</> : busy ? 'Saving' : 'Save settings'}
       </button>
     </div>
@@ -75,9 +75,9 @@ export default function AdminSettings() {
 function Field({ label, hint, children }: { label: string; hint: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">{label}</span>
+      <span className="text-xs uppercase tracking-[0.2em] text-mute">{label}</span>
       <span className="mt-2 block">{children}</span>
-      <span className="mt-1.5 block text-xs text-ink-mute">{hint}</span>
+      <span className="mt-1.5 block text-xs text-mute">{hint}</span>
     </label>
   )
 }

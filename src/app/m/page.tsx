@@ -9,6 +9,8 @@ import { daysLeft, shortDate } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { Settings } from '@/lib/types'
 
+const firstName = (name: string | null | undefined) => (name ?? 'there').trim().split(' ')[0]
+
 export default function MemberHome() {
   const { profile } = useAuth()
   const [settings, setSettings] = useState<Settings | null>(null)
@@ -37,74 +39,84 @@ export default function MemberHome() {
 
   return (
     <div className="animate-rise">
-      <p className="text-xs uppercase tracking-[0.28em] text-ink-mute">
-        {profile?.full_name ?? 'Member'}
-      </p>
+      <h1 className="text-3xl">Hi {firstName(profile?.full_name)}</h1>
 
-      <section className="mt-8">
+      <section
+        className={cn(
+          'mt-6 rounded-lg px-5 py-6',
+          !profile?.expires_at ? 'bg-surface-raised' : !active ? 'bg-alert-tint' : soon ? 'bg-warn-tint' : 'bg-good-tint'
+        )}
+      >
         {profile?.expires_at ? (
           <>
-            <p
-              className={cn(
-                'font-display text-[7.5rem] leading-[0.8] tabular-nums',
-                !active ? 'text-alert' : soon ? 'text-warn' : 'text-volt'
-              )}
-            >
-              {left}
+            <p className="flex items-baseline gap-2">
+              <span
+                className={cn(
+                  'stat text-6xl',
+                  !active ? 'text-alert' : soon ? 'text-warn' : 'text-good'
+                )}
+              >
+                {left}
+              </span>
+              <span className="text-lg font-semibold text-ink-soft">
+                {left === 1 ? 'day left' : 'days left'}
+              </span>
             </p>
-            <h1 className="mt-2 text-3xl">{active ? 'days left' : 'days left'}</h1>
-            <p className="mt-3 text-sm text-ink-mute">
-              {active ? 'Runs to ' + shortDate(profile.expires_at) : 'Ended ' + shortDate(profile.expires_at)}
+            <p className="mt-2 text-[15px] text-ink-soft">
+              {active
+                ? 'Your membership runs to ' + shortDate(profile.expires_at)
+                : 'Ended ' + shortDate(profile.expires_at)}
             </p>
           </>
         ) : (
           <>
-            <h1 className="text-5xl text-warn">No plan</h1>
-            <p className="mt-3 text-sm text-ink-mute">Choose a plan to start training.</p>
+            <p className="text-2xl font-semibold">No plan yet</p>
+            <p className="mt-1 text-[15px] text-ink-soft">Pick a plan to start training.</p>
           </>
         )}
       </section>
 
-      {/* One decisive action, weighted to the state the member is in. */}
-      <div className="mt-9 flex flex-col gap-3">
+      <div className="mt-5 flex flex-col gap-2.5">
         {active && !soon ? (
           <>
-            <Link href="/m/scan" className="btn-volt w-full">
-              <ScanLine size={19} aria-hidden /> Check in
+            <Link href="/m/scan" className="btn-primary w-full">
+              <ScanLine size={18} aria-hidden /> Check in
             </Link>
-            <Link href="/m/renew" className="btn-ghost w-full">
+            <Link href="/m/renew" className="btn-quiet w-full">
               Renew early
             </Link>
           </>
         ) : (
           <>
-            <Link href="/m/renew" className={cn('btn w-full', active ? 'bg-warn text-ink' : 'bg-alert text-white')}>
-              {active ? 'Renew now' : 'Renew membership'}
+            <Link href="/m/renew" className="btn-primary w-full">
+              {active ? 'Renew now' : 'Choose a plan'}
             </Link>
-            <Link href="/m/scan" className="btn-ghost w-full">
-              <ScanLine size={19} aria-hidden /> Check in
+            <Link href="/m/scan" className="btn-quiet w-full">
+              <ScanLine size={18} aria-hidden /> Check in
             </Link>
           </>
         )}
       </div>
 
-      <div className="rule mt-10" />
-
-      <section className="mt-7">
+      <section className="mt-9">
         <div className="flex items-baseline justify-between">
-          <h2 className="text-2xl">Invite</h2>
-          <Link href="/m/referrals" className="text-sm text-volt underline-offset-4 hover:underline">
+          <h2 className="text-xl">Invite friends</h2>
+          <Link href="/m/referrals" className="text-sm font-semibold text-ink underline-offset-4 hover:underline">
             Open
           </Link>
         </div>
-        <div className="mt-4 flex gap-1.5" role="img" aria-label={counted + ' of ' + target + ' invites counted'}>
+        <p className="mt-1 text-[15px] text-mute">
+          {target} friends on a monthly plan earns you {settings?.referral_reward_days ?? 7} free days.
+        </p>
+        <div
+          className="mt-3 flex gap-1.5"
+          role="img"
+          aria-label={counted + ' of ' + target + ' invites counted'}
+        >
           {Array.from({ length: target }).map((_, i) => (
-            <span key={i} className={cn('h-1.5 flex-1', i < counted ? 'bg-volt' : 'bg-ink-line')} />
+            <span key={i} className={cn('h-1.5 flex-1 rounded-full', i < counted ? 'bg-ink' : 'bg-line')} />
           ))}
         </div>
-        <p className="mt-3 text-sm text-ink-mute">
-          {counted} of {target} toward {settings?.referral_reward_days ?? 7} free days
-        </p>
       </section>
     </div>
   )

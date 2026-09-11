@@ -36,17 +36,17 @@ export default function ResetPasswordPage() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-6">
       <span className="font-display text-2xl uppercase tracking-tightest">
-        Zenthos<span className="text-volt">Gym</span>
+        Zenthos<span className="text-good">Gym</span>
       </span>
       <h1 className="mt-8 text-4xl">New password</h1>
 
       {!ready ? (
-        <p className="mt-4 text-sm text-ink-mute">Open this page from the link in your email.</p>
+        <p className="mt-4 text-sm text-mute">Open this page from the link in your email.</p>
       ) : (
         <form onSubmit={submit} className="mt-6">
           <PasswordField label="New password" value={password} onChange={setPassword} autoComplete="new-password" minLength={8} />
           {error && <p className="mt-4 border-l-2 border-alert pl-3 text-sm text-alert">{error}</p>}
-          <button type="submit" disabled={busy} className="btn-volt mt-6 w-full">
+          <button type="submit" disabled={busy} className="btn-primary mt-6 w-full">
             {busy ? 'Saving' : 'Save password'}
           </button>
         </form>

@@ -22,13 +22,13 @@ export default function ScanPage() {
   return (
     <div className="-mx-5 -mt-6">
       <div className="flex items-center gap-3 px-5 py-4">
-        <button onClick={() => router.back()} aria-label="Back" className="text-ink-mute hover:text-paper">
+        <button onClick={() => router.back()} aria-label="Back" className="text-mute hover:text-ink">
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-2xl">Check in</h1>
       </div>
       <Scanner onResult={handle} />
-      <p className="px-5 py-5 text-center text-sm text-ink-mute">
+      <p className="px-5 py-5 text-center text-sm text-mute">
         Hold the code in view. It reads automatically.
       </p>
     </div>

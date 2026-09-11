@@ -16,7 +16,7 @@ export function PasswordField({ value, onChange, label, autoComplete, minLength,
   const [shown, setShown] = useState(false)
   return (
     <label className="block">
-      <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">{label}</span>
+      <span className="text-xs uppercase tracking-[0.2em] text-mute">{label}</span>
       <span className="relative mt-2 block">
         <input
           type={shown ? 'text' : 'password'}
@@ -31,7 +31,7 @@ export function PasswordField({ value, onChange, label, autoComplete, minLength,
           type="button"
           onClick={() => setShown(s => !s)}
           aria-label={shown ? 'Hide password' : 'Show password'}
-          className="absolute right-0 top-0 grid h-12 w-12 place-items-center text-ink-mute transition-colors hover:text-volt"
+          className="absolute right-0 top-0 grid h-12 w-12 place-items-center text-mute transition-colors hover:text-good"
         >
           {shown ? <EyeOff size={18} /> : <Eye size={18} />}
         </button>

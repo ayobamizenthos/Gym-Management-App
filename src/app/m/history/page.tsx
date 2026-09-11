@@ -12,7 +12,7 @@ interface Row extends Payment {
 }
 
 const TONE: Record<Payment['status'], string> = {
-  confirmed: 'text-volt',
+  confirmed: 'text-good',
   pending: 'text-warn',
   rejected: 'text-alert',
 }
@@ -46,17 +46,17 @@ export default function HistoryPage() {
       <h1 className="text-4xl">Payments</h1>
 
       {ready && rows.length === 0 && (
-        <p className="mt-6 text-sm text-ink-mute">No payments recorded yet.</p>
+        <p className="mt-6 text-sm text-mute">No payments recorded yet.</p>
       )}
 
       <ul className="mt-6 flex flex-col gap-2">
         {rows.map(row => (
-          <li key={row.id} className="flex items-center justify-between border-l-2 border-ink-line bg-ink-soft px-4 py-4">
+          <li key={row.id} className="flex items-center justify-between border-l-2 border-line bg-surface-raised px-4 py-4">
             <span className="min-w-0">
               <span className="block font-display text-xl uppercase tracking-tightest">
                 {row.plan?.name ?? 'Payment'}
               </span>
-              <span className="block text-xs text-ink-mute">
+              <span className="block text-xs text-mute">
                 {shortDate(row.created_at)}
                 {row.includes_registration ? ' / includes registration' : ''}
               </span>

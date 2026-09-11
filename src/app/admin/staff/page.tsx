@@ -53,7 +53,7 @@ export default function AdminStaff() {
   return (
     <div className="max-w-2xl animate-rise">
       <h1 className="text-4xl lg:text-5xl">Staff</h1>
-      <p className="mt-2 text-sm text-ink-mute">
+      <p className="mt-2 text-sm text-mute">
         Front desk sees members and payments. Admin sees everything including revenue.
       </p>
 
@@ -61,13 +61,13 @@ export default function AdminStaff() {
 
       <ul className="mt-5 flex flex-col gap-2">
         {rows.map(r => (
-          <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 bg-ink-soft px-4 py-3.5">
+          <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 bg-surface-raised px-4 py-3.5">
             <span className="min-w-0">
               <span className="flex items-center gap-2 font-semibold">
-                {r.role === 'admin' && <Shield size={15} className="text-volt" />}
+                {r.role === 'admin' && <Shield size={15} className="text-good" />}
                 {r.full_name ?? 'Staff'}
               </span>
-              <span className="block text-sm text-ink-mute">{r.member_code}</span>
+              <span className="block text-sm text-mute">{r.role === 'admin' ? 'Administrator' : 'Front desk'}</span>
             </span>
             <select
               value={r.role}
@@ -85,12 +85,12 @@ export default function AdminStaff() {
       <div className="rule mt-8" />
 
       {created ? (
-        <section className="mt-6 border border-volt p-4">
+        <section className="mt-6 border border-good p-4">
           <h2 className="text-2xl">Account created</h2>
-          <p className="mt-2 text-sm text-ink-mute">Share these details with the staff member.</p>
+          <p className="mt-2 text-sm text-mute">Share these details with the staff member.</p>
           <p className="mt-3 text-sm">Email: <span className="font-mono">{created.email}</span></p>
           <p className="text-sm">Password: <span className="font-mono">{created.password}</span></p>
-          <button onClick={() => setCreated(null)} className="btn-ghost mt-4">Add another</button>
+          <button onClick={() => setCreated(null)} className="btn-quiet mt-4">Add another</button>
         </section>
       ) : (
         <section className="mt-6">
@@ -110,7 +110,7 @@ export default function AdminStaff() {
                 {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
               </select>
             </div>
-            <button type="submit" disabled={busy} className="btn-volt mt-1">
+            <button type="submit" disabled={busy} className="btn-primary mt-1">
               <UserPlus size={17} /> {busy ? 'Creating' : 'Create account'}
             </button>
           </form>

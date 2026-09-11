@@ -41,7 +41,7 @@ export default function LoginPage() {
 
   return (
     <main className="grid min-h-dvh lg:grid-cols-[1.15fr_1fr]">
-      <section className="relative hidden overflow-hidden bg-ink-soft lg:block">
+      <section className="relative hidden overflow-hidden bg-surface-raised lg:block">
         <div
           aria-hidden
           className="absolute inset-0 opacity-[0.05]"
@@ -49,25 +49,25 @@ export default function LoginPage() {
         />
         <div className="relative flex h-full flex-col justify-between p-14">
           <span className="font-display text-2xl uppercase tracking-tightest">
-            Zenthos<span className="text-volt">Gym</span>
+            Zenthos<span className="text-good">Gym</span>
           </span>
           <h1 className="text-[5.5rem] leading-[0.84]">
             Know who<br />is paid.<br />
-            <span className="text-volt">Know who left.</span>
+            <span className="text-good">Know who left.</span>
           </h1>
-          <span className="text-xs uppercase tracking-[0.3em] text-ink-mute">Lagos</span>
+          <span className="text-xs uppercase tracking-[0.3em] text-mute">Lagos</span>
         </div>
       </section>
 
       <section className="flex items-center justify-center px-6 py-14">
         <form onSubmit={submit} className="w-full max-w-sm animate-rise">
           <span className="font-display text-2xl uppercase tracking-tightest lg:hidden">
-            Zenthos<span className="text-volt">Gym</span>
+            Zenthos<span className="text-good">Gym</span>
           </span>
           <h2 className="mt-10 text-4xl lg:mt-0">Sign in</h2>
 
           <label className="mt-8 block">
-            <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Email</span>
+            <span className="text-xs uppercase tracking-[0.2em] text-mute">Email</span>
             <input
               type="email"
               required
@@ -88,15 +88,15 @@ export default function LoginPage() {
             </p>
           )}
 
-          <button type="submit" disabled={busy} className="btn-volt mt-7 w-full">
+          <button type="submit" disabled={busy} className="btn-primary mt-7 w-full">
             {busy ? 'Signing in' : 'Sign in'}
           </button>
 
           <div className="mt-5 flex items-center justify-between text-sm">
-            <Link href="/forgot-password" className="text-ink-mute underline-offset-4 hover:text-volt hover:underline">
+            <Link href="/forgot-password" className="text-mute underline-offset-4 hover:text-good hover:underline">
               Forgot password
             </Link>
-            <Link href="/join" className="text-ink-mute underline-offset-4 hover:text-volt hover:underline">
+            <Link href="/join" className="text-mute underline-offset-4 hover:text-good hover:underline">
               Sign up
             </Link>
           </div>

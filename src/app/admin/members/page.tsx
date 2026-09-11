@@ -39,7 +39,7 @@ export default function AdminMembers() {
       if (filter === 'due' && !(left !== null && left > 0 && left <= notice)) return false
       if (filter === 'expired' && !(r.expires_at && (left ?? 0) <= 0)) return false
       if (!needle) return true
-      return [r.full_name, r.phone, r.member_code].filter(Boolean)
+      return [r.full_name, r.phone].filter(Boolean)
         .some(v => String(v).toLowerCase().includes(needle))
     })
   }, [rows, query, filter, branch, notice])
@@ -49,15 +49,15 @@ export default function AdminMembers() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-4xl lg:text-5xl">Members</h1>
-          <p className="mt-2 text-sm text-ink-mute">{shown.length} shown of {rows.length}</p>
+          <p className="mt-2 text-sm text-mute">{shown.length} shown of {rows.length}</p>
         </div>
       </header>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
         <div className="relative">
-          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-mute" />
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-mute" />
           <input value={query} onChange={e => setQuery(e.target.value)}
-            placeholder="Name, phone or member code" className="field pl-11" />
+            placeholder="Search by name or phone" className="field pl-11" />
         </div>
         {branches.length > 1 && (
           <select value={branch} onChange={e => setBranch(e.target.value)} className="field sm:w-52">
@@ -71,7 +71,7 @@ export default function AdminMembers() {
         {(['all', 'active', 'due', 'expired'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)}
             className={cn('h-9 px-4 text-xs font-semibold uppercase tracking-wide transition-colors',
-              filter === f ? 'bg-volt text-ink' : 'border border-ink-line text-ink-mute hover:text-paper')}>
+              filter === f ? 'bg-good text-ink' : 'border border-line text-mute hover:text-ink')}>
             {f === 'due' ? 'Renewals due' : f}
           </button>
         ))}
@@ -86,22 +86,22 @@ export default function AdminMembers() {
           return (
             <li key={m.id}>
               <Link href={'/desk/members/' + m.id}
-                className={cn('flex items-center justify-between gap-4 border-l-2 bg-ink-soft px-4 py-3.5 hover:bg-ink-line/40',
-                  state === 'ok' && 'border-volt', state === 'due' && 'border-warn',
-                  state === 'expired' && 'border-alert', state === 'none' && 'border-ink-line')}>
+                className={cn('flex items-center justify-between gap-4 border-l-2 bg-surface-raised px-4 py-3.5 hover:bg-surface-sunk',
+                  state === 'ok' && 'border-good', state === 'due' && 'border-warn',
+                  state === 'expired' && 'border-alert', state === 'none' && 'border-line')}>
                 <span className="min-w-0">
                   <span className="block truncate font-semibold">{m.full_name ?? 'Member'}</span>
-                  <span className="block truncate text-sm text-ink-mute">
-                    {m.member_code}{m.phone ? ' · ' + m.phone : ''}
-                    {m.expires_at ? ' · to ' + shortDate(m.expires_at) : ''}
+                  <span className="block truncate text-sm text-mute">
+                    {m.phone ?? 'No phone on file'}
+                    
                   </span>
                 </span>
                 <span className="shrink-0 text-right">
                   {m.expires_at ? (
                     <span className={cn('font-display text-2xl tabular-nums',
-                      state === 'ok' ? 'text-volt' : state === 'due' ? 'text-warn' : 'text-alert')}>{left}</span>
+                      state === 'ok' ? 'text-good' : state === 'due' ? 'text-warn' : 'text-alert')}>{left}</span>
                   ) : (
-                    <span className="text-xs uppercase tracking-[0.18em] text-ink-mute">No plan</span>
+                    <span className="text-xs uppercase tracking-[0.18em] text-mute">No plan</span>
                   )}
                 </span>
               </Link>

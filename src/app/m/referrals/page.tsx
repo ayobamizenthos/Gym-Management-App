@@ -73,12 +73,12 @@ export default function ReferralsPage() {
   return (
     <div className="animate-rise">
       <h1 className="text-4xl">Invite &amp; earn</h1>
-      <p className="mt-2 text-sm text-ink-mute">
+      <p className="mt-2 text-sm text-mute">
         When {target} people you invite pay for a monthly plan or longer, you get {reward} free days.
       </p>
 
       {!profile?.username ? (
-        <section className="mt-7 border border-ink-line p-4">
+        <section className="mt-7 border border-line p-4">
           <p className="text-sm">Pick your link name first.</p>
           <div className="mt-3 flex gap-2">
             <input
@@ -87,18 +87,18 @@ export default function ReferralsPage() {
               placeholder="yourname"
               className="field"
             />
-            <button onClick={claimName} disabled={claiming || wanted.trim().length < 3} className="btn-volt px-5">
+            <button onClick={claimName} disabled={claiming || wanted.trim().length < 3} className="btn-primary px-5">
               {claiming ? '...' : 'Claim'}
             </button>
           </div>
-          <p className="mt-2 text-xs text-ink-mute">3-20 letters, numbers or underscore. Cannot be changed.</p>
+          <p className="mt-2 text-xs text-mute">3-20 letters, numbers or underscore. Cannot be changed.</p>
         </section>
       ) : (
         <section className="mt-7">
-          <p className="text-xs uppercase tracking-[0.2em] text-ink-mute">Your link</p>
-          <div className="mt-2 flex items-stretch border border-ink-line">
+          <p className="text-xs uppercase tracking-[0.2em] text-mute">Your link</p>
+          <div className="mt-2 flex items-stretch border border-line">
             <span className="min-w-0 flex-1 truncate px-4 py-3.5 text-sm">{link}</span>
-            <button onClick={copy} className="flex items-center gap-2 border-l border-ink-line px-4 text-sm font-semibold uppercase text-volt">
+            <button onClick={copy} className="flex items-center gap-2 border-l border-line px-4 text-sm font-semibold uppercase text-good">
               {copied ? <Check size={16} /> : <Copy size={16} />}
               {copied ? 'Copied' : 'Copy'}
             </button>
@@ -106,7 +106,7 @@ export default function ReferralsPage() {
           {typeof navigator !== 'undefined' && 'share' in navigator && (
             <button
               onClick={() => navigator.share({ title: 'Join me at the gym', url: link })}
-              className="btn-ghost mt-3 w-full"
+              className="btn-quiet mt-3 w-full"
             >
               <Share2 size={17} /> Share link
             </button>
@@ -116,18 +116,18 @@ export default function ReferralsPage() {
 
       <section className="mt-9">
         <div className="flex items-baseline justify-between">
-          <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Progress</span>
-          <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">
+          <span className="text-xs uppercase tracking-[0.2em] text-mute">Progress</span>
+          <span className="text-xs uppercase tracking-[0.2em] text-mute">
             {counted} of {target}
           </span>
         </div>
         <div className="mt-3 flex gap-1.5">
           {Array.from({ length: target }).map((_, i) => (
-            <span key={i} className={cn('h-2 flex-1 transition-colors', i < counted ? 'bg-volt' : 'bg-ink-line')} />
+            <span key={i} className={cn('h-2 flex-1 transition-colors', i < counted ? 'bg-good' : 'bg-line')} />
           ))}
         </div>
         {earned > 0 && (
-          <p className="mt-3 text-sm text-volt">
+          <p className="mt-3 text-sm text-good">
             {Math.floor(earned / target) * reward} free days earned so far.
           </p>
         )}
@@ -138,17 +138,17 @@ export default function ReferralsPage() {
       <section className="mt-6">
         <h2 className="text-2xl">People you invited</h2>
         {rows.length === 0 ? (
-          <p className="mt-4 text-sm text-ink-mute">Nobody yet. Share your link.</p>
+          <p className="mt-4 text-sm text-mute">Nobody yet. Share your link.</p>
         ) : (
           <ul className="mt-4 flex flex-col gap-2">
             {rows.map(r => (
-              <li key={r.id} className="flex items-center justify-between border-l-2 border-ink-line bg-ink-soft px-4 py-3">
+              <li key={r.id} className="flex items-center justify-between border-l-2 border-line bg-surface-raised px-4 py-3">
                 <span className="min-w-0">
                   <span className="block truncate font-semibold">{r.referred?.full_name ?? 'New member'}</span>
-                  <span className="block text-xs text-ink-mute">Joined {shortDate(r.created_at)}</span>
+                  <span className="block text-xs text-mute">Joined {shortDate(r.created_at)}</span>
                 </span>
                 <span className={cn('text-xs font-semibold uppercase tracking-wide',
-                  r.rewarded_at ? 'text-volt' : r.qualified_at ? 'text-good' : 'text-ink-mute')}>
+                  r.rewarded_at ? 'text-good' : r.qualified_at ? 'text-good' : 'text-mute')}>
                   {r.rewarded_at ? 'Rewarded' : r.qualified_at ? 'Counted' : 'Not yet paid'}
                 </span>
               </li>

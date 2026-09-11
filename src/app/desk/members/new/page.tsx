@@ -52,21 +52,21 @@ export default function RegisterMember() {
     return (
       <div className="max-w-md animate-rise">
         <h1 className="text-4xl">Member registered</h1>
-        <p className="mt-3 text-sm text-ink-mute">Give these sign-in details to the member.</p>
-        <dl className="mt-6 border border-ink-line">
-          <div className="flex justify-between border-b border-ink-line px-4 py-3">
-            <dt className="text-xs uppercase tracking-[0.2em] text-ink-mute">Email</dt>
+        <p className="mt-3 text-sm text-mute">Give these sign-in details to the member.</p>
+        <dl className="mt-6 border border-line">
+          <div className="flex justify-between border-b border-line px-4 py-3">
+            <dt className="text-xs uppercase tracking-[0.2em] text-mute">Email</dt>
             <dd className="text-sm">{created.email}</dd>
           </div>
           <div className="flex justify-between px-4 py-3">
-            <dt className="text-xs uppercase tracking-[0.2em] text-ink-mute">Password</dt>
+            <dt className="text-xs uppercase tracking-[0.2em] text-mute">Password</dt>
             <dd className="font-mono text-sm">{created.password}</dd>
           </div>
         </dl>
         <div className="mt-6 flex gap-2">
           <button onClick={() => { setCreated(null); setForm({ full_name: '', phone: '', email: '', username: '', branch_id: form.branch_id }) }}
-            className="btn-volt flex-1">Register another</button>
-          <button onClick={() => router.push('/desk/members')} className="btn-ghost flex-1">Done</button>
+            className="btn-primary flex-1">Register another</button>
+          <button onClick={() => router.push('/desk/members')} className="btn-quiet flex-1">Done</button>
         </div>
       </div>
     )
@@ -75,34 +75,34 @@ export default function RegisterMember() {
   return (
     <div className="max-w-md animate-rise">
       <h1 className="text-4xl">Register member</h1>
-      <p className="mt-2 text-sm text-ink-mute">From the paper form. Email is optional.</p>
+      <p className="mt-2 text-sm text-mute">From the paper form. Email is optional.</p>
 
       <form onSubmit={submit} className="mt-7 flex flex-col gap-4">
         <label className="block">
-          <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Full name</span>
+          <span className="text-xs uppercase tracking-[0.2em] text-mute">Full name</span>
           <input required value={form.full_name} onChange={set('full_name')} className="field mt-2" />
         </label>
         <label className="block">
-          <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Phone</span>
+          <span className="text-xs uppercase tracking-[0.2em] text-mute">Phone</span>
           <input required inputMode="tel" value={form.phone} onChange={set('phone')} className="field mt-2" />
         </label>
         <label className="block">
-          <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Email (optional)</span>
+          <span className="text-xs uppercase tracking-[0.2em] text-mute">Email (optional)</span>
           <input type="email" value={form.email} onChange={set('email')} className="field mt-2" />
         </label>
         <label className="block">
-          <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Invite name (optional)</span>
+          <span className="text-xs uppercase tracking-[0.2em] text-mute">Invite name (optional)</span>
           <input value={form.username} onChange={set('username')} placeholder="yourname" className="field mt-2" />
         </label>
         {branches.length > 1 && (
           <label className="block">
-            <span className="text-xs uppercase tracking-[0.2em] text-ink-mute">Branch</span>
+            <span className="text-xs uppercase tracking-[0.2em] text-mute">Branch</span>
             <select value={form.branch_id} onChange={set('branch_id')} className="field mt-2">
               {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
           </label>
         )}
-        <button type="submit" disabled={busy} className="btn-volt mt-2 w-full">
+        <button type="submit" disabled={busy} className="btn-primary mt-2 w-full">
           {busy ? 'Registering' : 'Register member'}
         </button>
       </form>

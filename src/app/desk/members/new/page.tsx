@@ -56,7 +56,7 @@ export default function RegisterMember() {
         <dl className="mt-6 border border-edge">
           <div className="flex justify-between border-b border-edge px-4 py-3">
             <dt className="text-xs uppercase tracking-[0.2em] text-mute">Email</dt>
-            <dd className="text-sm">{created.email}</dd>
+            <dd className="truncate pl-3 font-mono text-sm">{created.email}</dd>
           </div>
           <div className="flex justify-between px-4 py-3">
             <dt className="text-xs uppercase tracking-[0.2em] text-mute">Password</dt>
@@ -103,7 +103,7 @@ export default function RegisterMember() {
           </label>
         )}
         <button type="submit" disabled={busy} className="btn-primary mt-2 w-full">
-          {busy ? 'Registering' : 'Register member'}
+          {busy ? <span className="dots">Registering</span> : 'Register member'}
         </button>
       </form>
     </div>

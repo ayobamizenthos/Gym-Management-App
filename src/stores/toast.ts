@@ -13,6 +13,9 @@ interface ToastState {
   dismiss: (id: number) => void
 }
 
+// Bad news needs longer on screen than a confirmation.
+const LIFETIME: Record<Toast['tone'], number> = { good: 4200, info: 4200, bad: 7000 }
+
 let seq = 0
 
 export const useToasts = create<ToastState>(set => ({
@@ -20,7 +23,7 @@ export const useToasts = create<ToastState>(set => ({
   push: t => {
     const id = ++seq
     set(s => ({ items: [...s.items, { ...t, id }] }))
-    setTimeout(() => set(s => ({ items: s.items.filter(i => i.id !== id) })), 4200)
+    setTimeout(() => set(s => ({ items: s.items.filter(i => i.id !== id) })), LIFETIME[t.tone])
   },
   dismiss: id => set(s => ({ items: s.items.filter(i => i.id !== id) })),
 }))

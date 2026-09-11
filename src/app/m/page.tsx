@@ -8,18 +8,19 @@ import { useAuth } from '@/stores/auth'
 import { supabase } from '@/lib/supabase'
 import { daysLeft, shortDate } from '@/lib/format'
 import { cn } from '@/lib/cn'
+import { useCached } from '@/hooks/useCached'
 import type { Settings } from '@/lib/types'
 
 const firstName = (name: string | null | undefined) => (name ?? 'there').trim().split(' ')[0]
 
 export default function MemberHome() {
   const { profile } = useAuth()
-  const [settings, setSettings] = useState<Settings | null>(null)
   const [counted, setCounted] = useState(0)
 
-  useEffect(() => {
-    void supabase.from('settings').select('*').maybeSingle().then(({ data }) => setSettings(data as Settings))
-  }, [])
+  const { data: settings } = useCached<Settings>('settings', async () => {
+    const { data } = await supabase.from('settings').select('*').maybeSingle()
+    return data as Settings
+  })
 
   useEffect(() => {
     if (!profile) return

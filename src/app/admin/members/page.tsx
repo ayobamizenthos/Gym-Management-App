@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Search } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { daysLeft, shortDate } from '@/lib/format'
+import { daysLeft } from '@/lib/format'
 import { cn } from '@/lib/cn'
+import { useCached } from '@/hooks/useCached'
 import type { Branch, Profile, Settings } from '@/lib/types'
 
 type Filter = 'all' | 'active' | 'due' | 'expired'
@@ -13,19 +14,22 @@ type Filter = 'all' | 'active' | 'due' | 'expired'
 export default function AdminMembers() {
   const [rows, setRows] = useState<Profile[]>([])
   const [branches, setBranches] = useState<Branch[]>([])
-  const [settings, setSettings] = useState<Settings | null>(null)
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<Filter>('all')
   const [branch, setBranch] = useState('all')
+  const [ready, setReady] = useState(false)
+
+  const { data: settings } = useCached<Settings>('settings', async () => {
+    const { data } = await supabase.from('settings').select('*').maybeSingle()
+    return data as Settings
+  })
 
   useEffect(() => {
     void supabase.from('profiles').select('*').eq('role', 'member')
       .order('created_at', { ascending: false }).limit(5000)
-      .then(({ data }) => setRows((data ?? []) as Profile[]))
+      .then(({ data }) => { setRows((data ?? []) as Profile[]); setReady(true) })
     void supabase.from('branches').select('*').order('name')
       .then(({ data }) => setBranches((data ?? []) as Branch[]))
-    void supabase.from('settings').select('*').maybeSingle()
-      .then(({ data }) => setSettings(data as Settings))
   }, [])
 
   const notice = settings?.expiry_notice_days ?? 5
@@ -79,7 +83,19 @@ export default function AdminMembers() {
 
       <div className="rule mt-5" />
 
-      <ul className="mt-5 flex flex-col gap-2">
+      {!ready ? (
+        <div className="mt-5 space-y-2" aria-busy="true" aria-label="Loading members">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-[68px] animate-pulse rounded-sm bg-base-panel" />
+          ))}
+        </div>
+      ) : shown.length === 0 ? (
+        <p className="py-20 text-center text-mute">
+          {rows.length === 0 ? 'No members yet.' : 'No members match that search.'}
+        </p>
+      ) : null}
+
+      <ul role="list" className="mt-5 flex flex-col gap-2">
         {shown.map(m => {
           const left = daysLeft(m.expires_at)
           const state = !m.expires_at ? 'none' : (left ?? 0) <= 0 ? 'expired' : left! <= notice ? 'due' : 'ok'
@@ -93,7 +109,6 @@ export default function AdminMembers() {
                   <span className="block truncate font-semibold">{m.full_name ?? 'Member'}</span>
                   <span className="block truncate text-sm text-mute">
                     {m.phone ?? 'No phone on file'}
-                    
                   </span>
                 </span>
                 <span className="shrink-0 text-right">

@@ -168,6 +168,8 @@ export function AvatarCropper({ file, onCancel, onDone }: Props) {
           className="relative aspect-square w-full max-w-[300px] cursor-grab touch-none overflow-hidden rounded-full bg-black active:cursor-grabbing"
         >
           {src && (
+            /* a local object URL - there is nothing for the image optimiser to fetch */
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={src}
               alt=""

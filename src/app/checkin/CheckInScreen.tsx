@@ -105,16 +105,16 @@ export default function CheckInScreen() {
         <h1 className="mt-8 text-6xl sm:text-7xl">{skin.label}</h1>
         <p className="mt-4 max-w-sm text-lg opacity-80">{skin.note(result!)}</p>
 
-        <div className="mt-10 flex items-center gap-3 text-sm uppercase tracking-[0.25em] opacity-70">
-          <span>{result!.full_name ?? 'Member'}</span>
-        </div>
+        <p className="mt-10 text-sm uppercase tracking-[0.25em] opacity-70">
+          {result!.full_name ?? 'Member'}
+        </p>
       </section>
 
       <footer className="p-6">
         {result!.kind === 'valid' || result!.kind === 'duplicate' ? (
           <Link href="/m" className="btn w-full rounded-md border border-current">Open my membership</Link>
         ) : (
-          <Link href="/m/renew" className="btn w-full bg-chalk text-chalk">Renew now</Link>
+          <Link href="/m/renew" className="btn w-full rounded-md bg-white text-base">Renew now</Link>
         )}
       </footer>
     </main>

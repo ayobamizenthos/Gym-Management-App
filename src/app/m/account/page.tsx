@@ -78,7 +78,18 @@ export default function AccountPage() {
     }
   }
 
-  const left = daysLeft(profile?.expires_at ?? null)
+  if (!profile) {
+    return (
+      <div className="space-y-3" aria-busy="true" aria-label="Loading your account">
+        <div className="h-9 w-32 animate-pulse rounded-sm bg-base-panel" />
+        <div className="h-20 animate-pulse rounded-sm bg-base-panel" />
+        <div className="h-14 animate-pulse rounded-sm bg-base-panel" />
+        <div className="h-56 animate-pulse rounded-sm bg-base-panel" />
+      </div>
+    )
+  }
+
+  const left = daysLeft(profile.expires_at)
   const active = left !== null && left > 0
 
   return (
@@ -92,7 +103,7 @@ export default function AccountPage() {
           aria-label="Change profile photo"
           className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full border border-edge"
         >
-          <Avatar path={profile?.photo_url} name={profile?.full_name} size={80} />
+          <Avatar path={profile.photo_url} name={profile.full_name} size={80} />
           <span className="absolute inset-x-0 bottom-0 grid place-items-center bg-base/70 py-1">
             <Camera size={13} className="text-white" aria-hidden />
           </span>
@@ -109,9 +120,9 @@ export default function AccountPage() {
           }}
         />
         <div className="min-w-0">
-          <p className="truncate text-xl font-semibold">{profile?.full_name ?? 'Member'}</p>
-          <p className="truncate text-sm text-mute">{profile?.email}</p>
-          {uploading && <p className="text-xs text-live">Uploading</p>}
+          <p className="truncate text-xl font-semibold">{profile.full_name ?? 'Member'}</p>
+          <p className="truncate text-sm text-mute">{profile.email}</p>
+          {uploading && <p className="text-xs text-live"><span className="dots">Uploading</span></p>}
         </div>
       </section>
 
@@ -122,10 +133,10 @@ export default function AccountPage() {
         )}
       >
         <span className="text-[15px] font-medium">
-          {profile?.expires_at ? (active ? 'Active membership' : 'Membership expired') : 'No plan yet'}
+          {profile.expires_at ? (active ? 'Active membership' : 'Membership expired') : 'No plan yet'}
         </span>
         <span className={cn('font-display text-lg', active ? 'text-live' : 'text-out')}>
-          {profile?.expires_at ? (active ? left + ' days left' : shortDate(profile.expires_at)) : '--'}
+          {profile.expires_at ? (active ? left + ' days left' : shortDate(profile.expires_at)) : '--'}
         </span>
       </div>
 
@@ -159,7 +170,7 @@ export default function AccountPage() {
         </div>
 
         <button onClick={save} disabled={!dirty || busy} className="btn-primary mt-5 w-full">
-          {saved ? 'Saved' : busy ? 'Saving' : 'Save changes'}
+          {saved ? 'Saved' : busy ? <span className="dots">Saving</span> : 'Save changes'}
         </button>
       </section>
 

@@ -36,10 +36,10 @@ export default function EntranceCode() {
     <div className="animate-rise">
       <div className="no-print flex items-center justify-between">
         <Link href="/admin/branches" className="flex items-center gap-2 text-sm text-mute hover:text-chalk">
-          <ArrowLeft size={16} /> Branches
+          <ArrowLeft size={16} aria-hidden /> Branches
         </Link>
         <button onClick={() => window.print()} className="btn-primary h-11 px-5 text-sm">
-          <Printer size={17} /> Print
+          <Printer size={17} aria-hidden /> Print
         </button>
       </div>
 
@@ -50,10 +50,9 @@ export default function EntranceCode() {
 
       {/* The printable sheet. White so it survives any printer. */}
       <div className="print-sheet mx-auto mt-7 w-full max-w-[560px] bg-white p-10 text-center text-black print:mt-0">
-        <p className="font-display text-4xl uppercase tracking-tightest">
-          Zenthos<span className="text-chalk">Gym</span>
-        </p>
+        <p className="font-display text-4xl uppercase tracking-tightest">Zenthos Gym</p>
 
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={png} alt="Entrance check-in code" className="mx-auto mt-7 w-full max-w-[380px]" />
 
         <p className="mt-7 font-display text-5xl uppercase leading-[0.9] tracking-tightest">

@@ -6,14 +6,19 @@ import { X } from 'lucide-react'
 
 export function ToastHost() {
   const { items, dismiss } = useToasts()
-  if (items.length === 0) return null
+  // The live region stays mounted and empty - screen readers ignore a region
+  // that appears with its content already inside it.
   return (
-    <div className="pointer-events-none fixed inset-x-3 bottom-4 z-[90] flex flex-col gap-2 sm:left-auto sm:right-5 sm:w-96">
+    <div
+      role="status"
+      aria-live="polite"
+      className="pointer-events-none fixed inset-x-3 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-[90] flex flex-col gap-2 md:bottom-5 md:left-auto md:right-5 md:w-96"
+    >
       {items.map(t => (
         <div
           key={t.id}
           className={cn(
-            'pointer-events-auto flex animate-rise items-start gap-3 border bg-base-panel px-4 py-3',
+            'pointer-events-auto flex animate-rise items-start gap-3 rounded-sm border bg-base-panel px-4 py-3 shadow-lg shadow-black/30',
             t.tone === 'good' && 'border-live',
             t.tone === 'bad' && 'border-out',
             t.tone === 'info' && 'border-edge'

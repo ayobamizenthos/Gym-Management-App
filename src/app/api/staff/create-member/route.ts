@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { callerProfile, serviceClient } from '@/lib/server-supabase'
+import { PLACEHOLDER_EMAIL_DOMAIN } from '@/lib/members'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
 
   // Members registered from a paper form often have no email. Mint a stable
   // placeholder so the account still exists and can be claimed later.
-  const login = email || `m${Date.now().toString(36)}@members.zenthosgym.local`
+  const login = email || `m${Date.now().toString(36)}${PLACEHOLDER_EMAIL_DOMAIN}`
   const password = body.password?.trim() || `zg-${Math.random().toString(36).slice(2, 10)}`
 
   const { data, error } = await admin.auth.admin.createUser({

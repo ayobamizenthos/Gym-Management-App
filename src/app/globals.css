@@ -37,6 +37,11 @@
 
   .label { @apply text-[13px] font-medium text-mute; }
 
+  /* Fixed bottom bars sit above the iPhone home indicator, and the scroll
+     container has to clear the bar plus that inset or the last row is unreachable. */
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  .pad-nav { padding-bottom: calc(6.5rem + env(safe-area-inset-bottom)); }
+
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
@@ -60,7 +65,8 @@
 /* Printing the entrance code should yield the poster and nothing else. */
 @media print {
   body { background: #fff !important; }
-  aside, nav, header, .no-print { display: none !important; }
+  aside, nav, header, footer, .no-print { display: none !important; }
+  * { color: #000 !important; }
   main { padding: 0 !important; }
   .print-sheet {
     box-shadow: none !important;

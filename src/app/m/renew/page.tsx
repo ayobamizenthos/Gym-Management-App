@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, Upload, CreditCard, Landmark } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -8,6 +8,8 @@ import { useAuth } from '@/stores/auth'
 import { useToasts } from '@/stores/toast'
 import { naira } from '@/lib/format'
 import { cn } from '@/lib/cn'
+import { useCached } from '@/hooks/useCached'
+import { isReachableEmail } from '@/lib/members'
 import type { Plan, Settings } from '@/lib/types'
 
 type Method = 'card' | 'transfer'
@@ -22,32 +24,56 @@ declare global {
   }
 }
 
+function PlanRow({ plan, on, onPick }: { plan: Plan; on: boolean; onPick: () => void }) {
+  return (
+    <li>
+      <button
+        type="button"
+        aria-pressed={on}
+        onClick={onPick}
+        className={cn(
+          'flex w-full items-center justify-between rounded-md border px-4 py-3.5 text-left transition-all',
+          on ? 'border-chalk bg-base-panel' : 'border-edge hover:border-mute'
+        )}
+      >
+        <span className="flex items-center gap-3">
+          <span
+            aria-hidden
+            className={cn(
+              'grid h-5 w-5 shrink-0 place-items-center rounded-sm border transition-colors',
+              on ? 'border-chalk bg-chalk' : 'border-edge'
+            )}
+          >
+            {on && <Check size={13} className="text-base" strokeWidth={3} />}
+          </span>
+          <span className="font-display text-lg">{plan.name}</span>
+        </span>
+        <span className="font-display text-lg tabular-nums">{naira(plan.price)}</span>
+      </button>
+    </li>
+  )
+}
+
 export default function RenewPage() {
   const { profile, refresh } = useAuth()
   const router = useRouter()
   const push = useToasts(s => s.push)
 
-  const [plans, setPlans] = useState<Plan[]>([])
-  const [settings, setSettings] = useState<Settings | null>(null)
-  const [loading, setLoading] = useState(true)
   const [planId, setPlanId] = useState<string | null>(null)
   const [addOns, setAddOns] = useState<string[]>([])
   const [method, setMethod] = useState<Method>('card')
   const [proof, setProof] = useState<File | null>(null)
   const [busy, setBusy] = useState(false)
-  const barRef = useRef<HTMLDivElement>(null)
   const [barHeight, setBarHeight] = useState(0)
 
-  useEffect(() => {
-    void Promise.all([
-      supabase.from('plans').select('*').eq('is_active', true).order('sort_order'),
-      supabase.from('settings').select('*').maybeSingle(),
-    ]).then(([p, s]) => {
-      setPlans((p.data ?? []) as Plan[])
-      setSettings(s.data as Settings)
-      setLoading(false)
-    })
-  }, [])
+  const { data: plans, loading } = useCached<Plan[]>('plans', async () => {
+    const { data } = await supabase.from('plans').select('*').eq('is_active', true).order('sort_order')
+    return (data ?? []) as Plan[]
+  })
+  const { data: settings } = useCached<Settings>('settings', async () => {
+    const { data } = await supabase.from('settings').select('*').maybeSingle()
+    return data as Settings
+  })
 
   useEffect(() => {
     if (document.getElementById('paystack-inline')) return
@@ -60,20 +86,18 @@ export default function RenewPage() {
 
   // The bar grows when the joining fee line appears, so its height is measured
   // rather than guessed - the pay options must never sit underneath it.
-  useLayoutEffect(() => {
-    const element = barRef.current
+  const measureBar = useCallback((element: HTMLDivElement | null) => {
     if (!element) {
       setBarHeight(0)
       return
     }
+    setBarHeight(element.offsetHeight)
     const observer = new ResizeObserver(() => setBarHeight(element.offsetHeight))
     observer.observe(element)
-    setBarHeight(element.offsetHeight)
-    return () => observer.disconnect()
-  })
+  }, [])
 
-  const memberships = plans.filter(p => !p.is_addon)
-  const extras = plans.filter(p => p.is_addon)
+  const memberships = (plans ?? []).filter(p => !p.is_addon)
+  const extras = (plans ?? []).filter(p => p.is_addon)
   const chosen = memberships.find(p => p.id === planId) ?? null
 
   const { joiningFee, total } = useMemo(() => {
@@ -85,6 +109,12 @@ export default function RenewPage() {
         : 0
     return { joiningFee: fee, total: base + fee }
   }, [chosen, extras, addOns, profile?.registration_paid, settings])
+
+  const cardAvailable = isReachableEmail(profile?.email)
+
+  useEffect(() => {
+    if (!cardAvailable) setMethod('transfer')
+  }, [cardAvailable])
 
   // Tapping the selected plan again clears it.
   const pickPlan = (id: string) => setPlanId(current => (current === id ? null : id))
@@ -124,7 +154,7 @@ export default function RenewPage() {
 
     window.PaystackPop.setup({
       key,
-      email: profile!.email ?? 'member@zenthosgym.com',
+      email: profile!.email!,
       amount: Math.round(total * 100),
       currency: 'NGN',
       ref: reference,
@@ -183,34 +213,6 @@ export default function RenewPage() {
     )
   }
 
-  const Row = ({ plan, on, onPick }: { plan: Plan; on: boolean; onPick: () => void }) => (
-    <li>
-      <button
-        type="button"
-        aria-pressed={on}
-        onClick={onPick}
-        className={cn(
-          'flex w-full items-center justify-between rounded-md border px-4 py-3.5 text-left transition-all',
-          on ? 'border-chalk bg-base-panel' : 'border-edge hover:border-mute'
-        )}
-      >
-        <span className="flex items-center gap-3">
-          <span
-            aria-hidden
-            className={cn(
-              'grid h-5 w-5 shrink-0 place-items-center rounded-sm border transition-colors',
-              on ? 'border-chalk bg-chalk' : 'border-edge'
-            )}
-          >
-            {on && <Check size={13} className="text-base" strokeWidth={3} />}
-          </span>
-          <span className="font-display text-lg">{plan.name}</span>
-        </span>
-        <span className="font-display text-lg tabular-nums">{naira(plan.price)}</span>
-      </button>
-    </li>
-  )
-
   return (
     <div className="animate-rise" style={{ paddingBottom: barHeight + 28 }}>
       <h1 className="text-3xl">Renew</h1>
@@ -219,7 +221,7 @@ export default function RenewPage() {
         <legend className="text-sm font-semibold text-mute">Membership</legend>
         <ul role="list" className="mt-3 flex flex-col gap-2">
           {memberships.map(plan => (
-            <Row key={plan.id} plan={plan} on={planId === plan.id} onPick={() => pickPlan(plan.id)} />
+            <PlanRow key={plan.id} plan={plan} on={planId === plan.id} onPick={() => pickPlan(plan.id)} />
           ))}
         </ul>
       </fieldset>
@@ -229,7 +231,7 @@ export default function RenewPage() {
           <legend className="text-sm font-semibold text-mute">Add on</legend>
           <ul role="list" className="mt-3 flex flex-col gap-2">
             {extras.map(extra => (
-              <Row key={extra.id} plan={extra} on={addOns.includes(extra.id)} onPick={() => toggleAddOn(extra.id)} />
+              <PlanRow key={extra.id} plan={extra} on={addOns.includes(extra.id)} onPick={() => toggleAddOn(extra.id)} />
             ))}
           </ul>
         </fieldset>
@@ -238,18 +240,20 @@ export default function RenewPage() {
       {chosen && (
         <div className="mt-7 animate-rise">
           <p className="text-sm font-semibold text-mute">Pay with</p>
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              aria-pressed={method === 'card'}
-              onClick={() => setMethod('card')}
-              className={cn(
-                'flex h-11 items-center justify-center gap-2 rounded-md border text-[15px] font-semibold transition-all',
-                method === 'card' ? 'border-chalk bg-chalk text-base' : 'border-edge text-chalk hover:bg-base-panel'
-              )}
-            >
-              <CreditCard size={17} aria-hidden /> Card
-            </button>
+          <div className={cn('mt-3 grid gap-2', cardAvailable ? 'grid-cols-2' : 'grid-cols-1')}>
+            {cardAvailable && (
+              <button
+                type="button"
+                aria-pressed={method === 'card'}
+                onClick={() => setMethod('card')}
+                className={cn(
+                  'flex h-11 items-center justify-center gap-2 rounded-md border text-[15px] font-semibold transition-all',
+                  method === 'card' ? 'border-chalk bg-chalk text-base' : 'border-edge text-chalk hover:bg-base-panel'
+                )}
+              >
+                <CreditCard size={17} aria-hidden /> Card
+              </button>
+            )}
             <button
               type="button"
               aria-pressed={method === 'transfer'}
@@ -284,7 +288,11 @@ export default function RenewPage() {
       )}
 
       {chosen && (
-        <div ref={barRef} className="fixed inset-x-0 bottom-[68px] z-30 mx-auto max-w-2xl border-t border-edge bg-base px-5 pb-4 pt-3">
+        <div
+          ref={measureBar}
+          className="fixed inset-x-0 z-30 mx-auto max-w-2xl border-t border-edge bg-base px-5 pb-4 pt-3"
+          style={{ bottom: 'calc(68px + env(safe-area-inset-bottom))' }}
+        >
           <div className="flex items-baseline justify-between">
             <span className="text-sm font-semibold text-mute">Total</span>
             <span className="font-display text-2xl tabular-nums">{naira(total)}</span>

@@ -45,20 +45,26 @@ export default function HistoryPage() {
     <div className="animate-rise">
       <h1 className="text-4xl">Payments</h1>
 
-      {ready && rows.length === 0 && (
-        <p className="mt-6 text-sm text-mute">No payments recorded yet.</p>
-      )}
+      {!ready ? (
+        <div className="mt-6 space-y-2" aria-busy="true" aria-label="Loading payments">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="h-[72px] animate-pulse rounded-sm bg-base-panel" />
+          ))}
+        </div>
+      ) : rows.length === 0 ? (
+        <p className="mt-6 text-[15px] text-mute">No payments recorded yet.</p>
+      ) : null}
 
-      <ul className="mt-6 flex flex-col gap-2">
+      <ul role="list" className="mt-6 flex flex-col gap-2">
         {rows.map(row => (
-          <li key={row.id} className="flex items-center justify-between border-l-2 border-edge bg-base-panel px-4 py-4">
+          <li key={row.id} className="flex items-center justify-between gap-3 rounded-sm border-l-2 border-edge bg-base-panel px-4 py-4">
             <span className="min-w-0">
               <span className="block font-display text-xl uppercase tracking-tightest">
                 {row.plan?.name ?? 'Payment'}
               </span>
               <span className="block text-xs text-mute">
                 {shortDate(row.created_at)}
-                {row.includes_registration ? ' / includes registration' : ''}
+                {row.includes_registration ? ' / includes joining fee' : ''}
               </span>
             </span>
             <span className="text-right">

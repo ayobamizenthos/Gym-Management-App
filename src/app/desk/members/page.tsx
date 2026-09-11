@@ -4,18 +4,23 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Search, UserPlus } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { daysLeft, shortDate } from '@/lib/format'
+import { daysLeft } from '@/lib/format'
 import { cn } from '@/lib/cn'
+import { useCached } from '@/hooks/useCached'
 import type { Profile, Settings } from '@/lib/types'
 
 type Filter = 'all' | 'due' | 'expired'
 
 export default function DeskMembers() {
   const [rows, setRows] = useState<Profile[]>([])
-  const [settings, setSettings] = useState<Settings | null>(null)
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<Filter>('all')
   const [ready, setReady] = useState(false)
+
+  const { data: settings } = useCached<Settings>('settings', async () => {
+    const { data } = await supabase.from('settings').select('*').maybeSingle()
+    return data as Settings
+  })
 
   const load = useCallback(async () => {
     const { data } = await supabase
@@ -29,9 +34,6 @@ export default function DeskMembers() {
   }, [])
 
   useEffect(() => { void load() }, [load])
-  useEffect(() => {
-    void supabase.from('settings').select('*').maybeSingle().then(({ data }) => setSettings(data as Settings))
-  }, [])
 
   const notice = settings?.expiry_notice_days ?? 5
 
@@ -89,11 +91,19 @@ export default function DeskMembers() {
 
       <div className="rule mt-5" />
 
-      {ready && shown.length === 0 && (
-        <p className="py-20 text-center text-mute">No members match.</p>
-      )}
+      {!ready ? (
+        <div className="mt-5 space-y-2" aria-busy="true" aria-label="Loading members">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-[68px] animate-pulse rounded-sm bg-base-panel" />
+          ))}
+        </div>
+      ) : shown.length === 0 ? (
+        <p className="py-20 text-center text-mute">
+          {rows.length === 0 ? 'No members yet. Register the first one.' : 'No members match that search.'}
+        </p>
+      ) : null}
 
-      <ul className="mt-5 flex flex-col gap-2">
+      <ul role="list" className="mt-5 flex flex-col gap-2">
         {shown.map(m => {
           const left = daysLeft(m.expires_at)
           const state = m.expires_at === null ? 'none' : (left ?? 0) <= 0 ? 'expired' : left! <= notice ? 'due' : 'ok'

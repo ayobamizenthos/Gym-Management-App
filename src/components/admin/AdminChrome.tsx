@@ -25,26 +25,26 @@ export function AdminChrome({ children }: { children: React.ReactNode }) {
         <div className="flex h-16 items-center px-5 font-display text-xl uppercase tracking-tightest">
           Zenthos<span className="text-live">Gym</span>
         </div>
-        <nav className="flex flex-1 flex-col gap-1 p-3">
+        <nav aria-label="Admin" className="flex flex-1 flex-col gap-1 p-3">
           {LINKS.map(l => {
             const active = path === l.href
             return (
-              <Link key={l.href} href={l.href}
-                className={cn('flex items-center gap-3 px-3 py-2.5 text-sm font-semibold uppercase tracking-wide transition-colors',
+              <Link key={l.href} href={l.href} aria-current={active ? 'page' : undefined}
+                className={cn('flex items-center gap-3 rounded-sm px-3 py-2.5 text-sm font-semibold uppercase tracking-wide transition-colors',
                   active ? 'bg-live text-chalk' : 'text-mute hover:text-chalk')}>
-                <l.icon size={17} />{l.label}
+                <l.icon size={17} aria-hidden />{l.label}
               </Link>
             )
           })}
           <Link href="/desk" className="mt-2 flex items-center gap-3 border-t border-edge px-3 pt-5 text-sm font-semibold uppercase tracking-wide text-mute hover:text-live">
-            <Activity size={17} /> Front desk
+            <Activity size={17} aria-hidden /> Front desk
           </Link>
         </nav>
         <div className="border-t border-edge p-3">
           <p className="px-3 pb-1 text-xs uppercase tracking-[0.2em] text-mute">Signed in</p>
           <p className="truncate px-3 pb-3 text-sm">{profile?.full_name}</p>
           <button onClick={signOut} className="flex w-full items-center gap-3 px-3 py-2 text-sm text-mute hover:text-out">
-            <LogOut size={16} /> Sign out
+            <LogOut size={16} aria-hidden /> Sign out
           </button>
         </div>
       </aside>
@@ -54,21 +54,21 @@ export function AdminChrome({ children }: { children: React.ReactNode }) {
           <span className="font-display text-lg uppercase tracking-tightest">
             Zenthos<span className="text-live">Gym</span>
           </span>
-          <button onClick={signOut} aria-label="Sign out" className="text-mute"><LogOut size={18} /></button>
+          <button onClick={signOut} aria-label="Sign out" className="text-mute transition-colors hover:text-out"><LogOut size={18} aria-hidden /></button>
         </header>
 
-        <div className="no-scrollbar flex gap-1 overflow-x-auto border-b border-edge px-3 py-2 lg:hidden">
+        <nav aria-label="Admin" className="no-scrollbar flex gap-1 overflow-x-auto border-b border-edge px-3 py-2 lg:hidden">
           {LINKS.map(l => {
             const active = path === l.href
             return (
-              <Link key={l.href} href={l.href}
-                className={cn('shrink-0 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide',
-                  active ? 'bg-live text-chalk' : 'text-mute')}>
+              <Link key={l.href} href={l.href} aria-current={active ? 'page' : undefined}
+                className={cn('shrink-0 rounded-sm px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors',
+                  active ? 'bg-live text-chalk' : 'text-mute hover:text-chalk')}>
                 {l.label}
               </Link>
             )
           })}
-        </div>
+        </nav>
 
         <main className="flex-1 px-4 py-6 lg:px-10">{children}</main>
       </div>

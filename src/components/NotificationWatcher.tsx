@@ -5,16 +5,27 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/stores/auth'
 import { useToasts } from '@/stores/toast'
-import { playNewMember, playPaid, playReward, playRepeat } from '@/lib/sounds'
+import type { Toast } from '@/stores/toast'
+import { playNewMember, playPaid, playReward, playRepeat, playNoMembership, unlockAudio } from '@/lib/sounds'
 
-const SOUND: Record<string, () => void> = {
-  member_joined: playNewMember,
-  payment_pending: playPaid,
-  payment_confirmed: playPaid,
-  referral_reward: playReward,
+interface Alert {
+  sound: () => void
+  tone: Toast['tone']
+  buzz: number | number[]
 }
 
-/** Live alerts for whoever is signed in. Staff hear members joining and
+const ALERTS: Record<string, Alert> = {
+  member_joined:     { sound: playNewMember,     tone: 'good', buzz: 35 },
+  payment_pending:   { sound: playPaid,          tone: 'info', buzz: 35 },
+  payment_confirmed: { sound: playPaid,          tone: 'good', buzz: 35 },
+  payment_rejected:  { sound: playNoMembership,  tone: 'bad',  buzz: [70, 50, 70] },
+  referral_reward:   { sound: playReward,        tone: 'good', buzz: [35, 40, 35] },
+  renewals_due:      { sound: playRepeat,        tone: 'info', buzz: 35 },
+}
+
+const FALLBACK: Alert = { sound: playRepeat, tone: 'info', buzz: 35 }
+
+/** Live alerts for whoever is signed in. Staff hear members paying and
  *  payments arriving; members hear their own confirmations. */
 export function NotificationWatcher() {
   const { session, role } = useAuth()
@@ -22,6 +33,19 @@ export function NotificationWatcher() {
   const router = useRouter()
   const roleRef = useRef(role)
   roleRef.current = role
+
+  // Browsers keep audio muted until the page has been touched, so the very first
+  // interaction of the session primes it - by the time an alert lands it is armed.
+  useEffect(() => {
+    const prime = () => unlockAudio()
+    const options = { once: true, passive: true } as const
+    window.addEventListener('pointerdown', prime, options)
+    window.addEventListener('keydown', prime, options)
+    return () => {
+      window.removeEventListener('pointerdown', prime)
+      window.removeEventListener('keydown', prime)
+    }
+  }, [])
 
   useEffect(() => {
     const userId = session?.user.id
@@ -34,13 +58,10 @@ export function NotificationWatcher() {
         { event: 'INSERT', schema: 'public', table: 'notifications', filter: 'user_id=eq.' + userId },
         payload => {
           const row = payload.new as { type: string; title: string; message: string }
-          ;(SOUND[row.type] ?? playRepeat)()
-          if (navigator.vibrate) navigator.vibrate(35)
-          push({
-            tone: row.type === 'payment_pending' ? 'info' : 'good',
-            title: row.title,
-            message: row.message,
-          })
+          const alert = ALERTS[row.type] ?? FALLBACK
+          alert.sound()
+          navigator.vibrate?.(alert.buzz)
+          push({ tone: alert.tone, title: row.title, message: row.message })
           if (row.type === 'payment_pending' && roleRef.current !== 'member') router.refresh()
         }
       )

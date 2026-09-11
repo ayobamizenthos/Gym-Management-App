@@ -16,10 +16,10 @@ export function MemberChrome({ children }: { children: React.ReactNode }) {
   const path = usePathname()
   return (
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col">
-      <main className="flex-1 px-5 pb-28 pt-6">{children}</main>
+      <main className="pad-nav flex-1 px-5 pt-6">{children}</main>
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-40 mx-auto grid max-w-2xl grid-cols-4 border-t border-edge bg-base"
+        className="safe-bottom fixed inset-x-0 bottom-0 z-40 mx-auto grid max-w-2xl grid-cols-4 border-t border-edge bg-base"
       >
         {TABS.map(tab => {
           const active = path === tab.href

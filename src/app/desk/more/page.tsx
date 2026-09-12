@@ -1,6 +1,6 @@
 'use client'
 
-import { Banknote, ScanLine, UserRound } from 'lucide-react'
+import { Banknote, UserRound } from 'lucide-react'
 import { MoreMenu } from '@/components/MoreMenu'
 
 export default function DeskMore() {
@@ -12,7 +12,6 @@ export default function DeskMore() {
           heading: 'Front desk',
           links: [
             { href: '/desk/payments', label: 'Payments', hint: 'Confirm transfers and see what has been paid', icon: Banknote },
-            { href: '/checkin', label: 'Check in a member', hint: 'Open the check-in screen on this device', icon: ScanLine },
           ],
         },
         {

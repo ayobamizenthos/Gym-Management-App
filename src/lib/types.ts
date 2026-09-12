@@ -69,6 +69,7 @@ export interface CheckInRow {
 export interface CheckInResult {
   kind: CheckInKind
   full_name: string | null
+  username: string | null
   photo_url: string | null
   expires_at: string | null
   days_left: number | null

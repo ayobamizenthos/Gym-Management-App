@@ -3,42 +3,35 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { CheckCircle2, AlertTriangle, RotateCcw, UserX } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/stores/auth'
 import { playDeskAlert, unlockAudio } from '@/lib/sounds'
-import { shortDate } from '@/lib/format'
+import { asName, shortDate } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { Loader } from '@/components/Loader'
+import { StatusMark } from '@/components/StatusMark'
 import type { CheckInResult, CheckInKind } from '@/lib/types'
 
-const SKIN: Record<CheckInKind, {
-  label: string
-  note: (r: CheckInResult) => string
-  bg: string
-  fg: string
-  Icon: typeof CheckCircle2
-  motion: string
-}> = {
+const COPY: Record<CheckInKind, { title: string; note: (r: CheckInResult) => string; tone: string }> = {
   valid: {
-    label: 'You are in',
-    note: r => `${r.days_left} day${r.days_left === 1 ? '' : 's'} left on your membership`,
-    bg: 'bg-live', fg: 'text-white', Icon: CheckCircle2, motion: 'animate-pop',
+    title: 'Access granted',
+    note: r => r.days_left + (r.days_left === 1 ? ' day left' : ' days left'),
+    tone: 'text-live',
   },
   expired: {
-    label: 'Membership expired',
-    note: r => `Ran out ${shortDate(r.expires_at)}. Renew to train today.`,
-    bg: 'bg-out', fg: 'text-white', Icon: AlertTriangle, motion: 'animate-shake',
-  },
-  duplicate: {
-    label: 'Already checked in',
-    note: r => (r.is_active ? `You scanned earlier today. ${r.days_left} days left.` : 'You scanned earlier today.'),
-    bg: 'bg-base-panel', fg: 'text-chalk', Icon: RotateCcw, motion: 'animate-pop',
+    title: 'Membership expired',
+    note: r => 'Ran out ' + shortDate(r.expires_at),
+    tone: 'text-out',
   },
   no_membership: {
-    label: 'No active plan',
-    note: () => 'Pick a plan to start training.',
-    bg: 'bg-due', fg: 'text-white', Icon: UserX, motion: 'animate-pop',
+    title: 'No active subscription',
+    note: () => 'Choose a plan to start training',
+    tone: 'text-due',
+  },
+  duplicate: {
+    title: 'Already checked in',
+    note: r => (r.is_active ? 'Scanned earlier today · ' + r.days_left + ' days left' : 'Scanned earlier today'),
+    tone: 'text-chalk',
   },
 }
 
@@ -68,18 +61,18 @@ export default function CheckInScreen() {
   useEffect(() => {
     if (loading || fired.current) return
     if (!session) {
-      router.replace(`/login?next=${encodeURIComponent(`/checkin${branch ? `?b=${branch}` : ''}`)}`)
+      router.replace('/login?next=' + encodeURIComponent('/checkin' + (branch ? '?b=' + branch : '')))
       return
     }
     fired.current = true
     void run()
   }, [loading, session, run, router, branch])
 
-  if (loading || (!result && !error)) return <Loader full label="Checking your membership" />
+  if (loading || (!result && !error)) return <Loader full label="Reading your membership" />
 
   if (error) {
     return (
-      <main className="grid min-h-dvh place-items-center px-6 text-center">
+      <main className="grid min-h-dvh place-items-center bg-base px-6 text-center">
         <div>
           <h1 className="text-4xl">Could not check you in</h1>
           <p className="mt-3 text-mute">{error}</p>
@@ -89,32 +82,44 @@ export default function CheckInScreen() {
     )
   }
 
-  const skin = SKIN[result!.kind]
-  const { Icon } = skin
+  const outcome = result!
+  const copy = COPY[outcome.kind]
+  const who = asName(outcome.username) ?? outcome.full_name ?? 'Member'
+  const welcomed = outcome.kind === 'valid' || outcome.kind === 'duplicate'
 
   return (
-    <main className={cn('grid min-h-dvh grid-rows-[1fr_auto]', skin.bg, skin.fg)}>
-      <section className="flex flex-col items-center justify-center px-6 text-center">
-        <span className={cn('relative grid h-28 w-28 place-items-center', skin.motion)}>
-          {result!.kind === 'valid' && (
-            <span className="absolute inset-0 animate-ring rounded-full border-4 border-white/40" />
-          )}
-          <Icon size={104} strokeWidth={1.6} />
-        </span>
+    <main className="relative grid min-h-dvh grid-rows-[1fr_auto] overflow-hidden bg-base">
+      {/* a single wash of the state colour, low enough to stay a lighting effect */}
+      <span
+        aria-hidden
+        className={cn(
+          'pointer-events-none absolute inset-x-0 top-0 h-[60vh] opacity-[0.09] blur-[80px]',
+          outcome.kind === 'valid' && 'bg-live',
+          outcome.kind === 'expired' && 'bg-out',
+          outcome.kind === 'no_membership' && 'bg-due',
+          outcome.kind === 'duplicate' && 'bg-chalk'
+        )}
+      />
 
-        <h1 className="mt-8 text-6xl sm:text-7xl">{skin.label}</h1>
-        <p className="mt-4 max-w-sm text-lg opacity-80">{skin.note(result!)}</p>
+      <section className="relative flex flex-col items-center justify-center px-7 text-center">
+        <StatusMark kind={outcome.kind} />
 
-        <p className="mt-10 text-sm uppercase tracking-[0.25em] opacity-70">
-          {result!.full_name ?? 'Member'}
+        <h1 className="animate-lift-1 mt-9 text-[2.75rem] leading-[0.95] sm:text-6xl">{copy.title}</h1>
+
+        <p className={cn('animate-lift-2 mt-4 text-lg font-semibold', copy.tone)}>{copy.note(outcome)}</p>
+
+        <p className="animate-lift-3 mt-8 text-[13px] font-semibold uppercase tracking-[0.28em] text-mute">
+          {who}
         </p>
       </section>
 
-      <footer className="p-6">
-        {result!.kind === 'valid' || result!.kind === 'duplicate' ? (
-          <Link href="/m" className="btn w-full rounded-md border border-current">Open my membership</Link>
+      <footer className="animate-lift-3 relative p-6">
+        {welcomed ? (
+          <Link href="/m" className="btn-quiet w-full">Open my membership</Link>
         ) : (
-          <Link href="/m/renew" className="btn w-full rounded-md bg-white text-ink">Renew now</Link>
+          <Link href="/m/renew" className="btn-primary w-full">
+            {outcome.kind === 'expired' ? 'Renew now' : 'Choose a plan'}
+          </Link>
         )}
       </footer>
     </main>

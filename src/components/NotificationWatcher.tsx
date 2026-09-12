@@ -7,6 +7,7 @@ import { useAuth } from '@/stores/auth'
 import { useToasts } from '@/stores/toast'
 import type { Toast } from '@/stores/toast'
 import { playNewMember, playPaid, playReward, playRepeat, playNoMembership, unlockAudio } from '@/lib/sounds'
+import { registerWorker, syncSubscription } from '@/lib/push'
 
 interface Alert {
   sound: () => void
@@ -20,6 +21,7 @@ const ALERTS: Record<string, Alert> = {
   payment_confirmed: { sound: playPaid,          tone: 'good', buzz: 35 },
   payment_rejected:  { sound: playNoMembership,  tone: 'bad',  buzz: [70, 50, 70] },
   referral_reward:   { sound: playReward,        tone: 'good', buzz: [35, 40, 35] },
+  referral_joined:   { sound: playReward,        tone: 'good', buzz: [35, 40, 35] },
   renewals_due:      { sound: playRepeat,        tone: 'info', buzz: 35 },
 }
 
@@ -39,6 +41,13 @@ export function NotificationWatcher() {
 
   // Browsers keep audio muted until the page has been touched, so the very first
   // interaction of the session primes it - by the time an alert lands it is armed.
+  // The worker has to be registered before a push can ever arrive, and the
+  // device re-registered against whoever is signed in now.
+  useEffect(() => {
+    if (!session?.user.id) return
+    void registerWorker().then(() => syncSubscription())
+  }, [session?.user.id])
+
   useEffect(() => {
     const prime = () => unlockAudio()
     const options = { once: true, passive: true } as const

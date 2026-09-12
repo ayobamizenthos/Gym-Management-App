@@ -29,6 +29,7 @@ const KINDS: Record<string, Kind> = {
   member_joined:     { icon: UserPlus,        tone: 'good',  family: 'membership', href: () => '/desk/members' },
   renewals_due:      { icon: Clock,           tone: 'warn',  family: 'membership', href: r => (r === 'member' ? '/m/renew' : '/desk/members') },
   referral_reward:   { icon: Gift,            tone: 'good',  family: 'rewards',    href: () => '/m/referrals' },
+  referral_joined:   { icon: UserPlus,        tone: 'good',  family: 'rewards',    href: () => '/m/referrals' },
 }
 
 const FALLBACK: Kind = { icon: BadgeCheck, tone: 'plain', family: 'membership', href: () => '/m' }

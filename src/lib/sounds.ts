@@ -249,7 +249,7 @@ export function playNoMembership() {
     { freq: 196, dur: 0.34, gain: 0.12, type: 'sine', at: 0.17 },
   ])
   strike(0, 0.08, 0.06, 1600)
-  announce('See the front desk', 560, { rate: 0.92, pitch: 0.78 })
+  announce('No active subscription. Please subscribe', 520, { rate: 0.95, pitch: 0.8 })
 }
 
 /** Money in. A bright rising flourish that finishes on an octave. */

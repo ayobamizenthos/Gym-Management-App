@@ -39,8 +39,24 @@ function audio(): AudioContext | null {
 }
 
 /** Browsers keep audio muted until a gesture. Call once on first tap. */
+let speechUnlocked = false
+
+function unlockSpeech() {
+  if (speechUnlocked) return
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
+  try {
+    const silent = new SpeechSynthesisUtterance(' ')
+    silent.volume = 0
+    window.speechSynthesis.speak(silent)
+    speechUnlocked = true
+  } catch {
+    // no engine here; the chime carries the meaning on its own
+  }
+}
+
 export function unlockAudio() {
   primeVoice()
+  unlockSpeech()
   const ac = audio()
   if (!ac || !master) return
   const osc = ac.createOscillator()
@@ -158,6 +174,10 @@ function pickVoice(): SpeechSynthesisVoice | null {
 export function setVoice(name: string) {
   try { localStorage.setItem(VOICE_CHOICE, name) } catch {}
   preferred = availableVoices().find(v => v.name === name) ?? preferred
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    window.speechSynthesis.cancel()
+    announcing = false
+  }
 }
 
 export function currentVoice(): SpeechSynthesisVoice | null {
@@ -184,18 +204,21 @@ let announcing = false
 
 function announce(words: string, delay = 0, { rate = 0.92, pitch = 0.85 } = {}) {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
+  unlockSpeech()
   if (announcing) window.speechSynthesis.cancel()
+
   window.setTimeout(() => {
     try {
       const line = new SpeechSynthesisUtterance(words)
       if (!preferred) preferred = pickVoice()
       if (preferred) {
-        line.voice = preferred
+        // lang first: assigning it after the voice detaches the voice on iOS
         line.lang = preferred.lang
+        line.voice = preferred
       }
       line.rate = rate
-      // a woman's voice sits naturally without being dropped; dropping it is
-      // what makes a synthesised voice sound like a toy
+      // a woman's voice sits naturally; dropping its pitch is what makes a
+      // synthesised voice sound like a toy
       line.pitch = preferred && FEMALE.test(preferred.name) ? 1 : pitch
       line.volume = 1
       announcing = true
@@ -206,6 +229,12 @@ function announce(words: string, delay = 0, { rate = 0.92, pitch = 0.85 } = {}) 
       // no speech engine on this device - the chime already carried the meaning
     }
   }, delay)
+}
+
+/** Says a line now, with whatever voice is currently chosen. Used to audition. */
+export function sayNow(words: string) {
+  unlockSpeech()
+  announce(words, 0)
 }
 
 const C5 = 523.25
@@ -273,7 +302,7 @@ export function playNoMembership() {
     { freq: 196, dur: 0.34, gain: 0.12, type: 'sine', at: 0.17 },
   ])
   strike(0, 0.08, 0.06, 1600)
-  announce('No active subscription. Please subscribe', 520, { rate: 0.95, pitch: 0.8 })
+  announce('No active subscription', 520)
 }
 
 /** Money in. A bright rising flourish that finishes on an octave. */

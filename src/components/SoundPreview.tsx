@@ -4,14 +4,14 @@ import { useEffect, useState } from 'react'
 import { Play } from 'lucide-react'
 import {
   playGranted, playExpired, playNoMembership, playRepeat, playPaid,
-  unlockAudio, primeVoice, availableVoices, setVoice, currentVoice,
+  unlockAudio, primeVoice, availableVoices, setVoice, currentVoice, sayNow,
 } from '@/lib/sounds'
 import { cn } from '@/lib/cn'
 
 const CUES = [
   { label: 'Access granted', hint: 'Member is in', play: playGranted, tone: 'good' },
   { label: 'Membership expired', hint: 'Their time has run out', play: playExpired, tone: 'bad' },
-  { label: 'No plan yet', hint: 'Send them to the desk', play: playNoMembership, tone: 'warn' },
+  { label: 'No active subscription', hint: 'Registered, never paid', play: playNoMembership, tone: 'warn' },
   { label: 'Already checked in', hint: 'Second scan today', play: playRepeat, tone: 'plain' },
   { label: 'Payment received', hint: 'Money confirmed', play: playPaid, tone: 'good' },
 ] as const
@@ -64,7 +64,7 @@ export function SoundPreview() {
             {voices.map(v => (
               <button
                 key={v.name}
-                onClick={() => { setVoice(v.name); setChosen(v.name); unlockAudio(); playGranted() }}
+                onClick={() => { unlockAudio(); setVoice(v.name); setChosen(v.name); sayNow('Access granted') }}
                 aria-pressed={chosen === v.name}
                 className={cn('h-9 shrink-0 rounded-full px-3.5 text-[13px] font-semibold transition-colors',
                   chosen === v.name ? 'bg-live text-ink' : 'bg-base-raised text-mute hover:text-chalk')}

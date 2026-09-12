@@ -40,6 +40,7 @@ function audio(): AudioContext | null {
 
 /** Browsers keep audio muted until a gesture. Call once on first tap. */
 export function unlockAudio() {
+  primeVoice()
   const ac = audio()
   if (!ac || !master) return
   const osc = ac.createOscillator()
@@ -120,6 +121,69 @@ function strike(at = 0, level = 0.13, decay = 0.09, colour = 2600) {
   source.start(start)
 }
 
+
+// ---------------------------------------------------------------- voice ----
+// The chime is the sound that carries; the words are what make it feel like a
+// door deciding about you. They land just after the chord so the two do not
+// fight, and the whole thing degrades to the chime alone on a device with no
+// speech engine rather than failing silently.
+
+let preferred: SpeechSynthesisVoice | null = null
+let voicesReady = false
+
+function pickVoice(): SpeechSynthesisVoice | null {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null
+  const voices = window.speechSynthesis.getVoices()
+  if (voices.length === 0) return null
+
+  // English, and a local engine where one exists: a network voice on a slow
+  // connection would arrive long after the member has walked through.
+  const english = voices.filter(v => /^en(-|_|$)/i.test(v.lang))
+  const pool = english.length > 0 ? english : voices
+  const local = pool.filter(v => v.localService)
+  const candidates = local.length > 0 ? local : pool
+
+  // the deeper, more deliberate voices read better as an announcement
+  const wanted = /(daniel|google uk english male|microsoft guy|microsoft david|alex|arthur|male)/i
+  return candidates.find(v => wanted.test(v.name)) ?? candidates[0] ?? null
+}
+
+/** Voices arrive asynchronously; this keeps the choice warm. */
+export function primeVoice() {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
+  if (voicesReady) return
+  preferred = pickVoice()
+  if (preferred) voicesReady = true
+  else window.speechSynthesis.addEventListener('voiceschanged', () => {
+    preferred = pickVoice()
+    voicesReady = Boolean(preferred)
+  }, { once: true })
+}
+
+let announcing = false
+
+function announce(words: string, delay = 0, { rate = 0.94, pitch = 0.82 } = {}) {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
+  if (announcing) window.speechSynthesis.cancel()
+  window.setTimeout(() => {
+    try {
+      const line = new SpeechSynthesisUtterance(words)
+      if (!preferred) preferred = pickVoice()
+      if (preferred) line.voice = preferred
+      line.lang = preferred?.lang ?? 'en-GB'
+      line.rate = rate
+      line.pitch = pitch
+      line.volume = 1
+      announcing = true
+      line.onend = () => { announcing = false }
+      line.onerror = () => { announcing = false }
+      window.speechSynthesis.speak(line)
+    } catch {
+      // no speech engine on this device - the chime already carried the meaning
+    }
+  }, delay)
+}
+
 const C5 = 523.25
 const E5 = 659.25
 const G5 = 783.99
@@ -149,6 +213,7 @@ export function playGranted() {
   ])
   strike(0, 0.1, 0.07, 3200)
   strike(0.235, 0.15, 0.14, 2400)
+  announce('Access granted', 420)
 }
 
 /** Membership expired. A low descending klaxon, three times. Nobody mistakes
@@ -163,6 +228,7 @@ export function playExpired() {
   strike(0, 0.1, 0.06, 900)
   strike(0.34, 0.1, 0.06, 900)
   strike(0.68, 0.1, 0.06, 900)
+  announce('Membership expired', 980, { rate: 0.9, pitch: 0.72 })
 }
 
 /** Already in today. Warm, brief, clearly not a refusal. */
@@ -172,6 +238,7 @@ export function playRepeat() {
     { freq: C6, dur: 0.18, gain: 0.18, type: 'triangle', fat: true, at: 0.1 },
   ])
   strike(0, 0.07, 0.05, 2800)
+  announce('Already checked in', 340, { rate: 1, pitch: 0.9 })
 }
 
 /** No membership on file. A falling pair: a question, not an alarm. */
@@ -182,6 +249,7 @@ export function playNoMembership() {
     { freq: 196, dur: 0.34, gain: 0.12, type: 'sine', at: 0.17 },
   ])
   strike(0, 0.08, 0.06, 1600)
+  announce('See the front desk', 560, { rate: 0.92, pitch: 0.78 })
 }
 
 /** Money in. A bright rising flourish that finishes on an octave. */

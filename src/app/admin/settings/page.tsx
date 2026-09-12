@@ -8,6 +8,7 @@ import { useAuth } from '@/stores/auth'
 import { useToasts } from '@/stores/toast'
 import { Accordion } from '@/components/Accordion'
 import { NotificationToggle } from '@/components/NotificationToggle'
+import { SoundPreview } from '@/components/SoundPreview'
 import type { Settings } from '@/lib/types'
 
 const FIELDS = [
@@ -126,8 +127,12 @@ export default function AdminSettings() {
           </Row>
         </Accordion>
 
-        <Accordion title="Alerts">
+        <Accordion title="Notifications">
           <NotificationToggle />
+        </Accordion>
+
+        <Accordion title="Door sounds">
+          <SoundPreview />
         </Accordion>
       </div>
 

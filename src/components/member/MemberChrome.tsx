@@ -2,9 +2,13 @@
 
 import { Dumbbell, CreditCard, ScanLine, ReceiptText, UserRound } from 'lucide-react'
 import { BottomNav } from '@/components/BottomNav'
+import { useAuth } from '@/stores/auth'
 import { AlertBell } from '@/components/AlertBell'
 
 export function MemberChrome({ children }: { children: React.ReactNode }) {
+  const { role } = useAuth()
+  const staffHome = role === 'admin' ? '/admin' : role === 'receptionist' ? '/desk' : null
+
   return (
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col">
       {/* The inbox lives top right, the same place it sits on the staff screens.
@@ -19,6 +23,7 @@ export function MemberChrome({ children }: { children: React.ReactNode }) {
 
       <BottomNav
         label="Main"
+        swipe={staffHome ? { left: staffHome } : undefined}
         left={[
           { href: '/m', label: 'Home', icon: Dumbbell },
           { href: '/m/renew', label: 'Renew', icon: CreditCard },

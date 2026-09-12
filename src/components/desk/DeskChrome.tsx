@@ -60,6 +60,8 @@ export function DeskChrome({ children }: { children: React.ReactNode }) {
         <div className="md:hidden">
           <BottomNav
             label="Front desk"
+
+            swipe={{ right: '/m' }}
             left={[
               { href: '/desk', label: 'Live', icon: Activity },
               { href: '/desk/members', label: 'Members', icon: Users, section: '/desk/members' },

@@ -68,6 +68,8 @@ export function AdminChrome({ children }: { children: React.ReactNode }) {
         <div className="lg:hidden">
           <BottomNav
             label="Admin"
+
+            swipe={{ right: '/m' }}
             left={[
               { href: '/admin', label: 'Overview', icon: BarChart3 },
               { href: '/admin/members', label: 'Members', icon: Users },

@@ -1,7 +1,8 @@
 'use client'
 
+import { useRef } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import type { LucideIcon } from 'lucide-react'
 import { useAlerts } from '@/stores/alerts'
 import { cn } from '@/lib/cn'
@@ -22,6 +23,11 @@ interface Props {
   left: [NavItem, NavItem]
   right: [NavItem, NavItem]
   action: { href: string; label: string; icon: LucideIcon }
+  /**
+   * Dragging across the bar switches workspace. Staff run the gym and train in
+   * it, and this is how they cross between the two without hunting for a link.
+   */
+  swipe?: { left?: string; right?: string }
 }
 
 /**
@@ -32,9 +38,29 @@ interface Props {
  * The ring around that button is painted in the page colour, which cuts the
  * button out of the pill instead of stacking a circle on top of it.
  */
-export function BottomNav({ label, left, right, action }: Props) {
+export function BottomNav({ label, left, right, action, swipe }: Props) {
   const path = usePathname()
+  const router = useRouter()
   const { unread } = useAlerts()
+  const from = useRef<{ x: number; y: number } | null>(null)
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0]
+    from.current = { x: touch.clientX, y: touch.clientY }
+  }
+
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const start = from.current
+    from.current = null
+    if (!start || !swipe) return
+    const touch = e.changedTouches[0]
+    const dx = touch.clientX - start.x
+    const dy = touch.clientY - start.y
+    // a deliberate horizontal drag, not a tap that wandered or a vertical scroll
+    if (Math.abs(dx) < 64 || Math.abs(dy) > 44) return
+    const target = dx < 0 ? swipe.left : swipe.right
+    if (target) router.push(target)
+  }
 
   const isOn = (item: NavItem) =>
     item.section ? path === item.section || path.startsWith(item.section + '/') : path === item.href
@@ -87,6 +113,8 @@ export function BottomNav({ label, left, right, action }: Props) {
     >
       <nav
         aria-label={label}
+        onTouchStart={swipe ? onTouchStart : undefined}
+        onTouchEnd={swipe ? onTouchEnd : undefined}
         className="pointer-events-auto relative flex h-[62px] w-full max-w-md items-stretch rounded-full border border-edge-soft bg-base-panel shadow-[0_10px_30px_-8px_rgba(0,0,0,.75)]"
       >
         <Slot item={left[0]} />

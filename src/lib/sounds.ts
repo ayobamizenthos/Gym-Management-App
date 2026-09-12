@@ -129,50 +129,74 @@ function strike(at = 0, level = 0.13, decay = 0.09, colour = 2600) {
 // speech engine rather than failing silently.
 
 let preferred: SpeechSynthesisVoice | null = null
-let voicesReady = false
 
-function pickVoice(): SpeechSynthesisVoice | null {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null
-  const voices = window.speechSynthesis.getVoices()
-  if (voices.length === 0) return null
+const VOICE_CHOICE = 'zg.voice'
+// An announcement voice reads as official when it is measured and even. These
+// are the calm, clearly-articulated engines each platform ships.
+const FEMALE = /(zira|samantha|karen|moira|tessa|fiona|serena|hazel|susan|aria|jenny|libby|sonia|female|woman)/i
 
-  // English, and a local engine where one exists: a network voice on a slow
-  // connection would arrive long after the member has walked through.
-  const english = voices.filter(v => /^en(-|_|$)/i.test(v.lang))
-  const pool = english.length > 0 ? english : voices
+export function availableVoices(): SpeechSynthesisVoice[] {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return []
+  const all = window.speechSynthesis.getVoices()
+  const english = all.filter(v => /^en(-|_|$)/i.test(v.lang))
+  const pool = english.length > 0 ? english : all
+  // a local engine answers instantly; a network one can arrive after the member
   const local = pool.filter(v => v.localService)
   const candidates = local.length > 0 ? local : pool
-
-  // the deeper, more deliberate voices read better as an announcement
-  const wanted = /(daniel|google uk english male|microsoft guy|microsoft david|alex|arthur|male)/i
-  return candidates.find(v => wanted.test(v.name)) ?? candidates[0] ?? null
+  // an official-sounding woman first, which is what a gym door wants
+  return [...candidates].sort((a, b) => (FEMALE.test(b.name) ? 1 : 0) - (FEMALE.test(a.name) ? 1 : 0))
 }
 
-/** Voices arrive asynchronously; this keeps the choice warm. */
+function pickVoice(): SpeechSynthesisVoice | null {
+  const voices = availableVoices()
+  if (voices.length === 0) return null
+  let saved: string | null = null
+  try { saved = localStorage.getItem(VOICE_CHOICE) } catch {}
+  return voices.find(v => v.name === saved) ?? voices[0]
+}
+
+export function setVoice(name: string) {
+  try { localStorage.setItem(VOICE_CHOICE, name) } catch {}
+  preferred = availableVoices().find(v => v.name === name) ?? preferred
+}
+
+export function currentVoice(): SpeechSynthesisVoice | null {
+  if (!preferred) preferred = pickVoice()
+  return preferred
+}
+
+/**
+ * Voices load asynchronously. Asking before they arrive returns an empty list,
+ * the utterance gets no voice, and the browser falls back to its own default -
+ * which is how a chosen woman's voice ends up speaking as a man.
+ */
 export function primeVoice() {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
-  if (voicesReady) return
-  preferred = pickVoice()
-  if (preferred) voicesReady = true
-  else window.speechSynthesis.addEventListener('voiceschanged', () => {
-    preferred = pickVoice()
-    voicesReady = Boolean(preferred)
-  }, { once: true })
+  const attempt = () => { preferred = pickVoice() }
+  attempt()
+  if (!preferred) {
+    window.speechSynthesis.addEventListener('voiceschanged', attempt, { once: true })
+    window.setTimeout(attempt, 1200)
+  }
 }
 
 let announcing = false
 
-function announce(words: string, delay = 0, { rate = 0.94, pitch = 0.82 } = {}) {
+function announce(words: string, delay = 0, { rate = 0.92, pitch = 0.85 } = {}) {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
   if (announcing) window.speechSynthesis.cancel()
   window.setTimeout(() => {
     try {
       const line = new SpeechSynthesisUtterance(words)
       if (!preferred) preferred = pickVoice()
-      if (preferred) line.voice = preferred
-      line.lang = preferred?.lang ?? 'en-GB'
+      if (preferred) {
+        line.voice = preferred
+        line.lang = preferred.lang
+      }
       line.rate = rate
-      line.pitch = pitch
+      // a woman's voice sits naturally without being dropped; dropping it is
+      // what makes a synthesised voice sound like a toy
+      line.pitch = preferred && FEMALE.test(preferred.name) ? 1 : pitch
       line.volume = 1
       announcing = true
       line.onend = () => { announcing = false }

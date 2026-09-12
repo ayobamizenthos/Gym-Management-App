@@ -53,17 +53,22 @@ const check = (ok, what) => { out.push((ok ? 'ok   ' : 'FAIL ') + what); if (!ok
   check(after.buffer > before.buffer, 'it fires a noise transient so it cuts through')
   check(after.compressor >= 1, 'output runs through a limiter')
   check(spoken.some(s => /access granted/i.test(s.text)), 'it says "Access granted" (' + JSON.stringify(spoken.map(s => s.text)) + ')')
-  check(spoken.every(s => s.pitch < 1), 'the voice is pitched down, not chipmunked')
+  // a woman's voice sits at natural pitch; above 1 is where it turns into a toy.
+  // the silent primer that unlocks iOS speech is not an announcement.
+  const said = spoken.filter(s => s.text.trim())
+  check(said.length > 0 && said.every(s => s.pitch <= 1), 'no announcement is pitched into a chipmunk')
+  check(spoken.some(s => !s.text.trim()), 'speech is primed with a silent utterance so iOS honours the chosen voice')
 
   await page.click('button:has-text("Membership expired")')
   await page.waitForTimeout(1800)
   const all = await page.evaluate(() => window.__spoken)
   check(all.some(s => /membership expired/i.test(s.text)), 'the refusal says "Membership expired"')
 
-  await page.click('button:has-text("No plan yet")')
+  await page.click('button:has-text("No active subscription")')
   await page.waitForTimeout(1200)
   const all2 = await page.evaluate(() => window.__spoken)
-  check(all2.some(s => /front desk/i.test(s.text)), 'no-plan sends them to the desk')
+  check(all2.some(s => /no active subscription/i.test(s.text)) && !all2.some(s => /please subscribe/i.test(s.text)),
+    'the no-subscription line stops at the fact')
 
   check(errs.length === 0, 'no runtime errors' + (errs.length ? ' -> ' + errs[0].slice(0, 90) : ''))
   await b.close()

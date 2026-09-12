@@ -22,7 +22,7 @@ const ACCOUNTS = {
 
 const ROUTES = {
   admin: ['/admin', '/admin/members', '/admin/plans', '/admin/branches', '/admin/staff', '/admin/settings', '/admin/alerts', '/admin/more'],
-  desk: ['/desk', '/desk/members', '/desk/members/new', '/desk/payments', '/desk/alerts', '/desk/more'],
+  desk: ['/desk/overview', '/desk', '/desk/members', '/desk/members/new', '/desk/payments', '/desk/alerts', '/desk/more'],
   member: ['/m', '/m/renew', '/m/referrals', '/m/account', '/m/history', '/m/alerts'],
 }
 

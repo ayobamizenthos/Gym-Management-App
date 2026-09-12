@@ -45,9 +45,11 @@ const check = (ok, what) => { results.push((ok ? 'ok   ' : 'FAIL ') + what); if 
     await page.waitForTimeout(2200)
 
     await page.reload({ waitUntil: 'domcontentloaded' })
-    await page.waitForTimeout(1400)
-    const afterReload = await page.locator('body').innerText()
-    check(afterReload.includes(stamp), vp.name + ': a corrected phone number persists')
+    const persisted = await page
+      .waitForFunction(expected => document.body.innerText.includes(expected), stamp, { timeout: 20000 })
+      .then(() => true)
+      .catch(() => false)
+    check(persisted, vp.name + ': a corrected phone number persists')
 
     // sign-in help has to be reachable and explain the identity
     await page.click('button:has-text("Sign-in help")')
@@ -82,9 +84,20 @@ const check = (ok, what) => { results.push((ok ? 'ok   ' : 'FAIL ') + what); if 
   await page.waitForResponse(r => r.url().includes('/rest/v1/profiles') && r.request().method() === 'PATCH', { timeout: 30000 })
   await page.waitForTimeout(800)
   await page.reload({ waitUntil: 'domcontentloaded' })
-  await page.waitForTimeout(1400)
-  // the value lives in an input, which innerText does not expose
-  check((await page.locator('label:has-text("Phone") input').inputValue()) === stamp, 'member: their own phone still saves')
+  // the form fills in once the profile arrives, so wait for the value itself
+  const landed = await page
+    .waitForFunction(
+      expected => {
+        const labels = [...document.querySelectorAll('label')]
+        const field = labels.find(l => /Phone/.test(l.textContent || ''))?.querySelector('input')
+        return field ? field.value === expected : false
+      },
+      stamp,
+      { timeout: 20000 }
+    )
+    .then(() => true)
+    .catch(() => false)
+  check(landed, 'member: their own phone still saves')
   await ctx.close()
 
   await browser.close()

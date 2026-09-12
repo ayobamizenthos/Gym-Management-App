@@ -40,8 +40,9 @@ async function drag(page, dx) {
     const c = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
     const p = await c.newPage()
     await signIn(p, email)
-    await p.goto(BASE + dash, { waitUntil: 'networkidle' })
-    await p.waitForTimeout(1200)
+    await p.goto(BASE + dash, { waitUntil: 'domcontentloaded' })
+    await p.waitForSelector('nav.rounded-full', { timeout: 30000 })
+    await p.waitForTimeout(2500)
 
     await drag(p, 120)                       // left to right
     check(p.url().includes('/m'), who + ': swiping right off the dashboard opens the member view (' + p.url().replace(BASE, '') + ')')
@@ -55,8 +56,9 @@ async function drag(page, dx) {
   const c = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
   const p = await c.newPage()
   await signIn(p, process.env.TEST_MEMBER)
-  await p.goto(BASE + '/m', { waitUntil: 'networkidle' })
-  await p.waitForTimeout(1200)
+  await p.goto(BASE + '/m', { waitUntil: 'domcontentloaded' })
+  await p.waitForSelector('nav.rounded-full', { timeout: 30000 })
+  await p.waitForTimeout(2500)
   await drag(p, -120)
   check(p.url().endsWith('/m'), 'member: swiping does nothing')
   await c.close()

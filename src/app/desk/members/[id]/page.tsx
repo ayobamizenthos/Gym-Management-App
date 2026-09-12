@@ -13,7 +13,7 @@ import { Loader } from '@/components/Loader'
 import { Dialog } from '@/components/Dialog'
 import { BackLink } from '@/components/BackLink'
 import { Select } from '@/components/Select'
-import { daysLeft, naira, shortDate, timeOnly } from '@/lib/format'
+import { asName, daysLeft, naira, shortDate, timeOnly } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { isReachableEmail } from '@/lib/members'
 import type { CheckInRow, Payment, Plan, Profile } from '@/lib/types'
@@ -279,7 +279,7 @@ export default function MemberDetail() {
           <dl className="divide-y divide-edge-soft">
             {[
               ['Member code', member.member_code],
-              ['Username', member.username],
+              ['Username', asName(member.username)],
               ['Email', isReachableEmail(member.email) ? member.email : 'None on file'],
               ['Phone', member.phone],
               ['Address', member.address],
@@ -355,7 +355,7 @@ export default function MemberDetail() {
               <p className="mt-3 text-sm text-mute">
                 They sign in with{' '}
                 <span className="text-chalk">
-                  {member.username ?? (isReachableEmail(member.email) ? member.email : 'no name set yet')}
+                  {asName(member.username) ?? (isReachableEmail(member.email) ? member.email : 'no name set yet')}
                 </span>
                 {member.username && isReachableEmail(member.email) ? ' or their email.' : '.'}
               </p>

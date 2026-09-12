@@ -10,15 +10,14 @@ import { daysLeft } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { Branch, Profile, Settings } from '@/lib/types'
 
-type Filter = 'all' | 'active' | 'due' | 'expired' | 'waiting'
+type Filter = 'all' | 'active' | 'due' | 'expired'
 
 /** What each filter means, in the words the desk would use. */
 const FILTERS: { key: Filter; label: string }[] = [
   { key: 'all', label: 'All' },
   { key: 'active', label: 'Training' },
-  { key: 'due', label: 'Ending soon' },
+  { key: 'due', label: 'Due' },
   { key: 'expired', label: 'Lapsed' },
-  { key: 'waiting', label: 'Not started' },
 ]
 
 export function MembersScreen() {
@@ -87,9 +86,11 @@ export function MembersScreen() {
         <div>
           <h1 className="text-3xl lg:text-4xl">Members</h1>
           <p className="mt-1 text-sm text-mute">
-            {query || filter !== 'all' || branch !== 'all'
-              ? shown.length + ' of ' + rows.length + ' members'
-              : rows.length + (rows.length === 1 ? ' member' : ' members')}
+            {!ready
+              ? 'Loading'
+              : query || filter !== 'all' || branch !== 'all'
+                ? shown.length + ' of ' + rows.length + ' shown'
+                : rows.length + (rows.length === 1 ? ' member' : ' members')}
           </p>
         </div>
         <Link href="/desk/members/new" className="btn-primary h-11 shrink-0 px-4 text-sm">

@@ -10,7 +10,7 @@ import { useToasts } from '@/stores/toast'
 import { AvatarCropper } from '@/components/AvatarCropper'
 import { Avatar } from '@/components/Avatar'
 import { forgetAvatar } from '@/lib/avatar'
-import { daysLeft } from '@/lib/format'
+import { asName, daysLeft } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { isReachableEmail } from '@/lib/members'
 import { NotificationToggle } from '@/components/NotificationToggle'
@@ -191,7 +191,7 @@ export default function AccountPage() {
             <dt className="label shrink-0">Username</dt>
             <dd className="truncate text-right text-[15px]">
               {profile.username ? (
-                profile.username
+                asName(profile.username)
               ) : (
                 <Link href="/m/referrals" className="text-live underline-offset-4 hover:underline">Pick one</Link>
               )}

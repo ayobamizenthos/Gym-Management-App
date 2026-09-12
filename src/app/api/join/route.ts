@@ -60,7 +60,7 @@ export async function POST(request: Request) {
     .eq('username', username)
     .maybeSingle()
   if (taken) {
-    return NextResponse.json({ error: 'That username is already taken' }, { status: 409 })
+    return NextResponse.json({ error: 'Username already exists' }, { status: 409 })
   }
 
   const { error } = await admin.auth.admin.createUser({

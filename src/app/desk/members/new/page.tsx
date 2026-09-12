@@ -7,6 +7,7 @@ import { useAuth } from '@/stores/auth'
 import { useToasts } from '@/stores/toast'
 import { BackLink } from '@/components/BackLink'
 import { Select } from '@/components/Select'
+import { UsernameField } from '@/components/UsernameField'
 import type { Branch } from '@/lib/types'
 
 export default function RegisterMember() {
@@ -16,6 +17,7 @@ export default function RegisterMember() {
   const [branches, setBranches] = useState<Branch[]>([])
   const [form, setForm] = useState({ full_name: '', phone: '', email: '', username: '', branch_id: '' })
   const [busy, setBusy] = useState(false)
+  const [usernameOk, setUsernameOk] = useState(true)
   const [created, setCreated] = useState<{ email: string; password: string } | null>(null)
 
   useEffect(() => {
@@ -93,10 +95,13 @@ export default function RegisterMember() {
           <span className="label">Email (optional)</span>
           <input type="email" value={form.email} onChange={set('email')} className="field mt-1.5" />
         </label>
-        <label className="block">
-          <span className="label">Username (optional)</span>
-          <input value={form.username} onChange={set('username')} placeholder="yourname" className="field mt-1.5" />
-        </label>
+        <UsernameField
+          label="Username (optional)"
+          hint="How they sign in. Leave it blank and they can pick one later."
+          value={form.username}
+          onChange={value => setForm(f => ({ ...f, username: value }))}
+          onStateChange={setUsernameOk}
+        />
         {branches.length > 1 && (
           <label className="block">
             <span className="label">Branch</span>
@@ -110,7 +115,7 @@ export default function RegisterMember() {
             </span>
           </label>
         )}
-        <button type="submit" disabled={busy} className="btn-primary mt-2 w-full">
+        <button type="submit" disabled={busy || !usernameOk} className="btn-primary mt-2 w-full">
           {busy ? <span className="dots">Registering</span> : 'Register member'}
         </button>
       </form>

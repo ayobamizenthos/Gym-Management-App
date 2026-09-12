@@ -278,7 +278,6 @@ export default function MemberDetail() {
         <Accordion title="Details">
           <dl className="divide-y divide-edge-soft">
             {[
-              ['Member code', member.member_code],
               ['Username', asName(member.username)],
               ['Email', isReachableEmail(member.email) ? member.email : 'None on file'],
               ['Phone', member.phone],

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { unlockAudio } from '@/lib/sounds'
 import { PasswordField } from '@/components/PasswordField'
+import { UsernameField } from '@/components/UsernameField'
 import { useHydrated } from '@/hooks/useHydrated'
 
 export default function JoinScreen() {
@@ -19,6 +20,7 @@ export default function JoinScreen() {
   const [email, setEmail] = useState('')
   const [address, setAddress] = useState('')
   const [username, setUsername] = useState('')
+  const [usernameOk, setUsernameOk] = useState(false)
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -102,16 +104,7 @@ export default function JoinScreen() {
           <span className="text-xs uppercase tracking-[0.2em] text-mute">Address</span>
           <input required value={address} onChange={e => setAddress(e.target.value)} className="field mt-2" />
         </label>
-        <label className="block">
-          <span className="text-xs uppercase tracking-[0.2em] text-mute">Username</span>
-          <input
-            required
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-            pattern="[A-Za-z0-9_]{3,20}"
-            className="field mt-2"
-          />
-        </label>
+        <UsernameField required value={username} onChange={setUsername} onStateChange={setUsernameOk} />
         <PasswordField label="Password" value={password} onChange={setPassword} autoComplete="new-password" minLength={8} />
 
         {error && (
@@ -120,7 +113,7 @@ export default function JoinScreen() {
           </p>
         )}
 
-        <button type="submit" disabled={busy || !hydrated} className="btn-primary mt-2 w-full">
+        <button type="submit" disabled={busy || !hydrated || !usernameOk} className="btn-primary mt-2 w-full">
           {busy ? <span className="dots">Creating account</span> : 'Create account'}
         </button>
       </form>

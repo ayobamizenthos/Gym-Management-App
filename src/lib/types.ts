@@ -11,7 +11,6 @@ export interface Profile {
   branch_id: string | null
   username: string | null
   referred_by: string | null
-  member_code: string | null
   photo_url: string | null
   address: string | null
   email: string | null
@@ -70,7 +69,6 @@ export interface CheckInRow {
 export interface CheckInResult {
   kind: CheckInKind
   full_name: string | null
-  member_code: string | null
   photo_url: string | null
   expires_at: string | null
   days_left: number | null

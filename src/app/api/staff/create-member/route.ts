@@ -38,6 +38,11 @@ export async function POST(request: Request) {
 
   const admin = serviceClient()
 
+  if (username) {
+    const { data: taken } = await admin.from('profiles').select('id').eq('username', username).maybeSingle()
+    if (taken) return NextResponse.json({ error: 'Username already exists' }, { status: 409 })
+  }
+
   // Members registered from a paper form often have no email. Mint a stable
   // placeholder so the account still exists and can be claimed later.
   const login = email || `m${Date.now().toString(36)}${PLACEHOLDER_EMAIL_DOMAIN}`

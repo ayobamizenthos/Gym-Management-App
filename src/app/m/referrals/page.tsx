@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/stores/auth'
 import { useToasts } from '@/stores/toast'
 import { useCached } from '@/hooks/useCached'
+import { UsernameField } from '@/components/UsernameField'
 import { playReward } from '@/lib/sounds'
 import { shortDate } from '@/lib/format'
 import { cn } from '@/lib/cn'
@@ -26,6 +27,7 @@ export default function ReferralsPage() {
   const [copied, setCopied] = useState(false)
   const [claiming, setClaiming] = useState(false)
   const [wanted, setWanted] = useState('')
+  const [wantedOk, setWantedOk] = useState(false)
   // window and navigator are read after mount so the server and client render
   // the same markup on the first pass.
   const [origin, setOrigin] = useState('')
@@ -100,22 +102,19 @@ export default function ReferralsPage() {
       {!profile?.username ? (
         <section className="mt-7 rounded-lg bg-base-panel p-4">
           <p className="text-[15px]">Pick your username first.</p>
-          <div className="mt-3 flex gap-2">
-            <input
+          <div className="mt-3">
+            <UsernameField
+              required
+              label=""
+              hint="3-20 letters, numbers or underscore. You sign in with it too. Cannot be changed."
               value={wanted}
-              onChange={e => setWanted(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))}
-              placeholder="yourname"
-              maxLength={20}
-              autoCapitalize="none"
-              autoCorrect="off"
-              aria-label="Username"
-              className="field"
+              onChange={setWanted}
+              onStateChange={setWantedOk}
             />
-            <button onClick={claimName} disabled={claiming || wanted.trim().length < 3} className="btn-primary shrink-0 px-5">
-              {claiming ? <span className="dots">Saving</span> : 'Claim'}
-            </button>
           </div>
-          <p className="mt-2 text-xs text-mute">3-20 letters, numbers or underscore. You sign in with it too. Cannot be changed.</p>
+          <button onClick={claimName} disabled={claiming || !wantedOk} className="btn-primary mt-3 w-full">
+            {claiming ? <span className="dots">Saving</span> : 'Claim this username'}
+          </button>
         </section>
       ) : (
         <section className="mt-7">

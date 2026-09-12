@@ -164,6 +164,32 @@ const call = (path, token, body) =>
     const after = await (await service("/rest/v1/profiles?id=eq." + victim.id + "&select=id")).json()
     expect(Array.isArray(after) && after.length === 0, "the deleted profile is really gone")
 
+    // ---- a username identifies exactly one person ----
+    const handle = named.username
+    const dupe = await fetch(APP + "/api/join", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ full_name: "Copy Cat", phone: "08000000009", email: "copycat" + Date.now() + "@zenthos.test",
+        address: "x", username: handle, password: "Copycat99#" }),
+    })
+    const dupeBody = await dupe.json()
+    expect(dupe.status === 409 && dupeBody.error === "Username already exists",
+      "signing up with a taken username is refused by name (" + dupe.status + " " + dupeBody.error + ")")
+
+    const free = await (await fetch(URL + "/rest/v1/rpc/username_available", {
+      method: "POST", headers: { apikey: PUBLISHABLE, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_username: handle }),
+    })).json()
+    expect(free === false, "the availability check reports a taken name as taken")
+
+    const spare = await (await fetch(URL + "/rest/v1/rpc/username_available", {
+      method: "POST", headers: { apikey: PUBLISHABLE, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_username: "free" + Date.now().toString(36).slice(-6) }),
+    })).json()
+    expect(spare === true, "the availability check reports a free name as free")
+
+    expect((await call("/api/staff/create-member", desk.token, { full_name: "Copy Cat", phone: "08000000008", username: handle })).status === 409,
+      "the desk cannot register a member on a taken username")
+
     // ---- a forged Paystack reference must never confirm anything ----
     const forged = await call('/api/paystack/verify', member.token, {
       reference: 'zg_forged_' + Date.now(),

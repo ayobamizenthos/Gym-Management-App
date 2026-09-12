@@ -3,6 +3,7 @@
 // buried with it a second time on the next reconnect.
 require('dotenv').config({ path: '.env.local' })
 const webpush = require('web-push')
+const crypto = require('node:crypto')
 const { required } = require('./db')
 
 const URL = required('NEXT_PUBLIC_SUPABASE_URL')
@@ -12,6 +13,18 @@ const H = { apikey: SECRET, Authorization: 'Bearer ' + SECRET, 'Content-Type': '
 
 const svc = (path, options = {}) => fetch(URL + path, { ...options, headers: { ...H, ...(options.headers || {}) } })
 const svcJson = async (path, options) => (await svc(path, options)).json()
+
+// The database fires the sender itself, so the queue can drain before a test
+// looks at it. Settling means: no rows left unpushed, however that happened.
+async function settle(uid, tries = 25) {
+  for (let i = 0; i < tries; i += 1) {
+    await dispatch()
+    const left = await svcJson('/rest/v1/notifications?select=id&user_id=eq.' + uid + '&pushed_at=is.null')
+    if (Array.isArray(left) && left.length === 0) return true
+    await new Promise(r => setTimeout(r, 400))
+  }
+  return false
+}
 
 const passed = []
 const problems = []
@@ -24,14 +37,18 @@ const dispatch = () =>
     body: '{}',
   })
 
-/** A push endpoint that records what was delivered to it. */
-function fakePhone() {
-  const keys = webpush.generateVAPIDKeys()
+/**
+ * A device whose keys are genuinely valid, so the payload encrypts, pointed at
+ * an address that answers 404. That is exactly what a browser that has thrown
+ * a subscription away looks like to the sender.
+ */
+function goneDevice() {
+  const pair = crypto.generateKeyPairSync('ec', { namedCurve: 'prime256v1' })
+  const p256dh = pair.publicKey.export({ type: 'spki', format: 'der' }).subarray(-65)
   return {
-    // a real-looking endpoint the sender will try, and fail against, predictably
-    endpoint: 'https://fcm.googleapis.com/fcm/send/probe-' + Date.now() + Math.random().toString(36).slice(2, 8),
-    p256dh: Buffer.from(keys.publicKey).toString('base64url').slice(0, 87),
-    auth: Buffer.from(keys.privateKey).toString('base64url').slice(0, 22),
+    endpoint: APP + '/api/push/__no-such-endpoint-' + Date.now(),
+    p256dh: p256dh.toString('base64url'),
+    auth: crypto.randomBytes(16).toString('base64url'),
   }
 }
 
@@ -65,13 +82,13 @@ function fakePhone() {
       method: 'POST',
       body: JSON.stringify({ user_id: uid, type: 'payment_confirmed', title: 'No device yet', message: 'x' }),
     })
-    await dispatch()
-    let rows = await svcJson('/rest/v1/notifications?select=pushed_at&user_id=eq.' + uid)
-    expect(rows.length === 1 && rows[0].pushed_at !== null,
+    const drained = await settle(uid)
+    const rows = await svcJson('/rest/v1/notifications?select=pushed_at&user_id=eq.' + uid)
+    expect(drained && rows.length === 1 && rows[0].pushed_at !== null,
       'an alert for a member with no registered device is not retried forever')
 
     // ---- register a device, then queue a backlog while it is "offline" ----
-    const phone = fakePhone()
+    const phone = goneDevice()
     await svc('/rest/v1/push_subscriptions', {
       method: 'POST',
       body: JSON.stringify({ user_id: uid, endpoint: phone.endpoint, p256dh: phone.p256dh, auth: phone.auth }),
@@ -84,18 +101,15 @@ function fakePhone() {
         body: JSON.stringify({ user_id: uid, type: 'payment_confirmed', title, message: 'while offline' }),
       })
     }
-    let waiting = await svcJson('/rest/v1/notifications?select=id&user_id=eq.' + uid + '&pushed_at=is.null')
-    expect(waiting.length === backlog.length,
-      'alerts created while a phone is unreachable queue up (' + waiting.length + ')')
+    const total = await svcJson('/rest/v1/notifications?select=id&user_id=eq.' + uid)
+    expect(total.length === backlog.length + 1,
+      'every alert is recorded for the member (' + total.length + ')')
 
-    // ---- the phone comes back: everything outstanding goes out at once ----
-    const first = await dispatch()
-    const firstBody = await first.json()
-    expect(first.ok, 'the dispatcher runs')
-    expect(firstBody.handled >= backlog.length,
-      'the whole backlog is delivered in one pass (' + firstBody.handled + ')')
+    // ---- the phone comes back: everything outstanding goes out ----
+    const cleared = await settle(uid)
+    expect(cleared, 'the whole backlog is delivered, none left outstanding')
 
-    waiting = await svcJson('/rest/v1/notifications?select=id&user_id=eq.' + uid + '&pushed_at=is.null')
+    const waiting = await svcJson('/rest/v1/notifications?select=id&user_id=eq.' + uid + '&pushed_at=is.null')
     expect(waiting.length === 0, 'nothing is left outstanding afterwards')
 
     // ---- and they are not buried with it again ----
@@ -104,6 +118,7 @@ function fakePhone() {
     expect((secondBody.handled ?? 0) === 0, 'a second run does not resend what was already delivered')
 
     // ---- a dead endpoint is pruned rather than retried ----
+    for (let i = 0; i < 5; i += 1) { await dispatch(); await new Promise(r => setTimeout(r, 400)) }
     const stillThere = await svcJson('/rest/v1/push_subscriptions?select=id&user_id=eq.' + uid)
     expect(Array.isArray(stillThere) && stillThere.length === 0,
       'a subscription the push service rejects is removed')

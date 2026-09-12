@@ -1,6 +1,6 @@
 'use client'
 
-import { Activity, Banknote, Building2, Settings as Cog, Shield, Tags, UserRound } from 'lucide-react'
+import { Activity, Banknote, Building2, Settings as Cog, Shield, UserRound } from 'lucide-react'
 import { MoreMenu } from '@/components/MoreMenu'
 
 export default function AdminMore() {
@@ -11,7 +11,6 @@ export default function AdminMore() {
         {
           heading: 'Run the gym',
           links: [
-            { href: '/admin/plans', label: 'Plans & pricing', hint: 'What you charge and how long it lasts', icon: Tags },
             { href: '/admin/branches', label: 'Branches', hint: 'Locations and their entrance codes', icon: Building2 },
             { href: '/admin/staff', label: 'Staff', hint: 'Who can work the desk and who can see revenue', icon: Shield },
             { href: '/admin/settings', label: 'Settings', hint: 'Fees, renewals, referrals and check-in', icon: Cog },

@@ -52,7 +52,7 @@ export function DeskChrome({ children }: { children: React.ReactNode }) {
           <span className="font-display text-lg uppercase tracking-tightest">
             Zenthos<span className="text-live">Gym</span>
           </span>
-          <AlertBell href="/desk/alerts" />
+          <AlertBell href="/desk/alerts" home="/desk" />
         </header>
 
         <main className="pad-nav flex-1 px-4 pt-5 md:px-8 md:pb-8">{children}</main>

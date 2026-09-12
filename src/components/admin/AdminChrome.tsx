@@ -60,7 +60,7 @@ export function AdminChrome({ children }: { children: React.ReactNode }) {
           <span className="font-display text-lg uppercase tracking-tightest">
             Zenthos<span className="text-live">Gym</span>
           </span>
-          <AlertBell href="/admin/alerts" />
+          <AlertBell href="/admin/alerts" home="/admin" />
         </header>
 
         <main className="pad-nav flex-1 px-4 pt-6 lg:px-10 lg:pb-10">{children}</main>

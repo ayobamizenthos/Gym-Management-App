@@ -11,7 +11,7 @@ export function MemberChrome({ children }: { children: React.ReactNode }) {
           It floats over the page so the photographic headers keep the full bleed. */}
       <div className="pointer-events-none fixed inset-x-0 top-0 z-30 mx-auto flex max-w-2xl justify-end px-3 pt-2">
         <span className="pointer-events-auto rounded-full bg-base/70 backdrop-blur-sm">
-          <AlertBell href="/m/alerts" />
+          <AlertBell href="/m/alerts" home="/m" />
         </span>
       </div>
 

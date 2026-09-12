@@ -1,8 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
 import { Scanner } from '@/components/Scanner'
+import { BackLink } from '@/components/BackLink'
 import { unlockAudio } from '@/lib/sounds'
 
 export default function ScanPage() {
@@ -22,9 +22,7 @@ export default function ScanPage() {
   return (
     <div className="-mx-5 -mt-6">
       <div className="flex items-center gap-3 px-5 py-4">
-        <button onClick={() => router.back()} aria-label="Back" className="text-mute hover:text-chalk">
-          <ArrowLeft size={20} />
-        </button>
+        <BackLink fallback="/m" label="" />
         <h1 className="text-2xl">Check in</h1>
       </div>
       <Scanner onResult={handle} />

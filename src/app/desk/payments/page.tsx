@@ -112,7 +112,7 @@ export default function DeskPayments() {
       ) : (
         <ul role="list" className="mt-5 flex flex-col gap-2">
           {rows.map(row => (
-            <li key={row.id} className="rounded-sm border-l-2 border-edge bg-base-panel p-4">
+            <li key={row.id} className="rounded-lg bg-base-panel p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="font-semibold">{row.member?.full_name ?? 'Member'}</p>

@@ -87,7 +87,7 @@ export default function LoginPage() {
             <h2 className="text-4xl">Sign in</h2>
 
             <label className="mt-8 block">
-              <span className="label">Email or invite name</span>
+              <span className="label">Email or username</span>
               <input
                 type="text"
                 required

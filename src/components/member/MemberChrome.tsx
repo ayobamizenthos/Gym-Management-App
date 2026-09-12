@@ -1,44 +1,24 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Dumbbell, CreditCard, Users, UserRound } from 'lucide-react'
-import { cn } from '@/lib/cn'
-
-const TABS = [
-  { href: '/m', label: 'Membership', icon: Dumbbell },
-  { href: '/m/renew', label: 'Renew', icon: CreditCard },
-  { href: '/m/referrals', label: 'Invite', icon: Users },
-  { href: '/m/account', label: 'Account', icon: UserRound },
-]
+import { Dumbbell, ReceiptText, ScanLine, Bell, UserRound } from 'lucide-react'
+import { BottomNav } from '@/components/BottomNav'
 
 export function MemberChrome({ children }: { children: React.ReactNode }) {
-  const path = usePathname()
   return (
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col">
       <main className="pad-nav flex-1 px-5 pt-6">{children}</main>
-      <nav
-        aria-label="Main"
-        className="safe-bottom fixed inset-x-0 bottom-0 z-40 mx-auto grid max-w-2xl grid-cols-4 border-t border-edge bg-base"
-      >
-        {TABS.map(tab => {
-          const active = path === tab.href
-          return (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              aria-current={active ? 'page' : undefined}
-              className={cn(
-                'flex flex-col items-center gap-1 py-3 text-[11px] font-semibold uppercase tracking-wide transition-colors',
-                active ? 'text-live' : 'text-mute hover:text-chalk'
-              )}
-            >
-              <tab.icon size={19} aria-hidden />
-              {tab.label}
-            </Link>
-          )
-        })}
-      </nav>
+      <BottomNav
+        label="Main"
+        left={[
+          { href: '/m', label: 'Home', icon: Dumbbell },
+          { href: '/m/history', label: 'Payments', icon: ReceiptText },
+        ]}
+        action={{ href: '/m/scan', label: 'Check in', icon: ScanLine }}
+        right={[
+          { href: '/m/alerts', label: 'Alerts', icon: Bell, badge: true },
+          { href: '/m/account', label: 'Account', icon: UserRound },
+        ]}
+      />
     </div>
   )
 }

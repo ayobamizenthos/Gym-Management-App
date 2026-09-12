@@ -10,9 +10,10 @@ import { useToasts } from '@/stores/toast'
 import { AvatarCropper } from '@/components/AvatarCropper'
 import { Avatar } from '@/components/Avatar'
 import { forgetAvatar } from '@/lib/avatar'
-import { daysLeft, shortDate } from '@/lib/format'
+import { daysLeft } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { isReachableEmail } from '@/lib/members'
+import { NotificationToggle } from '@/components/NotificationToggle'
 
 export default function AccountPage() {
   const { profile, refresh, signOut } = useAuth()
@@ -128,19 +129,27 @@ export default function AccountPage() {
         </div>
       </section>
 
-      <div
-        className={cn(
-          'mt-6 flex items-center justify-between gap-3 rounded-lg px-4 py-3.5',
-          !profile.expires_at ? 'bg-base-panel' : active ? 'bg-live-tint' : 'bg-out-tint'
-        )}
-      >
-        <span className="text-[15px] font-medium">
-          {profile.expires_at ? (active ? 'Active membership' : 'Membership expired') : 'No plan yet'}
-        </span>
-        <span className={cn('shrink-0 font-display text-lg', !profile.expires_at ? 'text-mute' : active ? 'text-live' : 'text-out')}>
-          {profile.expires_at ? (active ? left + ' days left' : shortDate(profile.expires_at)) : 'Choose a plan'}
-        </span>
-      </div>
+      {active ? (
+        <div className="mt-6 flex items-center justify-between gap-3 rounded-lg bg-live-tint px-4 py-3.5">
+          <span className="text-[15px] font-medium">Active membership</span>
+          <span className="shrink-0 font-display text-lg text-live">{left} days left</span>
+        </div>
+      ) : (
+        <Link
+          href="/m/renew"
+          className={cn(
+            'mt-6 flex items-center justify-between gap-3 rounded-lg px-4 py-3.5 transition-opacity hover:opacity-90',
+            profile.expires_at ? 'bg-out-tint' : 'bg-base-panel'
+          )}
+        >
+          <span className="text-[15px] font-medium">
+            {profile.expires_at ? 'Membership expired' : 'No plan yet'}
+          </span>
+          <span className="flex shrink-0 items-center gap-1 font-display text-lg text-live">
+            Choose a plan <ChevronRight size={18} aria-hidden />
+          </span>
+        </Link>
+      )}
 
       <Link
         href="/m/history"
@@ -159,11 +168,13 @@ export default function AccountPage() {
             <dd className="truncate text-right text-[15px]">{profile.full_name ?? '--'}</dd>
           </div>
           <div className="flex items-baseline justify-between gap-4 py-3">
-            <dt className="label shrink-0">Member code</dt>
-            <dd className="truncate text-right font-mono text-[15px]">{profile.member_code ?? '--'}</dd>
+            <dt className="label shrink-0">Email</dt>
+            <dd className="truncate text-right text-[15px]">
+              {isReachableEmail(profile.email) ? profile.email : 'None on file'}
+            </dd>
           </div>
           <div className="flex items-baseline justify-between gap-4 py-3">
-            <dt className="label shrink-0">Invite name</dt>
+            <dt className="label shrink-0">Username</dt>
             <dd className="truncate text-right text-[15px]">
               {profile.username ? (
                 profile.username
@@ -173,9 +184,6 @@ export default function AccountPage() {
             </dd>
           </div>
         </dl>
-        <p className="mt-2 text-sm text-mute">
-          Your invite name also signs you in. Ask the front desk to correct your name.
-        </p>
 
         <div className="mt-5 flex flex-col gap-4">
           <label className="block">
@@ -195,6 +203,13 @@ export default function AccountPage() {
         <button onClick={save} disabled={!dirty || busy} className="btn-primary mt-5 w-full">
           {saved ? 'Saved' : busy ? <span className="dots">Saving</span> : 'Save changes'}
         </button>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-xl">Alerts</h2>
+        <div className="mt-3 rounded-lg bg-base-panel px-4">
+          <NotificationToggle />
+        </div>
       </section>
 
       <button

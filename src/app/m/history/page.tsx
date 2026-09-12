@@ -57,7 +57,7 @@ export default function HistoryPage() {
 
       <ul role="list" className="mt-6 flex flex-col gap-2">
         {rows.map(row => (
-          <li key={row.id} className="flex items-center justify-between gap-3 rounded-sm border-l-2 border-edge bg-base-panel px-4 py-4">
+          <li key={row.id} className="flex items-center justify-between gap-3 rounded-lg bg-base-panel px-4 py-4">
             <span className="min-w-0">
               <span className="block font-display text-xl uppercase tracking-tightest">
                 {row.plan?.name ?? 'Payment'}

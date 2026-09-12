@@ -102,19 +102,26 @@ export default function AdminOverview() {
         {due.length === 0 ? (
           <p className="mt-4 text-sm text-mute">Nobody is close to expiring.</p>
         ) : (
-          <ul className="mt-4 flex flex-col gap-2">
+          <ul role="list" className="mt-4 flex flex-col gap-2">
             {due.map(m => {
               const left = daysLeft(m.expires_at)
               return (
-                <li key={m.id} className={cn('flex items-center justify-between border-l-2 bg-base-panel px-4 py-3',
-                  (left ?? 99) <= 5 ? 'border-due' : 'border-edge')}>
-                  <span className="min-w-0">
-                    <span className="block truncate font-semibold">{m.full_name ?? 'Member'}</span>
-                    <span className="block text-sm text-mute">{m.phone ?? 'No phone'}</span>
-                  </span>
-                  <span className={cn('font-display text-2xl tabular-nums', (left ?? 99) <= 5 ? 'text-due' : 'text-chalk')}>
-                    {left}
-                  </span>
+                <li key={m.id}>
+                  <Link
+                    href={'/desk/members/' + m.id}
+                    className="flex items-center justify-between gap-4 rounded-lg bg-base-panel px-4 py-3 transition-colors hover:bg-base-raised"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate font-semibold">{m.full_name ?? 'Member'}</span>
+                      <span className="block truncate text-sm text-mute">{m.phone ?? 'No phone'}</span>
+                    </span>
+                    <span className="shrink-0 text-right">
+                      <span className={cn('block font-display text-2xl tabular-nums', (left ?? 99) <= 5 ? 'text-due' : 'text-chalk')}>
+                        {left}
+                      </span>
+                      <span className="block text-[10px] uppercase tracking-[0.18em] text-mute">days left</span>
+                    </span>
+                  </Link>
                 </li>
               )
             })}

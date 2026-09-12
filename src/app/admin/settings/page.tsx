@@ -1,46 +1,79 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { LogOut } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/stores/auth'
 import { useToasts } from '@/stores/toast'
 import { Accordion } from '@/components/Accordion'
-import { naira } from '@/lib/format'
+import { NotificationToggle } from '@/components/NotificationToggle'
 import type { Settings } from '@/lib/types'
+
+const FIELDS = [
+  'gym_name',
+  'registration_fee',
+  'referral_target',
+  'referral_reward_days',
+  'expiry_notice_days',
+  'checkin_window_hours',
+] as const
+
+type Field = (typeof FIELDS)[number]
+type Draft = Record<Field, string>
+
+const toDraft = (row: Settings): Draft =>
+  FIELDS.reduce((out, key) => ({ ...out, [key]: String(row[key] ?? '') }), {} as Draft)
 
 export default function AdminSettings() {
   const push = useToasts(s => s.push)
-  const [form, setForm] = useState<Settings | null>(null)
+  const { signOut } = useAuth()
+  const router = useRouter()
+  const [stored, setStored] = useState<Draft | null>(null)
+  const [draft, setDraft] = useState<Draft | null>(null)
   const [busy, setBusy] = useState(false)
-  const [saved, setSaved] = useState(false)
+  const [justSaved, setJustSaved] = useState(false)
 
   useEffect(() => {
-    void supabase.from('settings').select('*').maybeSingle().then(({ data }) => setForm(data as Settings))
+    void supabase.from('settings').select('*').maybeSingle().then(({ data }) => {
+      if (!data) return
+      const next = toDraft(data as Settings)
+      setStored(next)
+      setDraft(next)
+    })
   }, [])
 
-  if (!form) {
+  // Typing something and then undoing it is not a change, so the button goes
+  // quiet again rather than staying lit on an edit that no longer exists.
+  const dirty = useMemo(
+    () => Boolean(stored && draft && FIELDS.some(key => draft[key].trim() !== stored[key].trim())),
+    [stored, draft]
+  )
+
+  if (!draft) {
     return (
-      <div className="space-y-2" aria-busy="true" aria-label="Loading settings">
-        {Array.from({ length: 4 }).map((_, i) => (
+      <div className="mx-auto max-w-xl space-y-2" aria-busy="true" aria-label="Loading settings">
+        {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="h-14 animate-pulse rounded-sm bg-base-panel" />
         ))}
       </div>
     )
   }
 
-  const set = (key: keyof Settings) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm({ ...form, [key]: e.target.value } as Settings)
+  const set = (key: Field) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setDraft(current => (current ? { ...current, [key]: e.target.value } : current))
 
   const save = async () => {
     setBusy(true)
     const { error } = await supabase
       .from('settings')
       .update({
-        gym_name: form.gym_name,
-        registration_fee: Number(form.registration_fee),
-        referral_target: Number(form.referral_target),
-        referral_reward_days: Number(form.referral_reward_days),
-        expiry_notice_days: Number(form.expiry_notice_days),
-        checkin_window_hours: Number(form.checkin_window_hours),
+        gym_name: draft.gym_name.trim(),
+        registration_fee: Number(draft.registration_fee),
+        referral_target: Number(draft.referral_target),
+        referral_reward_days: Number(draft.referral_reward_days),
+        expiry_notice_days: Number(draft.expiry_notice_days),
+        checkin_window_hours: Number(draft.checkin_window_hours),
         updated_at: new Date().toISOString(),
       })
       .eq('id', true)
@@ -49,12 +82,11 @@ export default function AdminSettings() {
       push({ tone: 'bad', title: 'Not saved', message: error.message })
       return
     }
-    // reference data changed - drop the cached copy members are holding
-    try {
-      localStorage.removeItem('zg:settings')
-    } catch {}
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2200)
+    // reference data changed - drop the copy members are holding
+    try { localStorage.removeItem('zg:settings') } catch {}
+    setStored(draft)
+    setJustSaved(true)
+    setTimeout(() => setJustSaved(false), 2200)
     push({ tone: 'good', title: 'Settings saved' })
   }
 
@@ -65,85 +97,62 @@ export default function AdminSettings() {
 
       <div className="mt-7">
         <Accordion title="Gym" defaultOpen>
-          <Field label="Gym name" hint="Shown across the app">
-            <input value={form.gym_name} onChange={set('gym_name')} className="field" />
-          </Field>
-          <Field label="Joining fee" hint={'Charged once, on a member’s first membership payment. Walk-ins never pay it.'}>
-            <input
-              type="number"
-              min="0"
-              inputMode="numeric"
-              value={Number(form.registration_fee)}
-              onChange={set('registration_fee')}
-              className="field"
-            />
-            <span className="mt-1.5 block text-sm text-mute">{naira(form.registration_fee)}</span>
-          </Field>
+          <Row label="Gym name">
+            <input value={draft.gym_name} onChange={set('gym_name')} className="field" />
+          </Row>
+          <Row label="Registration fee">
+            <input type="number" min="0" inputMode="numeric" value={draft.registration_fee} onChange={set('registration_fee')} className="field" />
+          </Row>
         </Accordion>
 
         <Accordion title="Renewals">
-          <Field label="Renewal notice (days)" hint="How early a member counts as due for renewal">
-            <input
-              type="number"
-              min="1"
-              inputMode="numeric"
-              value={form.expiry_notice_days}
-              onChange={set('expiry_notice_days')}
-              className="field"
-            />
-          </Field>
+          <Row label="Renewal notice (days)">
+            <input type="number" min="1" inputMode="numeric" value={draft.expiry_notice_days} onChange={set('expiry_notice_days')} className="field" />
+          </Row>
         </Accordion>
 
         <Accordion title="Referrals">
-          <Field label="Referrals needed" hint="Paid referrals required before the reward unlocks">
-            <input
-              type="number"
-              min="1"
-              inputMode="numeric"
-              value={form.referral_target}
-              onChange={set('referral_target')}
-              className="field"
-            />
-          </Field>
-          <Field label="Reward (days)" hint="Free days added when the target is reached">
-            <input
-              type="number"
-              min="1"
-              inputMode="numeric"
-              value={form.referral_reward_days}
-              onChange={set('referral_reward_days')}
-              className="field"
-            />
-          </Field>
+          <Row label="Referrals needed">
+            <input type="number" min="1" inputMode="numeric" value={draft.referral_target} onChange={set('referral_target')} className="field" />
+          </Row>
+          <Row label="Reward (days)">
+            <input type="number" min="1" inputMode="numeric" value={draft.referral_reward_days} onChange={set('referral_reward_days')} className="field" />
+          </Row>
         </Accordion>
 
         <Accordion title="Check-in">
-          <Field label="Repeat scan window (hours)" hint="A second scan inside this window counts as the same visit">
-            <input
-              type="number"
-              min="1"
-              inputMode="numeric"
-              value={form.checkin_window_hours}
-              onChange={set('checkin_window_hours')}
-              className="field"
-            />
-          </Field>
+          <Row label="Repeat scan window (hours)">
+            <input type="number" min="1" inputMode="numeric" value={draft.checkin_window_hours} onChange={set('checkin_window_hours')} className="field" />
+          </Row>
+        </Accordion>
+
+        <Accordion title="Alerts">
+          <NotificationToggle />
         </Accordion>
       </div>
 
-      <button onClick={save} disabled={busy} className="btn-primary mt-7 w-full">
-        {saved ? 'Saved' : busy ? <span className="dots">Saving</span> : 'Save settings'}
+      <button onClick={save} disabled={!dirty || busy} className="btn-primary mt-7 w-full">
+        {justSaved ? 'Saved' : busy ? <span className="dots">Saving</span> : 'Save settings'}
+      </button>
+
+      <button
+        onClick={async () => {
+          await signOut()
+          router.replace('/login')
+        }}
+        className="mt-8 flex w-full items-center justify-center gap-2 py-3 text-[15px] font-semibold text-out"
+      >
+        <LogOut size={17} aria-hidden /> Sign out
       </button>
     </div>
   )
 }
 
-function Field({ label, hint, children }: { label: string; hint: string; children: React.ReactNode }) {
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="mb-5 block last:mb-0">
       <span className="label">{label}</span>
       <span className="mt-1.5 block">{children}</span>
-      <span className="mt-1.5 block text-sm text-mute">{hint}</span>
     </label>
   )
 }

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/stores/auth'
 import { useToasts } from '@/stores/toast'
+import { BackLink } from '@/components/BackLink'
 import type { Branch } from '@/lib/types'
 
 export default function RegisterMember() {
@@ -74,7 +75,8 @@ export default function RegisterMember() {
 
   return (
     <div className="max-w-md animate-rise">
-      <h1 className="text-4xl">Register member</h1>
+      <BackLink fallback="/desk/members" label="Members" />
+      <h1 className="mt-4 text-4xl">Register member</h1>
       <p className="mt-2 text-[15px] text-chalk-dim">From the paper form. Email is optional.</p>
 
       <form onSubmit={submit} className="mt-7 flex flex-col gap-4">
@@ -91,7 +93,7 @@ export default function RegisterMember() {
           <input type="email" value={form.email} onChange={set('email')} className="field mt-1.5" />
         </label>
         <label className="block">
-          <span className="label">Invite name (optional)</span>
+          <span className="label">Username (optional)</span>
           <input value={form.username} onChange={set('username')} placeholder="yourname" className="field mt-1.5" />
         </label>
         {branches.length > 1 && (

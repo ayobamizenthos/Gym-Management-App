@@ -96,11 +96,36 @@ export default function AdminPlans() {
           ))}
         </div>
       ) : (
-        <ul role="list" className="mt-5 flex flex-col gap-2">
+        <div className="mt-5">
           {plans.map(plan => (
-            <li key={plan.id} className={cn('rounded-sm bg-base-panel p-4 transition-opacity', !plan.is_active && 'opacity-50')}>
-              <div className="grid gap-3 sm:grid-cols-[1.4fr_1fr_1fr_auto] sm:items-end">
-                <label className="block">
+            <div key={plan.id} className={cn('transition-opacity', !plan.is_active && 'opacity-50')}>
+              <Accordion title={plan.name} count={naira(plan.price)}>
+                <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+                  <label className="block">
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-mute">Price</span>
+                    <input
+                      type="number" min="0" inputMode="numeric" defaultValue={Number(plan.price)}
+                      onBlur={e => Number(e.target.value) !== Number(plan.price) && patch(plan.id, { price: e.target.value as unknown as string })}
+                      className="field mt-1 h-11"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-mute">Days</span>
+                    <input
+                      type="number" min="0" inputMode="numeric" defaultValue={plan.duration_days}
+                      onBlur={e => Number(e.target.value) !== plan.duration_days && patch(plan.id, { duration_days: Number(e.target.value) })}
+                      className="field mt-1 h-11"
+                    />
+                  </label>
+                  <button
+                    onClick={() => setRemoving(plan)}
+                    aria-label={'Remove ' + plan.name}
+                    className="grid h-11 w-11 place-items-center rounded-sm text-mute transition-colors hover:bg-out-tint hover:text-out"
+                  >
+                    <Trash2 size={17} aria-hidden />
+                  </button>
+                </div>
+                <label className="mt-3 block">
                   <span className="text-[10px] uppercase tracking-[0.2em] text-mute">Name</span>
                   <input
                     defaultValue={plan.name}
@@ -108,40 +133,16 @@ export default function AdminPlans() {
                     className="field mt-1 h-11"
                   />
                 </label>
-                <label className="block">
-                  <span className="text-[10px] uppercase tracking-[0.2em] text-mute">Price</span>
-                  <input
-                    type="number" min="0" inputMode="numeric" defaultValue={Number(plan.price)}
-                    onBlur={e => Number(e.target.value) !== Number(plan.price) && patch(plan.id, { price: e.target.value as unknown as string })}
-                    className="field mt-1 h-11"
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-[10px] uppercase tracking-[0.2em] text-mute">Days</span>
-                  <input
-                    type="number" min="0" inputMode="numeric" defaultValue={plan.duration_days}
-                    onBlur={e => Number(e.target.value) !== plan.duration_days && patch(plan.id, { duration_days: Number(e.target.value) })}
-                    className="field mt-1 h-11"
-                  />
-                </label>
-                <button
-                  onClick={() => setRemoving(plan)}
-                  aria-label={'Remove ' + plan.name}
-                  className="grid h-11 w-11 place-items-center rounded-sm text-mute transition-colors hover:bg-out-tint hover:text-out"
-                >
-                  <Trash2 size={17} aria-hidden />
-                </button>
-              </div>
-              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2.5 text-xs">
-                <Toggle on={plan.is_active} onClick={() => patch(plan.id, { is_active: !plan.is_active })} label="Active" />
-                <Toggle on={plan.counts_for_referral} onClick={() => patch(plan.id, { counts_for_referral: !plan.counts_for_referral })} label="Counts for referrals" />
-                <Toggle on={plan.is_addon} onClick={() => patch(plan.id, { is_addon: !plan.is_addon })} label="Add-on (no days)" />
-                <Toggle on={plan.requires_registration} onClick={() => patch(plan.id, { requires_registration: !plan.requires_registration })} label="Charges joining fee" />
-                <span className="ml-auto font-display text-lg tabular-nums text-live">{naira(plan.price)}</span>
-              </div>
-            </li>
+                <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2.5 text-xs">
+                  <Toggle on={plan.is_active} onClick={() => patch(plan.id, { is_active: !plan.is_active })} label="Active" />
+                  <Toggle on={plan.counts_for_referral} onClick={() => patch(plan.id, { counts_for_referral: !plan.counts_for_referral })} label="Counts for referrals" />
+                  <Toggle on={plan.is_addon} onClick={() => patch(plan.id, { is_addon: !plan.is_addon })} label="Add-on (no days)" />
+                  <Toggle on={plan.requires_registration} onClick={() => patch(plan.id, { requires_registration: !plan.requires_registration })} label="Charges registration fee" />
+                </div>
+              </Accordion>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
 
       <div className="mt-8">
@@ -154,7 +155,7 @@ export default function AdminPlans() {
           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2.5 text-xs">
             <Toggle on={draft.counts_for_referral} onClick={() => setDraft({ ...draft, counts_for_referral: !draft.counts_for_referral })} label="Counts for referrals" />
             <Toggle on={draft.is_addon} onClick={() => setDraft({ ...draft, is_addon: !draft.is_addon })} label="Add-on" />
-            <Toggle on={draft.requires_registration} onClick={() => setDraft({ ...draft, requires_registration: !draft.requires_registration })} label="Charges joining fee" />
+            <Toggle on={draft.requires_registration} onClick={() => setDraft({ ...draft, requires_registration: !draft.requires_registration })} label="Charges registration fee" />
           </div>
           <button onClick={add} disabled={busy || !draft.name.trim()} className="btn-primary mt-4 w-full sm:w-auto sm:px-8">
             {busy ? <span className="dots">Adding</span> : <><Plus size={17} aria-hidden /> Add plan</>}

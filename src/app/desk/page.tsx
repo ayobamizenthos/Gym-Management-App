@@ -124,12 +124,11 @@ export default function DeskLive() {
               <li
                 key={row.id}
                 className={cn(
-                  'flex items-center gap-4 border-l-2 bg-base-panel px-4 py-3.5',
-                  skin.accent,
+                  'flex items-center gap-4 rounded-lg bg-base-panel px-4 py-3.5',
                   i === 0 && 'animate-rise'
                 )}
               >
-                <skin.Icon size={26} className="shrink-0" />
+                <skin.Icon size={26} aria-hidden className={cn('shrink-0', skin.accent.split(' ')[0])} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold text-chalk">{row.full_name ?? 'Member'}</p>
                   <p className="truncate text-sm text-mute">

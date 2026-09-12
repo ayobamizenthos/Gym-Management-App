@@ -2,17 +2,23 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BarChart3, Users, Tags, Building2, Shield, Settings as Cog, LogOut, Activity } from 'lucide-react'
+import {
+  BarChart3, Users, Tags, Building2, Shield, Settings as Cog, LogOut, Activity,
+  UserPlus, Bell, LayoutGrid,
+} from 'lucide-react'
 import { useAuth } from '@/stores/auth'
+import { BottomNav } from '@/components/BottomNav'
+import { AlertBell } from '@/components/AlertBell'
 import { cn } from '@/lib/cn'
 
-const LINKS = [
-  { href: '/admin',           label: 'Overview', icon: BarChart3 },
-  { href: '/admin/members',   label: 'Members',  icon: Users },
-  { href: '/admin/plans',     label: 'Plans',    icon: Tags },
-  { href: '/admin/branches',  label: 'Branches', icon: Building2 },
-  { href: '/admin/staff',     label: 'Staff',    icon: Shield },
-  { href: '/admin/settings',  label: 'Settings', icon: Cog },
+const RAIL = [
+  { href: '/admin',          label: 'Overview', icon: BarChart3 },
+  { href: '/admin/members',  label: 'Members',  icon: Users },
+  { href: '/admin/plans',    label: 'Plans',    icon: Tags },
+  { href: '/admin/branches', label: 'Branches', icon: Building2 },
+  { href: '/admin/staff',    label: 'Staff',    icon: Shield },
+  { href: '/admin/alerts',   label: 'Alerts',   icon: Bell },
+  { href: '/admin/settings', label: 'Settings', icon: Cog },
 ]
 
 export function AdminChrome({ children }: { children: React.ReactNode }) {
@@ -26,7 +32,7 @@ export function AdminChrome({ children }: { children: React.ReactNode }) {
           Zenthos<span className="text-live">Gym</span>
         </div>
         <nav aria-label="Admin" className="flex flex-1 flex-col gap-1 p-3">
-          {LINKS.map(l => {
+          {RAIL.map(l => {
             const active = path === l.href
             return (
               <Link key={l.href} href={l.href} aria-current={active ? 'page' : undefined}
@@ -54,25 +60,25 @@ export function AdminChrome({ children }: { children: React.ReactNode }) {
           <span className="font-display text-lg uppercase tracking-tightest">
             Zenthos<span className="text-live">Gym</span>
           </span>
-          <button onClick={signOut} aria-label="Sign out" className="-mr-2.5 grid h-11 w-11 place-items-center text-mute transition-colors hover:text-out">
-            <LogOut size={18} aria-hidden />
-          </button>
+          <AlertBell href="/admin/alerts" />
         </header>
 
-        <nav aria-label="Admin" className="no-scrollbar flex gap-1 overflow-x-auto border-b border-edge px-3 py-2 lg:hidden">
-          {LINKS.map(l => {
-            const active = path === l.href
-            return (
-              <Link key={l.href} href={l.href} aria-current={active ? 'page' : undefined}
-                className={cn('flex h-10 shrink-0 items-center rounded-sm px-3.5 text-xs font-semibold uppercase tracking-wide transition-colors',
-                  active ? 'bg-live text-ink' : 'text-mute hover:text-chalk')}>
-                {l.label}
-              </Link>
-            )
-          })}
-        </nav>
+        <main className="pad-nav flex-1 px-4 pt-6 lg:px-10 lg:pb-10">{children}</main>
 
-        <main className="flex-1 px-4 py-6 lg:px-10">{children}</main>
+        <div className="lg:hidden">
+          <BottomNav
+            label="Admin"
+            left={[
+              { href: '/admin', label: 'Overview', icon: BarChart3 },
+              { href: '/admin/members', label: 'Members', icon: Users },
+            ]}
+            action={{ href: '/desk/members/new', label: 'Register', icon: UserPlus }}
+            right={[
+              { href: '/admin/alerts', label: 'Alerts', icon: Bell, badge: true },
+              { href: '/admin/more', label: 'More', icon: LayoutGrid },
+            ]}
+          />
+        </div>
       </div>
     </div>
   )

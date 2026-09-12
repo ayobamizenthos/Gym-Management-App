@@ -2,14 +2,16 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, KeyRound, Copy, Check, Pencil } from 'lucide-react'
+import { KeyRound, Copy, Check, Pencil, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/stores/auth'
 import { useToasts } from '@/stores/toast'
 import { playPaid } from '@/lib/sounds'
 import { Avatar } from '@/components/Avatar'
 import { Accordion } from '@/components/Accordion'
 import { Loader } from '@/components/Loader'
 import { Dialog } from '@/components/Dialog'
+import { BackLink } from '@/components/BackLink'
 import { daysLeft, naira, shortDate, timeOnly } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { isReachableEmail } from '@/lib/members'
@@ -28,6 +30,7 @@ const STATUS_TONE: Record<Payment['status'], string> = {
 export default function MemberDetail() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
+  const { profile: viewer } = useAuth()
   const push = useToasts(s => s.push)
 
   const [member, setMember] = useState<Profile | null>(null)
@@ -42,6 +45,7 @@ export default function MemberDetail() {
   const [resetting, setResetting] = useState(false)
   const [issued, setIssued] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const load = useCallback(async () => {
     const [m, p, v] = await Promise.all([
@@ -162,23 +166,37 @@ export default function MemberDetail() {
     }
   }
 
+  const deleteAccount = async () => {
+    const { data: s } = await supabase.auth.getSession()
+    const res = await fetch('/api/admin/delete-member', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + s.session?.access_token },
+      body: JSON.stringify({ user_id: id }),
+    })
+    const payload = await res.json()
+    if (!res.ok) {
+      push({ tone: 'bad', title: 'Not deleted', message: payload.error })
+      return
+    }
+    push({ tone: 'info', title: 'Account deleted' })
+    router.replace('/desk/members')
+  }
+
   if (!member) return <Loader />
 
   const left = daysLeft(member.expires_at)
   const active = left !== null && left > 0
   const chosen = plans.find(p => p.id === planId)
+  // the plan they are on is whatever their last confirmed membership payment
+  // bought - it is a record of what they paid, never something to edit
+  const currentPlan = payments.find(row => row.status === 'confirmed' && row.plan?.name)?.plan?.name ?? null
   const totalPaid = payments
     .filter(p => p.status === 'confirmed')
     .reduce((sum, p) => sum + Number(p.amount), 0)
 
   return (
     <div className="mx-auto max-w-2xl animate-rise">
-      <button
-        onClick={() => router.back()}
-        className="flex items-center gap-2 text-sm text-mute transition-colors hover:text-chalk"
-      >
-        <ArrowLeft size={16} aria-hidden /> Back
-      </button>
+      <BackLink fallback="/desk/members" label="Members" />
 
       <header className="mt-5 flex items-start gap-4">
         <Avatar path={member.photo_url} name={member.full_name} size={64} />
@@ -197,13 +215,25 @@ export default function MemberDetail() {
         <span className="text-[15px] font-medium">
           {member.expires_at ? (active ? 'Active' : 'Expired') : 'No plan yet'}
         </span>
-        <span className={cn('figure text-2xl', active ? 'text-live' : 'text-out')}>
+        <span className={cn('figure text-2xl', !member.expires_at ? 'text-mute' : active ? 'text-live' : 'text-out')}>
           {member.expires_at ? (active ? left + ' days' : shortDate(member.expires_at)) : '--'}
         </span>
       </div>
 
+      {currentPlan && (
+        <div className="mt-2 flex items-center justify-between gap-3 rounded-lg bg-base-panel px-4 py-3">
+          <span className="label">Current plan</span>
+          <span className="truncate text-[15px] font-medium">{currentPlan}</span>
+        </div>
+      )}
+
       <div className="mt-8">
-        <Accordion title="Take payment" defaultOpen>
+        <Accordion title="Record a payment" defaultOpen>
+          <p className="mb-4 text-[15px] text-chalk-dim">
+            For money taken here at the desk, in cash or by transfer. Cash is added to their
+            membership immediately; a transfer waits on the Payments screen until it lands.
+            This never changes a payment they have already made.
+          </p>
           <div className="flex flex-col gap-2.5">
             <label className="block">
               <span className="label">Plan</span>
@@ -232,9 +262,6 @@ export default function MemberDetail() {
             <button onClick={take} disabled={busy || !planId} className="btn-primary mt-1 w-full">
               {busy ? <span className="dots">Saving</span> : 'Record payment'}
             </button>
-            {method === 'transfer' && (
-              <p className="text-sm text-mute">Transfers stay pending until confirmed on the Payments screen.</p>
-            )}
           </div>
         </Accordion>
 
@@ -242,7 +269,7 @@ export default function MemberDetail() {
           <dl className="divide-y divide-edge-soft">
             {[
               ['Member code', member.member_code],
-              ['Invite name', member.username],
+              ['Username', member.username],
               ['Email', isReachableEmail(member.email) ? member.email : 'None on file'],
               ['Phone', member.phone],
               ['Address', member.address],
@@ -362,6 +389,21 @@ export default function MemberDetail() {
           )}
         </Accordion>
 
+        {viewer?.role === 'admin' && (
+          <Accordion title="Delete account">
+            <p className="text-[15px] text-chalk-dim">
+              Removes the member, their sign-in and their history for good. Only an owner can do
+              this, and it cannot be undone.
+            </p>
+            <button
+              onClick={() => setDeleting(true)}
+              className="btn mt-4 w-full rounded-sm border border-out text-out hover:bg-out-tint"
+            >
+              <Trash2 size={16} aria-hidden /> Delete this account
+            </button>
+          </Accordion>
+        )}
+
         <Accordion title="Visits" count={visits.length}>
           {visits.length === 0 ? (
             <p className="text-sm text-mute">No check-ins recorded.</p>
@@ -390,6 +432,19 @@ export default function MemberDetail() {
           )}
         </Accordion>
       </div>
+
+      {deleting && (
+        <Dialog
+          title={'Delete ' + (member.full_name ?? 'this account') + '?'}
+          body="Their membership, payment history and visits are removed with them. This cannot be undone."
+          ask="Type DELETE to confirm"
+          requireText="DELETE"
+          confirmLabel="Delete"
+          tone="danger"
+          onConfirm={deleteAccount}
+          onClose={() => setDeleting(false)}
+        />
+      )}
 
       {resetting && (
         <Dialog

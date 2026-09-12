@@ -28,11 +28,14 @@ const FALLBACK: Alert = { sound: playRepeat, tone: 'info', buzz: 35 }
 /** Live alerts for whoever is signed in. Staff hear members paying and
  *  payments arriving; members hear their own confirmations. */
 export function NotificationWatcher() {
-  const { session, role } = useAuth()
+  const { session, role, profile } = useAuth()
   const push = useToasts(s => s.push)
   const router = useRouter()
   const roleRef = useRef(role)
   roleRef.current = role
+  // read through a ref so flipping the preference does not tear down the channel
+  const quietRef = useRef(false)
+  quietRef.current = profile?.notifications_enabled === false
 
   // Browsers keep audio muted until the page has been touched, so the very first
   // interaction of the session primes it - by the time an alert lands it is armed.
@@ -59,9 +62,13 @@ export function NotificationWatcher() {
         payload => {
           const row = payload.new as { type: string; title: string; message: string }
           const alert = ALERTS[row.type] ?? FALLBACK
-          alert.sound()
-          navigator.vibrate?.(alert.buzz)
-          push({ tone: alert.tone, title: row.title, message: row.message })
+          // Muted means quiet, not blind: the row is already in the inbox and
+          // the badge still counts it, so nothing is lost.
+          if (!quietRef.current) {
+            alert.sound()
+            navigator.vibrate?.(alert.buzz)
+            push({ tone: alert.tone, title: row.title, message: row.message })
+          }
           if (row.type === 'payment_pending' && roleRef.current !== 'member') router.refresh()
         }
       )

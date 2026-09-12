@@ -99,7 +99,7 @@ export default function ReferralsPage() {
 
       {!profile?.username ? (
         <section className="mt-7 rounded-lg border border-edge p-4">
-          <p className="text-[15px]">Pick your link name first.</p>
+          <p className="text-[15px]">Pick your username first.</p>
           <div className="mt-3 flex gap-2">
             <input
               value={wanted}
@@ -108,14 +108,14 @@ export default function ReferralsPage() {
               maxLength={20}
               autoCapitalize="none"
               autoCorrect="off"
-              aria-label="Link name"
+              aria-label="Username"
               className="field"
             />
             <button onClick={claimName} disabled={claiming || wanted.trim().length < 3} className="btn-primary shrink-0 px-5">
               {claiming ? <span className="dots">Saving</span> : 'Claim'}
             </button>
           </div>
-          <p className="mt-2 text-xs text-mute">3-20 letters, numbers or underscore. You can also sign in with it. Cannot be changed.</p>
+          <p className="mt-2 text-xs text-mute">3-20 letters, numbers or underscore. You sign in with it too. Cannot be changed.</p>
         </section>
       ) : (
         <section className="mt-7">
@@ -169,7 +169,7 @@ export default function ReferralsPage() {
         ) : (
           <ul role="list" className="mt-4 flex flex-col gap-2">
             {rows.map(r => (
-              <li key={r.id} className="flex items-center justify-between gap-3 rounded-sm border-l-2 border-edge bg-base-panel px-4 py-3">
+              <li key={r.id} className="flex items-center justify-between gap-3 rounded-lg bg-base-panel px-4 py-3">
                 <span className="min-w-0">
                   <span className="block truncate font-semibold">{r.referred?.full_name ?? 'New member'}</span>
                   <span className="block text-xs text-mute">Joined {shortDate(r.created_at)}</span>

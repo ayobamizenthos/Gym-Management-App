@@ -8,6 +8,8 @@ interface Props {
   body?: string
   /** Renders a required text field and passes its value to onConfirm. */
   ask?: string
+  /** When set, the confirm button only arms once the field matches this exactly. */
+  requireText?: string
   confirmLabel: string
   tone?: 'normal' | 'danger'
   onConfirm: (reply: string) => void | Promise<void>
@@ -19,7 +21,7 @@ interface Props {
  * browsers, so every destructive action goes through this instead. Focus is
  * trapped while it is open and returned to whatever opened it on close.
  */
-export function Dialog({ title, body, ask, confirmLabel, tone = 'normal', onConfirm, onClose }: Props) {
+export function Dialog({ title, body, ask, requireText, confirmLabel, tone = 'normal', onConfirm, onClose }: Props) {
   const panel = useRef<HTMLDivElement>(null)
   const opener = useRef<Element | null>(null)
   const [reply, setReply] = useState('')
@@ -60,7 +62,10 @@ export function Dialog({ title, body, ask, confirmLabel, tone = 'normal', onConf
     }
   }, [onClose])
 
+  const armed = ask === undefined || (requireText ? reply.trim().toUpperCase() === requireText.toUpperCase() : reply.trim() !== '')
+
   const run = async () => {
+    if (!armed) return
     setBusy(true)
     await onConfirm(reply.trim())
     setBusy(false)
@@ -89,7 +94,7 @@ export function Dialog({ title, body, ask, confirmLabel, tone = 'normal', onConf
             <input
               value={reply}
               onChange={e => setReply(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && reply.trim() && void run()}
+              onKeyDown={e => e.key === 'Enter' && armed && void run()}
               className="field mt-1.5"
             />
           </label>
@@ -99,7 +104,7 @@ export function Dialog({ title, body, ask, confirmLabel, tone = 'normal', onConf
           <button onClick={onClose} className="btn-quiet w-full">Cancel</button>
           <button
             onClick={() => void run()}
-            disabled={busy || (ask !== undefined && reply.trim() === '')}
+            disabled={busy || !armed}
             className={cn('w-full', tone === 'danger' ? 'btn bg-out text-chalk hover:brightness-110' : 'btn-primary')}
           >
             {busy ? <span className="dots">Processing</span> : confirmLabel}

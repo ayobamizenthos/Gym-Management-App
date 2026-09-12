@@ -2,14 +2,18 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Activity, Users, Banknote, LogOut } from 'lucide-react'
+import { Activity, Users, UserPlus, Bell, LayoutGrid, Banknote, LogOut } from 'lucide-react'
 import { useAuth } from '@/stores/auth'
+import { BottomNav } from '@/components/BottomNav'
+import { AlertBell } from '@/components/AlertBell'
 import { cn } from '@/lib/cn'
 
-const TABS = [
+const RAIL = [
   { href: '/desk', label: 'Live', icon: Activity },
   { href: '/desk/members', label: 'Members', icon: Users },
   { href: '/desk/payments', label: 'Payments', icon: Banknote },
+  { href: '/desk/alerts', label: 'Alerts', icon: Bell },
+  { href: '/desk/more', label: 'More', icon: LayoutGrid },
 ]
 
 export function DeskChrome({ children }: { children: React.ReactNode }) {
@@ -18,14 +22,13 @@ export function DeskChrome({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-dvh md:grid md:grid-cols-[210px_1fr]">
-      {/* Desktop rail */}
       <aside className="hidden border-r border-edge md:flex md:flex-col">
         <div className="flex h-16 items-center px-5 font-display text-xl uppercase tracking-tightest">
           Zenthos<span className="text-live">Gym</span>
         </div>
         <nav aria-label="Front desk" className="flex flex-1 flex-col gap-1 p-3">
-          {TABS.map(t => {
-            const active = path === t.href
+          {RAIL.map(t => {
+            const active = path === t.href || path.startsWith(t.href + '/')
             return (
               <Link key={t.href} href={t.href} aria-current={active ? 'page' : undefined}
                 className={cn('flex items-center gap-3 rounded-sm px-3 py-2.5 text-sm font-semibold uppercase tracking-wide transition-colors',
@@ -45,30 +48,29 @@ export function DeskChrome({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex min-h-dvh flex-col">
-        {/* Mobile bar */}
         <header className="flex h-14 items-center justify-between border-b border-edge px-4 md:hidden">
           <span className="font-display text-lg uppercase tracking-tightest">
             Zenthos<span className="text-live">Gym</span>
           </span>
-          <button onClick={signOut} aria-label="Sign out" className="-mr-2.5 grid h-11 w-11 place-items-center text-mute transition-colors hover:text-out">
-            <LogOut size={18} aria-hidden />
-          </button>
+          <AlertBell href="/desk/alerts" />
         </header>
 
         <main className="pad-nav flex-1 px-4 pt-5 md:px-8 md:pb-8">{children}</main>
 
-        <nav aria-label="Front desk" className="safe-bottom fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-edge bg-base md:hidden">
-          {TABS.map(t => {
-            const active = path === t.href
-            return (
-              <Link key={t.href} href={t.href} aria-current={active ? 'page' : undefined}
-                className={cn('flex flex-col items-center gap-1 py-3 text-[11px] font-semibold uppercase tracking-wide transition-colors',
-                  active ? 'text-live' : 'text-mute hover:text-chalk')}>
-                <t.icon size={19} aria-hidden />{t.label}
-              </Link>
-            )
-          })}
-        </nav>
+        <div className="md:hidden">
+          <BottomNav
+            label="Front desk"
+            left={[
+              { href: '/desk', label: 'Live', icon: Activity },
+              { href: '/desk/members', label: 'Members', icon: Users, section: '/desk/members' },
+            ]}
+            action={{ href: '/desk/members/new', label: 'Register', icon: UserPlus }}
+            right={[
+              { href: '/desk/alerts', label: 'Alerts', icon: Bell, badge: true },
+              { href: '/desk/more', label: 'More', icon: LayoutGrid },
+            ]}
+          />
+        </div>
       </div>
     </div>
   )

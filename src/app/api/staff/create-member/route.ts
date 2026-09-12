@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Name and phone are required' }, { status: 400 })
   }
   if (username && !/^[a-z0-9_]{3,20}$/.test(username)) {
-    return NextResponse.json({ error: 'Invite name must be 3-20 letters, numbers or underscore' }, { status: 400 })
+    return NextResponse.json({ error: 'Username must be 3-20 letters, numbers or underscore' }, { status: 400 })
   }
 
   const admin = serviceClient()

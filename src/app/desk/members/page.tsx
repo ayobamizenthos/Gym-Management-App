@@ -110,11 +110,7 @@ export default function DeskMembers() {
           return (
             <li key={m.id}>
               <Link href={'/desk/members/' + m.id}
-                className={cn('flex items-center justify-between gap-4 border-l-2 bg-base-panel px-4 py-3.5 transition-colors hover:bg-base-raised',
-                  state === 'ok' && 'border-live',
-                  state === 'due' && 'border-due',
-                  state === 'expired' && 'border-out',
-                  state === 'none' && 'border-edge')}>
+                className="flex items-center justify-between gap-4 rounded-lg bg-base-panel px-4 py-3.5 transition-colors hover:bg-base-raised">
                 <span className="min-w-0">
                   <span className="block truncate font-semibold">{m.full_name ?? 'Member'}</span>
                   <span className="block truncate text-sm text-mute">

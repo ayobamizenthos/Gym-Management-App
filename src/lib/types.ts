@@ -18,6 +18,7 @@ export interface Profile {
   date_of_birth: string | null
   emergency_contact: string | null
   registration_paid: boolean
+  notifications_enabled: boolean
   expires_at: string | null
   created_at: string
 }

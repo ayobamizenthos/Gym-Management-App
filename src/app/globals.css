@@ -71,7 +71,8 @@
 @media print {
   body { background: #fff !important; }
   aside, nav, header, footer, .no-print { display: none !important; }
-  * { color: #000 !important; }
+  /* the sheet paints its own colours - do not flatten them */
+  .print-sheet, .print-sheet * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   main { padding: 0 !important; }
   .print-sheet {
     box-shadow: none !important;

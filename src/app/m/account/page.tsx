@@ -20,7 +20,7 @@ export default function AccountPage() {
   const push = useToasts(s => s.push)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const [form, setForm] = useState({ full_name: '', phone: '', address: '', emergency_contact: '' })
+  const [form, setForm] = useState({ phone: '', address: '', emergency_contact: '' })
   const [dirty, setDirty] = useState(false)
   const [busy, setBusy] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -30,7 +30,6 @@ export default function AccountPage() {
   useEffect(() => {
     if (!profile) return
     setForm({
-      full_name: profile.full_name ?? '',
       phone: profile.phone ?? '',
       address: profile.address ?? '',
       emergency_contact: profile.emergency_contact ?? '',
@@ -153,11 +152,32 @@ export default function AccountPage() {
 
       <section className="mt-8">
         <h2 className="text-xl">Your details</h2>
-        <div className="mt-4 flex flex-col gap-4">
-          <label className="block">
-            <span className="text-sm font-medium text-mute">Full name</span>
-            <input value={form.full_name} onChange={set('full_name')} className="field mt-1.5" />
-          </label>
+
+        <dl className="mt-4 divide-y divide-edge-soft rounded-lg bg-base-panel px-4">
+          <div className="flex items-baseline justify-between gap-4 py-3">
+            <dt className="label shrink-0">Name</dt>
+            <dd className="truncate text-right text-[15px]">{profile.full_name ?? '--'}</dd>
+          </div>
+          <div className="flex items-baseline justify-between gap-4 py-3">
+            <dt className="label shrink-0">Member code</dt>
+            <dd className="truncate text-right font-mono text-[15px]">{profile.member_code ?? '--'}</dd>
+          </div>
+          <div className="flex items-baseline justify-between gap-4 py-3">
+            <dt className="label shrink-0">Invite name</dt>
+            <dd className="truncate text-right text-[15px]">
+              {profile.username ? (
+                profile.username
+              ) : (
+                <Link href="/m/referrals" className="text-live underline-offset-4 hover:underline">Pick one</Link>
+              )}
+            </dd>
+          </div>
+        </dl>
+        <p className="mt-2 text-sm text-mute">
+          Your invite name also signs you in. Ask the front desk to correct your name.
+        </p>
+
+        <div className="mt-5 flex flex-col gap-4">
           <label className="block">
             <span className="text-sm font-medium text-mute">Phone</span>
             <input inputMode="tel" value={form.phone} onChange={set('phone')} className="field mt-1.5" />

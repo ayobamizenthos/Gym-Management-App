@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, Upload, CreditCard, Landmark } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -64,7 +64,6 @@ export default function RenewPage() {
   const [method, setMethod] = useState<Method>('card')
   const [proof, setProof] = useState<File | null>(null)
   const [busy, setBusy] = useState(false)
-  const [barHeight, setBarHeight] = useState(0)
 
   const { data: plans, loading } = useCached<Plan[]>('plans', async () => {
     const { data } = await supabase.from('plans').select('*').eq('is_active', true).order('sort_order')
@@ -82,18 +81,6 @@ export default function RenewPage() {
     script.src = 'https://js.paystack.co/v1/inline.js'
     script.async = true
     document.body.appendChild(script)
-  }, [])
-
-  // The bar grows when the joining fee line appears, so its height is measured
-  // rather than guessed - the pay options must never sit underneath it.
-  const measureBar = useCallback((element: HTMLDivElement | null) => {
-    if (!element) {
-      setBarHeight(0)
-      return
-    }
-    setBarHeight(element.offsetHeight)
-    const observer = new ResizeObserver(() => setBarHeight(element.offsetHeight))
-    observer.observe(element)
   }, [])
 
   const memberships = (plans ?? []).filter(p => !p.is_addon)
@@ -214,7 +201,7 @@ export default function RenewPage() {
   }
 
   return (
-    <div className="animate-rise" style={{ paddingBottom: barHeight + 28 }}>
+    <div className="animate-rise">
       <h1 className="text-3xl">Renew</h1>
 
       <fieldset className="mt-6">
@@ -289,8 +276,7 @@ export default function RenewPage() {
 
       {chosen && (
         <div
-          ref={measureBar}
-          className="fixed inset-x-0 z-30 mx-auto max-w-2xl border-t border-edge bg-base px-5 pb-4 pt-3"
+          className="sticky z-30 -mx-5 mt-7 border-t border-edge bg-base px-5 pb-4 pt-3"
           style={{ bottom: 'calc(68px + env(safe-area-inset-bottom))' }}
         >
           <div className="flex items-baseline justify-between">

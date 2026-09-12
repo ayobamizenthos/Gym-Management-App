@@ -64,6 +64,31 @@ const attack = (wasBlocked, description) => (wasBlocked ? blocked.push(descripti
     truth = await serviceJson('/rest/v1/profiles?id=eq.' + uid + '&select=registration_paid')
     attack(truth[0].registration_paid === false, 'waiving your own registration fee')
 
+    // ---- identity is staff-maintained; contact details stay the member's ----
+    await asMember('/rest/v1/profiles?id=eq.' + uid, { method: 'PATCH', body: JSON.stringify({ full_name: 'Somebody Else' }) })
+    truth = await serviceJson('/rest/v1/profiles?id=eq.' + uid + '&select=full_name')
+    attack(truth[0].full_name === 'Attacker', 'renaming yourself to match another member')
+
+    await asMember('/rest/v1/profiles?id=eq.' + uid, { method: 'PATCH', body: JSON.stringify({ date_of_birth: '1900-01-01' }) })
+    truth = await serviceJson('/rest/v1/profiles?id=eq.' + uid + '&select=date_of_birth')
+    attack(truth[0].date_of_birth === null, 'rewriting your own date of birth')
+
+    await asMember('/rest/v1/profiles?id=eq.' + uid, { method: 'PATCH', body: JSON.stringify({ username: 'stolenhandle' }) })
+    truth = await serviceJson('/rest/v1/profiles?id=eq.' + uid + '&select=username')
+    attack(truth[0].username === null, 'claiming an invite name by direct write')
+
+    // the legitimate half has to keep working, or the app is broken
+    await asMember('/rest/v1/profiles?id=eq.' + uid, {
+      method: 'PATCH',
+      body: JSON.stringify({ phone: '08030000001', address: '12 Allen Avenue', emergency_contact: 'Sister 08030000002' }),
+    })
+    truth = await serviceJson('/rest/v1/profiles?id=eq.' + uid + '&select=phone,address,emergency_contact')
+    if (truth[0].phone === '08030000001' && truth[0].address === '12 Allen Avenue' && truth[0].emergency_contact === 'Sister 08030000002') {
+      blocked.push('a member can still keep their own contact details current')
+    } else {
+      problems.push('LEGIT: a member cannot update their own contact details')
+    }
+
     const everyone = await asMemberJson('/rest/v1/profiles?select=id,full_name,phone')
     attack(Array.isArray(everyone) && everyone.length <= 1, 'harvesting the member database')
 

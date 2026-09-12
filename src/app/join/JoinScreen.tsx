@@ -6,11 +6,13 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { unlockAudio } from '@/lib/sounds'
 import { PasswordField } from '@/components/PasswordField'
+import { useHydrated } from '@/hooks/useHydrated'
 
 export default function JoinScreen() {
   const params = useSearchParams()
   const router = useRouter()
   const referral = (params.get('ref') ?? '').trim().toLowerCase()
+  const hydrated = useHydrated()
 
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
@@ -118,7 +120,7 @@ export default function JoinScreen() {
           </p>
         )}
 
-        <button type="submit" disabled={busy} className="btn-primary mt-2 w-full">
+        <button type="submit" disabled={busy || !hydrated} className="btn-primary mt-2 w-full">
           {busy ? <span className="dots">Creating account</span> : 'Create account'}
         </button>
       </form>

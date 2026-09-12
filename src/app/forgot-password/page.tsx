@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { useHydrated } from '@/hooks/useHydrated'
 
 export default function ForgotPasswordPage() {
+  const hydrated = useHydrated()
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -39,7 +41,7 @@ export default function ForgotPasswordPage() {
             <input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="field mt-2" />
           </label>
           {error && <p className="mt-4 border-l-2 border-out pl-3 text-sm text-out">{error}</p>}
-          <button type="submit" disabled={busy} className="btn-primary mt-6 w-full">
+          <button type="submit" disabled={busy || !hydrated} className="btn-primary mt-6 w-full">
             {busy ? <span className="dots">Sending</span> : 'Send reset link'}
           </button>
         </form>

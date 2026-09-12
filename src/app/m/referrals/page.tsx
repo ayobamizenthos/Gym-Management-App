@@ -115,7 +115,7 @@ export default function ReferralsPage() {
               {claiming ? <span className="dots">Saving</span> : 'Claim'}
             </button>
           </div>
-          <p className="mt-2 text-xs text-mute">3-20 letters, numbers or underscore. Cannot be changed.</p>
+          <p className="mt-2 text-xs text-mute">3-20 letters, numbers or underscore. You can also sign in with it. Cannot be changed.</p>
         </section>
       ) : (
         <section className="mt-7">

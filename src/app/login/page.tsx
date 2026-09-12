@@ -8,11 +8,13 @@ import { supabase } from '@/lib/supabase'
 import { homeFor } from '@/lib/routes'
 import { unlockAudio } from '@/lib/sounds'
 import { PasswordField } from '@/components/PasswordField'
+import { useHydrated } from '@/hooks/useHydrated'
 import type { Role } from '@/lib/types'
 
 export default function LoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState('')
+  const hydrated = useHydrated()
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -23,15 +25,31 @@ export default function LoginPage() {
     setError(null)
     unlockAudio()
 
-    const { data, error: authError } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(),
-      password,
+    // An invite name cannot be turned into an email in the browser without
+    // exposing the member list, so the grant happens on the server and the
+    // session it hands back is installed here.
+    const res = await fetch('/api/signin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier, password }),
     })
-    if (authError) {
-      setError(authError.message)
+    const payload = await res.json()
+    if (!res.ok) {
+      setError(payload.error)
       setBusy(false)
       return
     }
+
+    const { data, error: sessionError } = await supabase.auth.setSession({
+      access_token: payload.access_token,
+      refresh_token: payload.refresh_token,
+    })
+    if (sessionError || !data.user) {
+      setError('Could not start your session. Try again.')
+      setBusy(false)
+      return
+    }
+
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -69,13 +87,17 @@ export default function LoginPage() {
             <h2 className="text-4xl">Sign in</h2>
 
             <label className="mt-8 block">
-              <span className="label">Email</span>
+              <span className="label">Email or invite name</span>
               <input
-                type="email"
+                type="text"
                 required
-                autoComplete="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
+                autoComplete="username"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                inputMode="email"
+                value={identifier}
+                onChange={e => setIdentifier(e.target.value)}
                 className="field mt-2"
               />
             </label>
@@ -90,7 +112,7 @@ export default function LoginPage() {
               </p>
             )}
 
-            <button type="submit" disabled={busy} className="btn-primary mt-7 w-full">
+            <button type="submit" disabled={busy || !hydrated} className="btn-primary mt-7 w-full">
               {busy ? <span className="dots">Signing in</span> : 'Sign in'}
             </button>
 

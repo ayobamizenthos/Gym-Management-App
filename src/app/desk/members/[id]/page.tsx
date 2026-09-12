@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, KeyRound, Copy, Check } from 'lucide-react'
+import { ArrowLeft, KeyRound, Copy, Check, Pencil } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToasts } from '@/stores/toast'
 import { playPaid } from '@/lib/sounds'
@@ -37,6 +37,8 @@ export default function MemberDetail() {
   const [planId, setPlanId] = useState('')
   const [method, setMethod] = useState<'cash' | 'transfer'>('cash')
   const [busy, setBusy] = useState(false)
+  const [edits, setEdits] = useState({ full_name: '', phone: '', address: '', emergency_contact: '', date_of_birth: '' })
+  const [editing, setEditing] = useState(false)
   const [resetting, setResetting] = useState(false)
   const [issued, setIssued] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -64,6 +66,17 @@ export default function MemberDetail() {
   useEffect(() => {
     void load()
   }, [load])
+
+  useEffect(() => {
+    if (!member) return
+    setEdits({
+      full_name: member.full_name ?? '',
+      phone: member.phone ?? '',
+      address: member.address ?? '',
+      emergency_contact: member.emergency_contact ?? '',
+      date_of_birth: member.date_of_birth ?? '',
+    })
+  }, [member])
 
   useEffect(() => {
     void supabase
@@ -99,6 +112,27 @@ export default function MemberDetail() {
       await load()
     }
     setBusy(false)
+  }
+
+  const saveDetails = async () => {
+    setEditing(true)
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        full_name: edits.full_name.trim() || null,
+        phone: edits.phone.trim() || null,
+        address: edits.address.trim() || null,
+        emergency_contact: edits.emergency_contact.trim() || null,
+        date_of_birth: edits.date_of_birth || null,
+      })
+      .eq('id', id)
+    setEditing(false)
+    if (error) {
+      push({ tone: 'bad', title: 'Not saved', message: error.message })
+      return
+    }
+    push({ tone: 'good', title: 'Details updated' })
+    await load()
   }
 
   const resetPassword = async () => {
@@ -207,9 +241,12 @@ export default function MemberDetail() {
         <Accordion title="Details">
           <dl className="divide-y divide-edge-soft">
             {[
-              ['Email', member.email],
+              ['Member code', member.member_code],
+              ['Invite name', member.username],
+              ['Email', isReachableEmail(member.email) ? member.email : 'None on file'],
               ['Phone', member.phone],
               ['Address', member.address],
+              ['Date of birth', member.date_of_birth ? shortDate(member.date_of_birth) : null],
               ['Emergency contact', member.emergency_contact],
               ['Joined', shortDate(member.created_at)],
               ['Joining fee', member.registration_paid ? 'Paid' : 'Not paid'],
@@ -220,6 +257,38 @@ export default function MemberDetail() {
               </div>
             ))}
           </dl>
+        </Accordion>
+
+        <Accordion title="Correct details">
+          <p className="mb-4 text-[15px] text-chalk-dim">
+            Members keep their own phone, address and emergency contact current. The name and date of
+            birth are yours to correct, because the desk reads them off the check-in screen.
+          </p>
+          <div className="flex flex-col gap-3.5">
+            <label className="block">
+              <span className="label">Full name</span>
+              <input value={edits.full_name} onChange={e => setEdits({ ...edits, full_name: e.target.value })} className="field mt-1.5" />
+            </label>
+            <label className="block">
+              <span className="label">Date of birth</span>
+              <input type="date" value={edits.date_of_birth} onChange={e => setEdits({ ...edits, date_of_birth: e.target.value })} className="field mt-1.5" />
+            </label>
+            <label className="block">
+              <span className="label">Phone</span>
+              <input inputMode="tel" value={edits.phone} onChange={e => setEdits({ ...edits, phone: e.target.value })} className="field mt-1.5" />
+            </label>
+            <label className="block">
+              <span className="label">Address</span>
+              <input value={edits.address} onChange={e => setEdits({ ...edits, address: e.target.value })} className="field mt-1.5" />
+            </label>
+            <label className="block">
+              <span className="label">Emergency contact</span>
+              <input value={edits.emergency_contact} onChange={e => setEdits({ ...edits, emergency_contact: e.target.value })} className="field mt-1.5" />
+            </label>
+          </div>
+          <button onClick={saveDetails} disabled={editing} className="btn-primary mt-5 w-full">
+            {editing ? <span className="dots">Saving</span> : <><Pencil size={16} aria-hidden /> Save details</>}
+          </button>
         </Accordion>
 
         <Accordion title="Sign-in help">
@@ -245,6 +314,13 @@ export default function MemberDetail() {
                 {isReachableEmail(member.email)
                   ? 'They can reset it themselves by email, or you can hand them a new one now.'
                   : 'This member has no email on file, so a new password has to come from the desk.'}
+              </p>
+              <p className="mt-3 text-sm text-mute">
+                They sign in with{' '}
+                <span className="text-chalk">
+                  {member.username ?? (isReachableEmail(member.email) ? member.email : 'no name set yet')}
+                </span>
+                {member.username && isReachableEmail(member.email) ? ' or their email.' : '.'}
               </p>
               <button onClick={() => setResetting(true)} className="btn-quiet mt-4 w-full">
                 <KeyRound size={16} aria-hidden /> Issue a new password

@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { PasswordField } from '@/components/PasswordField'
+import { useHydrated } from '@/hooks/useHydrated'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
+  const hydrated = useHydrated()
   const [ready, setReady] = useState(false)
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -46,7 +48,7 @@ export default function ResetPasswordPage() {
         <form onSubmit={submit} className="mt-6">
           <PasswordField label="New password" value={password} onChange={setPassword} autoComplete="new-password" minLength={8} />
           {error && <p className="mt-4 border-l-2 border-out pl-3 text-sm text-out">{error}</p>}
-          <button type="submit" disabled={busy} className="btn-primary mt-6 w-full">
+          <button type="submit" disabled={busy || !hydrated} className="btn-primary mt-6 w-full">
             {busy ? <span className="dots">Saving</span> : 'Save password'}
           </button>
         </form>

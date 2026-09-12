@@ -19,12 +19,17 @@ const passed = []
 const problems = []
 const expect = (ok, description) => (ok ? passed.push(description) : problems.push(description))
 
-async function makeUser(role) {
+async function makeUser(role, username) {
   const email = 'probe_' + role + '_' + Date.now() + Math.random().toString(36).slice(2, 6) + '@zenthos.test'
   const password = 'Probe' + Math.random().toString(36).slice(2, 10) + '#9'
   const created = await (await service('/auth/v1/admin/users', {
     method: 'POST',
-    body: JSON.stringify({ email, password, email_confirm: true, user_metadata: { full_name: 'Probe ' + role } }),
+    body: JSON.stringify({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { full_name: 'Probe ' + role, ...(username ? { username } : {}) },
+    }),
   })).json()
   if (role !== 'member') {
     await service('/rest/v1/profiles?id=eq.' + created.id, { method: 'PATCH', body: JSON.stringify({ role }) })
@@ -34,7 +39,7 @@ async function makeUser(role) {
     headers: { apikey: PUBLISHABLE, 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   })).json()
-  return { id: created.id, email, password, token: session.access_token }
+  return { id: created.id, email, password, username, token: session.access_token }
 }
 
 const call = (path, token, body) =>
@@ -56,6 +61,7 @@ const call = (path, token, body) =>
   const desk = await makeUser('receptionist')
   const boss = await makeUser('admin')
   const victim = await makeUser('member')
+  const named = await makeUser('member', 'probe' + Math.random().toString(36).slice(2, 8))
 
   try {
     // ---- no token at all ----
@@ -100,6 +106,54 @@ const call = (path, token, body) =>
     })
     expect(newLogin.ok, 'the issued password signs the member in')
 
+    // ---- signing in by invite name must work without exposing the roster ----
+    const byEmail = await call('/api/signin', null, { identifier: named.email, password: named.password })
+    expect(byEmail.ok, 'an email signs in')
+
+    const byName = await call('/api/signin', null, { identifier: named.username, password: named.password })
+    const namePayload = await byName.json()
+    expect(byName.ok && typeof namePayload.access_token === 'string', 'an invite name signs in')
+
+    const upper = await call('/api/signin', null, { identifier: named.username.toUpperCase(), password: named.password })
+    expect(upper.ok, 'an invite name is not case sensitive')
+
+    const wrongPassword = await call('/api/signin', null, { identifier: named.username, password: 'not-the-password' })
+    const wrongPayload = await wrongPassword.json()
+    expect(wrongPassword.status === 400, 'a wrong password is refused')
+
+    const unknownName = await call('/api/signin', null, { identifier: 'nobodyhere' + Date.now().toString(36).slice(-5), password: 'not-the-password' })
+    const unknownPayload = await unknownName.json()
+    expect(unknownPayload.error === wrongPayload.error,
+      'an unknown invite name is indistinguishable from a wrong password')
+
+    const scrape = JSON.stringify(unknownPayload) + JSON.stringify(wrongPayload) + JSON.stringify(namePayload)
+    expect(!scrape.includes('@zenthos.test'), 'no response leaks a member email address')
+
+    expect((await call('/api/signin', null, { identifier: named.username })).status === 400, 'a missing password is refused')
+
+
+    // a receptionist may reach member rows, and nothing else
+    const asDesk = (id, body) => fetch(URL + "/rest/v1/profiles?id=eq." + id, {
+      method: "PATCH",
+      headers: { apikey: PUBLISHABLE, Authorization: "Bearer " + desk.token, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    })
+    const readName = async id => (await (await service("/rest/v1/profiles?id=eq." + id + "&select=full_name,role")).json())[0]
+
+    await asDesk(boss.id, { full_name: "Hijacked" })
+    expect((await readName(boss.id)).full_name !== "Hijacked", "a receptionist cannot edit an admin profile")
+
+    await asDesk(desk.id, { role: "admin" })
+    expect((await readName(desk.id)).role === "receptionist", "a receptionist cannot promote themselves")
+    // ---- the staff half of the identity rule has to work ----
+    await fetch(URL + "/rest/v1/profiles?id=eq." + victim.id, {
+      method: "PATCH",
+      headers: { apikey: PUBLISHABLE, Authorization: "Bearer " + desk.token, "Content-Type": "application/json" },
+      body: JSON.stringify({ full_name: "Corrected Spelling" }),
+    })
+    const renamed = await (await service("/rest/v1/profiles?id=eq." + victim.id + "&select=full_name")).json()
+    expect(renamed[0].full_name === "Corrected Spelling", "a receptionist can correct a member name")
+
     // ---- a forged Paystack reference must never confirm anything ----
     const forged = await call('/api/paystack/verify', member.token, {
       reference: 'zg_forged_' + Date.now(),
@@ -125,7 +179,7 @@ const call = (path, token, body) =>
       console.log('\nNo route vulnerabilities found.')
     }
   } finally {
-    for (const account of [member, desk, boss, victim]) {
+    for (const account of [member, desk, boss, victim, named]) {
       await service('/auth/v1/admin/users/' + account.id, { method: 'DELETE' })
     }
   }

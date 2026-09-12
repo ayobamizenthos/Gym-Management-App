@@ -1,70 +1,78 @@
 require('dotenv').config({ path: '.env.local' })
 const { chromium } = require('playwright')
-const BASE = process.env.APP_URL || 'https://zenthosgym.netlify.app'
+const { contextFor } = require('./session.cjs')
+
+process.env.APP_URL = process.env.APP_URL || 'https://zenthosgym.netlify.app'
+const BASE = process.env.APP_URL
+
 const results = []
 const check = (ok, what) => { results.push((ok ? 'ok   ' : 'FAIL ') + what); if (!ok) process.exitCode = 1 }
 
-async function signIn(page, email) {
-  await page.goto(BASE + '/login', { waitUntil: 'domcontentloaded' })
-  await page.waitForSelector('button[type="submit"]:not([disabled])', { timeout: 45000 })
-  await page.fill('form input:not([type="password"])', email)
-  await page.fill('input[type="password"]', process.env.TEST_PASSWORD)
-  await Promise.all([page.waitForURL(u => !u.pathname.startsWith('/login'), { timeout: 45000 }), page.click('button[type="submit"]')])
-}
+const ROLES = [
+  ['member', process.env.TEST_MEMBER, '/m', ['Home', 'Renew', 'Payments', 'Account']],
+  ['desk', process.env.TEST_DESK, '/desk', ['Live', 'Members', 'Payments', 'More']],
+  ['admin', process.env.TEST_ADMIN, '/admin', ['Overview', 'Members', 'Plans', 'More']],
+]
 
 ;(async () => {
   const browser = await chromium.launch()
 
-  // --- tab switching must not build a history trail to walk back through
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
-  const page = await ctx.newPage()
-  await signIn(page, process.env.TEST_MEMBER)
-  await page.waitForTimeout(1200)
-  const startLen = await page.evaluate(() => window.history.length)
-  for (const label of ['Payments', 'Alerts', 'Account', 'Home']) {
-    await page.click('nav.rounded-full a:has-text("' + label + '")')
-    await page.waitForTimeout(900)
+  for (const [role, email, home, labels] of ROLES) {
+    const { context, page } = await contextFor(browser, role, email)
+    const errors = []
+    page.on('pageerror', e => errors.push(e.message))
+
+    await page.goto(BASE + home, { waitUntil: 'domcontentloaded' })
+    await page.waitForTimeout(1200)
+
+    // --- tab switching must not build a history trail to walk back through
+    const before = await page.evaluate(() => window.history.length)
+    for (const label of labels) {
+      await page.click('nav.rounded-full a:has-text("' + label + '")')
+      await page.waitForTimeout(900)
+      const heading = await page.locator('h1').first().innerText().catch(() => '')
+      check(heading.trim().length > 0, role + ': ' + label + ' opens a real page (' + heading.slice(0, 22) + ')')
+    }
+    const after = await page.evaluate(() => window.history.length)
+    check(after === before, role + ': four tab switches add no history (' + before + ' -> ' + after + ')')
+
+    // --- the raised action
+    await page.locator('nav.rounded-full a[aria-label]').first().click()
+    await page.waitForTimeout(1400)
+    check(!page.url().includes('/login'), role + ': the centre action opens without bouncing to login')
+
+    // --- the bell opens the inbox and closes it again
+    await page.goto(BASE + home, { waitUntil: 'domcontentloaded' })
+    await page.waitForTimeout(1000)
+    const bell = page.locator('button[aria-expanded]').first()
+    if (await bell.count()) {
+      await bell.click()
+      await page.waitForTimeout(1600)
+      check(page.url().includes('/alerts'), role + ': the bell opens the inbox')
+      await page.locator('button[aria-expanded]').first().click()
+      await page.waitForTimeout(1600)
+      check(!page.url().includes('/alerts'), role + ': tapping the bell again closes it')
+    } else {
+      check(false, role + ': has a bell')
+    }
+
+    check(errors.length === 0, role + ': no runtime errors' + (errors.length ? ' -> ' + errors[0].slice(0, 80) : ''))
+    await context.close()
   }
-  const endLen = await page.evaluate(() => window.history.length)
-  check(endLen === startLen, 'four tab switches add no history entries (' + startLen + ' -> ' + endLen + ')')
-  check(page.url().endsWith('/m'), 'the last tab tapped is the page shown')
 
   // --- a drill-down is one step, and Back returns to where it came from
-  await page.click('nav a:has-text("Account")')
-  await page.waitForTimeout(900)
-  await page.click('a:has-text("Payment history"), a[href="/m/history"]').catch(() => {})
-  await page.waitForTimeout(1000)
+  const { context, page } = await contextFor(browser, 'member', process.env.TEST_MEMBER)
+  await page.goto(BASE + '/m/account', { waitUntil: 'domcontentloaded' })
+  // the page has to be interactive or a Link reloads instead of routing
+  await page.waitForSelector('main a[href="/m/history"]', { timeout: 30000 })
+  await page.waitForTimeout(2500)
+  // the bottom bar links there too, so reach for the one inside the page
+  await page.locator('main a[href="/m/history"]').first().click()
+  await page.waitForURL('**/m/history', { timeout: 30000 })
   await page.goBack()
-  await page.waitForTimeout(1000)
+  await page.waitForTimeout(2000)
   check(page.url().includes('/m/account'), 'Back from a drill-down returns to the tab it started on')
-  await ctx.close()
-
-  // --- every bottom-nav destination must exist for each role
-  for (const [who, email, labels] of [
-    ['member', process.env.TEST_MEMBER, ['Home', 'Payments', 'Alerts', 'Account']],
-    ['desk', process.env.TEST_DESK, ['Live', 'Members', 'Alerts', 'More']],
-    ['admin', process.env.TEST_ADMIN, ['Overview', 'Members', 'Alerts', 'More']],
-  ]) {
-    const c = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
-    const p = await c.newPage()
-    const errors = []
-    p.on('pageerror', e => errors.push(e.message))
-    await signIn(p, email)
-    await p.waitForTimeout(1200)
-    for (const label of labels) {
-      await p.click('nav.rounded-full a:has-text("' + label + '")')
-      await p.waitForTimeout(1000)
-      const heading = await p.locator('h1').first().innerText().catch(() => '')
-      check(heading.trim().length > 0, who + ': ' + label + ' opens a real page (' + heading.slice(0, 22) + ')')
-    }
-    // the raised action
-    const action = await p.locator('nav.rounded-full a[aria-label]').first()
-    await action.click()
-    await p.waitForTimeout(1400)
-    check(!p.url().includes('/login'), who + ': the centre action opens without bouncing to login')
-    check(errors.length === 0, who + ': no runtime errors' + (errors.length ? ' -> ' + errors[0].slice(0, 90) : ''))
-    await c.close()
-  }
+  await context.close()
 
   await browser.close()
   results.forEach(r => console.log(r))

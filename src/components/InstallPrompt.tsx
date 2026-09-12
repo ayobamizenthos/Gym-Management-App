@@ -78,14 +78,14 @@ export function InstallPrompt() {
   }
 
   return (
-    <div className="animate-rise fixed bottom-[calc(74px+env(safe-area-inset-bottom))] left-3 z-50 max-w-[calc(100vw-1.5rem)] md:bottom-6 md:left-6">
-      <div className="flex items-center border border-edge bg-base/95 backdrop-blur-md">
+    <div className="no-print animate-rise fixed bottom-[calc(74px+env(safe-area-inset-bottom))] left-3 z-50 max-w-[calc(100vw-1.5rem)] md:bottom-6 md:left-6">
+      <div className="flex items-center overflow-hidden rounded-full border border-edge bg-base/95 backdrop-blur-md">
         <button
           type="button"
           onClick={collapsed ? () => setCollapsed(false) : undefined}
           aria-label={collapsed ? 'Show install option' : 'Zenthos Gym'}
           className={cn(
-            'grid h-12 w-12 shrink-0 place-items-center font-display text-xl uppercase tracking-tightest text-live',
+            'grid h-12 w-12 shrink-0 place-items-center rounded-full font-display text-xl uppercase tracking-tightest text-live',
             collapsed && 'transition-transform active:scale-95'
           )}
         >
@@ -112,7 +112,7 @@ export function InstallPrompt() {
                 <button
                   type="button"
                   onClick={() => void install()}
-                  className="flex h-9 shrink-0 items-center bg-live px-4 text-[13px] font-bold uppercase text-chalk"
+                  className="flex h-9 shrink-0 items-center rounded-full bg-live px-4 text-[13px] font-bold uppercase text-ink"
                 >
                   Install
                 </button>

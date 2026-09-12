@@ -74,7 +74,7 @@ export function AdminChrome({ children }: { children: React.ReactNode }) {
             ]}
             action={{ href: '/desk/members/new', label: 'Register', icon: UserPlus }}
             right={[
-              { href: '/admin/alerts', label: 'Alerts', icon: Bell, badge: true },
+              { href: '/admin/plans', label: 'Plans', icon: Tags },
               { href: '/admin/more', label: 'More', icon: LayoutGrid },
             ]}
           />

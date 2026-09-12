@@ -66,7 +66,7 @@ export function DeskChrome({ children }: { children: React.ReactNode }) {
             ]}
             action={{ href: '/desk/members/new', label: 'Register', icon: UserPlus }}
             right={[
-              { href: '/desk/alerts', label: 'Alerts', icon: Bell, badge: true },
+              { href: '/desk/payments', label: 'Payments', icon: Banknote },
               { href: '/desk/more', label: 'More', icon: LayoutGrid },
             ]}
           />

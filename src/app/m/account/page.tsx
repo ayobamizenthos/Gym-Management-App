@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Camera, LogOut, ChevronRight } from 'lucide-react'
+import { Camera, LogOut, ChevronRight, LayoutDashboard, Users } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/stores/auth'
 import { useToasts } from '@/stores/toast'
@@ -151,11 +151,35 @@ export default function AccountPage() {
         </Link>
       )}
 
+      {(profile.role === 'admin' || profile.role === 'receptionist') && (
+        <Link
+          href={profile.role === 'admin' ? '/admin' : '/desk'}
+          className="mt-3 flex items-center justify-between rounded-lg border border-live px-4 py-3.5 transition-colors hover:bg-live-tint"
+        >
+          <span className="flex items-center gap-2.5 text-[15px] font-medium">
+            <LayoutDashboard size={18} className="text-live" aria-hidden />
+            Back to {profile.role === 'admin' ? 'admin dashboard' : 'front desk'}
+          </span>
+          <ChevronRight size={18} className="text-live" aria-hidden />
+        </Link>
+      )}
+
       <Link
         href="/m/history"
         className="mt-3 flex items-center justify-between rounded-lg border border-edge px-4 py-3.5 transition-colors hover:bg-base-panel"
       >
         <span className="text-[15px] font-medium">Payment history</span>
+        <ChevronRight size={18} className="text-mute" aria-hidden />
+      </Link>
+
+      <Link
+        href="/m/referrals"
+        className="mt-2 flex items-center justify-between rounded-lg border border-edge px-4 py-3.5 transition-colors hover:bg-base-panel"
+      >
+        <span className="flex items-center gap-2.5 text-[15px] font-medium">
+          <Users size={18} className="text-mute" aria-hidden />
+          Invite &amp; earn
+        </span>
         <ChevronRight size={18} className="text-mute" aria-hidden />
       </Link>
 

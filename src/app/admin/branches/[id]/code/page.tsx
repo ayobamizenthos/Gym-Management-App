@@ -45,28 +45,21 @@ export default function EntranceCode() {
         their membership status instantly. The front desk hears the result.
       </p>
 
-      {/* The printable sheet: white so it survives any printer, and its own greys
-          so the poster keeps a hierarchy instead of printing as one flat block. */}
-      <div className="print-sheet mx-auto mt-7 w-full max-w-[560px] rounded-lg bg-white p-10 text-center print:mt-0">
-        <p className="font-display text-4xl uppercase tracking-tightest text-[#0B0B0C]">
-          Zenthos<span className="text-[#35D07F]">Gym</span>
+      {/* The printable sheet. White so it survives any printer. */}
+      <div className="print-sheet mx-auto mt-7 w-full max-w-[560px] bg-white p-10 text-center text-black print:mt-0">
+        <p className="font-display text-4xl uppercase tracking-tightest">
+          Zenthos<span className="text-chalk">Gym</span>
         </p>
 
-        <div className="mx-auto mt-7 w-full max-w-[380px] rounded-lg border border-[#E4E4E1] p-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={png} alt="Entrance check-in code" className="w-full" />
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={png} alt="Entrance check-in code" className="mx-auto mt-7 w-full max-w-[380px]" />
 
-        <p className="mt-7 font-display text-5xl uppercase leading-[0.9] tracking-tightest text-[#0B0B0C]">
+        <p className="mt-7 font-display text-5xl uppercase leading-[0.9] tracking-tightest">
           Scan before<br />you train
         </p>
-        <p className="mt-4 text-base leading-relaxed text-[#6B6B73]">
+        <p className="mt-4 text-base leading-relaxed">
           Point your phone camera at the code.<br />
           You will see your membership status straight away.
-        </p>
-
-        <p className="mt-8 border-t border-[#E4E4E1] pt-4 text-xs font-semibold uppercase tracking-[0.3em] text-[#9A9AA2]">
-          Members only
         </p>
       </div>
     </div>

@@ -23,9 +23,23 @@
   .rule { @apply border-t border-edge-soft; }
 
   .field {
-    @apply w-full rounded-sm border border-edge bg-base-panel px-4 h-12 text-[15px] text-chalk
-           outline-none transition-colors placeholder:text-mute
-           focus:border-chalk focus:bg-base-raised;
+    @apply w-full rounded-md bg-base-panel px-4 h-12 text-[15px] text-chalk
+           outline-none border-0 transition-colors placeholder:text-mute
+           focus:bg-base-raised;
+  }
+
+  /* Segmented controls: the chosen one is filled, the rest are just words. */
+  .seg {
+    @apply flex h-10 shrink-0 items-center gap-1.5 rounded-full px-4 text-[13px]
+           font-semibold transition-colors;
+  }
+  .seg-on  { @apply seg bg-live text-ink; }
+  .seg-off { @apply seg text-mute hover:text-chalk; }
+
+  /* A row that is its own surface, used wherever a list used to be boxed. */
+  .row {
+    @apply flex items-center gap-3.5 rounded-lg bg-base-panel px-4 py-3.5
+           transition-colors hover:bg-base-raised;
   }
 
   .btn {
@@ -34,9 +48,9 @@
            disabled:opacity-40 disabled:pointer-events-none select-none;
   }
   .btn-primary { @apply btn bg-chalk text-ink hover:bg-white; }
-  .btn-quiet   { @apply btn border border-edge text-chalk hover:border-mute hover:bg-base-panel; }
+  .btn-quiet   { @apply btn bg-base-panel text-chalk hover:bg-base-raised; }
 
-  .panel { @apply rounded-lg border border-edge-soft bg-base-panel; }
+  .panel { @apply rounded-lg bg-base-panel; }
 
   .figure { @apply font-display tabular-nums leading-none; }
 

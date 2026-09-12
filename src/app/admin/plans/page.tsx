@@ -84,10 +84,7 @@ export default function AdminPlans() {
 
   return (
     <div className="max-w-4xl animate-rise">
-      <h1 className="text-4xl lg:text-5xl">Plans &amp; pricing</h1>
-      <p className="mt-2 text-[15px] text-chalk-dim">Edit prices here. Nothing needs a developer.</p>
-
-      <div className="rule mt-6" />
+      <h1 className="text-3xl lg:text-4xl">Plans &amp; pricing</h1>
 
       {!ready ? (
         <div className="mt-5 space-y-2" aria-busy="true" aria-label="Loading plans">

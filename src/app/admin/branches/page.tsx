@@ -80,12 +80,11 @@ export default function AdminBranches() {
 
   return (
     <div className="max-w-3xl animate-rise">
-      <h1 className="text-4xl lg:text-5xl">Branches</h1>
+      <h1 className="text-3xl lg:text-4xl">Branches</h1>
       <p className="mt-2 text-[15px] text-chalk-dim">
         Add as many locations as you run. Memberships are valid at every branch.
       </p>
 
-      <div className="rule mt-6" />
 
       {!ready ? (
         <div className="mt-5 space-y-2" aria-busy="true" aria-label="Loading branches">

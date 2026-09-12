@@ -12,6 +12,7 @@ import { Accordion } from '@/components/Accordion'
 import { Loader } from '@/components/Loader'
 import { Dialog } from '@/components/Dialog'
 import { BackLink } from '@/components/BackLink'
+import { Select } from '@/components/Select'
 import { daysLeft, naira, shortDate, timeOnly } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { isReachableEmail } from '@/lib/members'
@@ -209,14 +210,20 @@ export default function MemberDetail() {
       <div
         className={cn(
           'mt-5 flex items-center justify-between rounded-lg px-4 py-3.5',
-          !member.expires_at ? 'bg-base-panel' : active ? 'bg-live-tint' : 'bg-out-tint'
+          active ? 'bg-live-tint' : member.expires_at && member.pending_days === 0 ? 'bg-out-tint' : 'bg-base-panel'
         )}
       >
         <span className="text-[15px] font-medium">
-          {member.expires_at ? (active ? 'Active' : 'Expired') : 'No plan yet'}
+          {active ? 'Active' : member.pending_days > 0 ? 'Paid, not started' : member.expires_at ? 'Expired' : 'No plan yet'}
         </span>
         <span className={cn('figure text-2xl', !member.expires_at ? 'text-mute' : active ? 'text-live' : 'text-out')}>
-          {member.expires_at ? (active ? left + ' days' : shortDate(member.expires_at)) : '--'}
+          {active
+            ? left + ' days'
+            : member.pending_days > 0
+              ? member.pending_days + ' days ready'
+              : member.expires_at
+                ? shortDate(member.expires_at)
+                : '--'}
         </span>
       </div>
 
@@ -230,32 +237,35 @@ export default function MemberDetail() {
       <div className="mt-8">
         <Accordion title="Record a payment" defaultOpen>
           <p className="mb-4 text-[15px] text-chalk-dim">
-            For money taken here at the desk, in cash or by transfer. Cash is added to their
-            membership immediately; a transfer waits on the Payments screen until it lands.
-            This never changes a payment they have already made.
+            Money taken at the desk. This adds to their membership; it never edits a payment
+            they have already made.
           </p>
           <div className="flex flex-col gap-2.5">
-            <label className="block">
+            <div className="block">
               <span className="label">Plan</span>
-              <select value={planId} onChange={e => setPlanId(e.target.value)} className="field mt-1.5">
-                {plans.map(p => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} — {naira(p.price)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block">
-              <span className="label">Method</span>
-              <select
-                value={method}
-                onChange={e => setMethod(e.target.value as 'cash' | 'transfer')}
-                className="field mt-1.5"
-              >
-                <option value="cash">Cash</option>
-                <option value="transfer">Transfer</option>
-              </select>
-            </label>
+              <div className="mt-1.5">
+                <Select
+                  value={planId}
+                  label="Plan"
+                  onChange={setPlanId}
+                  options={plans.map(p => ({ value: p.id, label: p.name, hint: naira(p.price) }))}
+                />
+              </div>
+            </div>
+            <div className="block">
+              <span className="label">How they paid</span>
+              <div className="mt-1.5">
+                <Select
+                  value={method}
+                  label="How they paid"
+                  onChange={value => setMethod(value as 'cash' | 'transfer')}
+                  options={[
+                    { value: 'cash', label: 'Cash', hint: 'Days added now' },
+                    { value: 'transfer', label: 'Transfer', hint: 'Confirm it on Payments once it lands' },
+                  ]}
+                />
+              </div>
+            </div>
             {chosen && chosen.requires_registration && !member.registration_paid && (
               <p className="text-sm text-due">A joining fee will be added to this payment.</p>
             )}

@@ -43,7 +43,7 @@ export default function HistoryPage() {
 
   return (
     <div className="animate-rise">
-      <h1 className="text-4xl">Payments</h1>
+      <h1 className="text-3xl lg:text-4xl">Payments</h1>
 
       {!ready ? (
         <div className="mt-6 space-y-2" aria-busy="true" aria-label="Loading payments">

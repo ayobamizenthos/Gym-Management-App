@@ -2,10 +2,9 @@
 
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { BellOff, CheckCheck, Trash2 } from 'lucide-react'
+import { BellOff, CheckCheck } from 'lucide-react'
 import { useAlerts } from '@/stores/alerts'
 import { useAuth } from '@/stores/auth'
-import { Dialog } from '@/components/Dialog'
 import { cn } from '@/lib/cn'
 import {
   BUCKET_ORDER,
@@ -22,11 +21,10 @@ const TONE_TEXT = { good: 'text-live', warn: 'text-due', bad: 'text-out', plain:
 const TONE_WASH = { good: 'bg-live-tint', warn: 'bg-due-tint', bad: 'bg-out-tint', plain: 'bg-base-raised' } as const
 
 export function NotificationInbox() {
-  const { items, unread, loading, markRead, clearAll } = useAlerts()
+  const { items, unread, loading, markRead } = useAlerts()
   const { role } = useAuth()
   const router = useRouter()
   const [family, setFamily] = useState<Family | 'all'>('all')
-  const [clearing, setClearing] = useState(false)
 
   const families = useMemo(() => {
     const present = new Set<Family>()
@@ -74,21 +72,13 @@ export function NotificationInbox() {
             {unread > 0 ? unread + (unread === 1 ? ' unread' : ' unread') : 'Nothing unread'}
           </p>
         </div>
-        {items.length > 0 && (
-          <div className="flex gap-2">
-            {unread > 0 && (
-              <button onClick={() => void markRead()} className="btn-quiet h-10 px-3.5 text-sm">
-                <CheckCheck size={16} aria-hidden /> Mark all read
-              </button>
-            )}
-            <button
-              onClick={() => setClearing(true)}
-              aria-label="Clear all notifications"
-              className="grid h-10 w-10 place-items-center rounded-sm border border-edge text-mute transition-colors hover:border-out hover:text-out"
-            >
-              <Trash2 size={16} aria-hidden />
-            </button>
-          </div>
+        {unread > 0 && (
+          <button
+            onClick={() => void markRead()}
+            className="-my-2 flex min-h-[44px] items-center gap-1.5 py-2 text-sm font-semibold text-live underline-offset-4 hover:underline"
+          >
+            <CheckCheck size={16} aria-hidden /> Mark all read
+          </button>
         )}
       </header>
 
@@ -166,16 +156,6 @@ export function NotificationInbox() {
         </div>
       )}
 
-      {clearing && (
-        <Dialog
-          title="Clear all alerts?"
-          body="They are removed from your inbox. Payments and visits keep their own records."
-          confirmLabel="Clear"
-          tone="danger"
-          onConfirm={clearAll}
-          onClose={() => setClearing(false)}
-        />
-      )}
     </div>
   )
 }

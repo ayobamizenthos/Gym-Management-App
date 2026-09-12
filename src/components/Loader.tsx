@@ -3,7 +3,12 @@ import { cn } from '@/lib/cn'
 /** Brand loader. A single sweeping bar - no spinners, no skeleton grids. */
 export function Loader({ full, label }: { full?: boolean; label?: string }) {
   return (
-    <div className={cn('grid place-items-center', full ? 'min-h-dvh' : 'py-20')}>
+    <div
+      className={cn(
+        'grid place-items-center',
+        full ? 'fixed inset-0 z-[80] bg-base' : 'py-20'
+      )}
+    >
       <div className="flex flex-col items-center gap-5">
         <span className="font-display text-3xl uppercase tracking-tightest text-chalk">
           Zenthos<span className="text-live">Gym</span>

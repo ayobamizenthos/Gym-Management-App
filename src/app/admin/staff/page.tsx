@@ -7,6 +7,7 @@ import { useAuth } from '@/stores/auth'
 import { useToasts } from '@/stores/toast'
 import { Accordion } from '@/components/Accordion'
 import { Dialog } from '@/components/Dialog'
+import { Select } from '@/components/Select'
 import type { Branch, Profile, Role } from '@/lib/types'
 
 const ROLE_LABEL: Record<Role, string> = {
@@ -93,16 +94,15 @@ export default function AdminStaff() {
 
   return (
     <div className="max-w-2xl animate-rise">
-      <h1 className="text-4xl lg:text-5xl">Staff</h1>
+      <h1 className="text-3xl lg:text-4xl">Staff</h1>
       <p className="mt-2 text-[15px] text-chalk-dim">
         Front desk sees members and payments. Admin sees everything including revenue.
       </p>
 
-      <div className="rule mt-6" />
 
       <ul role="list" className="mt-5 flex flex-col gap-2">
         {rows.map(r => (
-          <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 rounded-sm bg-base-panel px-4 py-3.5">
+          <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-base-panel px-4 py-3.5">
             <span className="min-w-0">
               <span className="flex items-center gap-2 font-semibold">
                 {r.role === 'admin' && <Shield size={15} className="text-live" aria-hidden />}
@@ -113,28 +113,29 @@ export default function AdminStaff() {
               </span>
               <span className="block truncate text-sm text-mute">{r.email ?? ROLE_LABEL[r.role]}</span>
             </span>
-            <select
+            <Select
               value={r.role}
-              aria-label={'Role for ' + (r.full_name ?? 'staff member')}
-              onChange={e => chooseRole(r, e.target.value as Role)}
-              className="field h-10 w-40"
-            >
-              <option value="receptionist">Receptionist</option>
-              <option value="admin">Admin</option>
-              <option value="member">Member</option>
-            </select>
+              label={'Role for ' + (r.full_name ?? 'staff member')}
+              onChange={value => chooseRole(r, value as Role)}
+              className="w-40 shrink-0 [&_button]:h-10 [&_button]:text-sm"
+              options={[
+                { value: 'receptionist', label: 'Receptionist' },
+                { value: 'admin', label: 'Admin' },
+                { value: 'member', label: 'Member' },
+              ]}
+            />
           </li>
         ))}
       </ul>
 
       <div className="mt-8">
         {created ? (
-          <section className="rounded-lg border border-live p-5">
+          <section className="rounded-lg bg-live-tint p-5">
             <h2 className="text-2xl">Account created</h2>
             <p className="mt-2 text-[15px] text-chalk-dim">
               Share these once. The password is not stored anywhere you can read it again.
             </p>
-            <dl className="mt-4 rounded-sm bg-base-raised px-4 py-3 text-sm">
+            <dl className="mt-4 rounded-md bg-base px-4 py-3 text-sm">
               <div className="flex justify-between gap-4 py-1">
                 <dt className="text-mute">Email</dt>
                 <dd className="truncate font-mono">{created.email}</dd>
@@ -159,14 +160,22 @@ export default function AdminStaff() {
               <input required type="email" placeholder="Email" autoComplete="off" inputMode="email" value={form.email}
                 onChange={e => setForm({ ...form, email: e.target.value })} className="field" />
               <div className="grid gap-3 sm:grid-cols-2">
-                <select value={form.role} aria-label="Role" onChange={e => setForm({ ...form, role: e.target.value })} className="field">
-                  <option value="receptionist">Receptionist</option>
-                  <option value="admin">Admin</option>
-                </select>
-                <select value={form.branch_id} aria-label="Branch" onChange={e => setForm({ ...form, branch_id: e.target.value })} className="field">
-                  <option value="">No branch</option>
-                  {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-                </select>
+                <Select
+                  value={form.role}
+                  label="Role"
+                  onChange={value => setForm({ ...form, role: value })}
+                  options={[
+                    { value: 'receptionist', label: 'Receptionist', hint: 'Members and payments' },
+                    { value: 'admin', label: 'Admin', hint: 'Everything, including revenue' },
+                  ]}
+                />
+                <Select
+                  value={form.branch_id}
+                  label="Branch"
+                  placeholder="No branch"
+                  onChange={value => setForm({ ...form, branch_id: value })}
+                  options={[{ value: '', label: 'No branch' }, ...branches.map(b => ({ value: b.id, label: b.name }))]}
+                />
               </div>
               <button type="submit" disabled={busy} className="btn-primary mt-1">
                 {busy ? <span className="dots">Creating</span> : <><UserPlus size={17} aria-hidden /> Create account</>}

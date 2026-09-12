@@ -92,13 +92,13 @@ export default function ReferralsPage() {
 
   return (
     <div className="animate-rise">
-      <h1 className="text-4xl">Invite &amp; earn</h1>
+      <h1 className="text-3xl lg:text-4xl">Invite &amp; earn</h1>
       <p className="mt-2 text-[15px] text-chalk-dim">
         When {target} people you invite pay for a monthly plan or longer, you get {reward} free days.
       </p>
 
       {!profile?.username ? (
-        <section className="mt-7 rounded-lg border border-edge p-4">
+        <section className="mt-7 rounded-lg bg-base-panel p-4">
           <p className="text-[15px]">Pick your username first.</p>
           <div className="mt-3 flex gap-2">
             <input
@@ -120,12 +120,12 @@ export default function ReferralsPage() {
       ) : (
         <section className="mt-7">
           <p className="text-xs uppercase tracking-[0.2em] text-mute">Your link</p>
-          <div className="mt-2 flex items-stretch rounded-sm border border-edge">
+          <div className="mt-2 flex items-stretch overflow-hidden rounded-md bg-base-panel">
             <span className="min-w-0 flex-1 truncate px-4 py-3.5 text-sm">{link || ' '}</span>
             <button
               onClick={() => void copy()}
               disabled={!link}
-              className="flex shrink-0 items-center gap-2 border-l border-edge px-4 text-sm font-semibold uppercase text-live disabled:opacity-40"
+              className="flex shrink-0 items-center gap-2 bg-base-raised px-4 text-sm font-semibold uppercase text-live disabled:opacity-40"
             >
               {copied ? <Check size={16} aria-hidden /> : <Copy size={16} aria-hidden />}
               {copied ? 'Copied' : 'Copy'}
@@ -160,7 +160,6 @@ export default function ReferralsPage() {
         )}
       </section>
 
-      <div className="rule mt-9" />
 
       <section className="mt-6">
         <h2 className="text-2xl">People you invited</h2>

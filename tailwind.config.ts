@@ -29,6 +29,9 @@ export default {
         shake: { '0%,100%': { transform: 'translateX(0)' }, '20%,60%': { transform: 'translateX(-6px)' }, '40%,80%': { transform: 'translateX(6px)' } },
         sweep: { '0%': { transform: 'translateX(-100%)' }, '100%': { transform: 'translateX(300%)' } },
         ring: { '0%': { transform: 'scale(.95)', opacity: '.5' }, '100%': { transform: 'scale(1.7)', opacity: '0' } },
+        // a workspace switch: the old one leaves the way the finger went
+        wipeLeft: { '0%': { transform: 'translate3d(100%,0,0)' }, '45%': { transform: 'translate3d(0,0,0)' }, '100%': { transform: 'translate3d(-100%,0,0)' } },
+        wipeRight: { '0%': { transform: 'translate3d(-100%,0,0)' }, '45%': { transform: 'translate3d(0,0,0)' }, '100%': { transform: 'translate3d(100%,0,0)' } },
       },
       animation: {
         rise: 'rise .28s cubic-bezier(.2,.8,.2,1) both',
@@ -36,6 +39,8 @@ export default {
         shake: 'shake .45s cubic-bezier(.36,.07,.19,.97) both',
         sweep: 'sweep 1.3s cubic-bezier(.4,0,.2,1) infinite',
         ring: 'ring 1.1s cubic-bezier(.2,.8,.2,1) infinite',
+        'wipe-left': 'wipeLeft .6s cubic-bezier(.4,0,.2,1) both',
+        'wipe-right': 'wipeRight .6s cubic-bezier(.4,0,.2,1) both',
       },
     },
   },

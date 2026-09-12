@@ -12,3 +12,8 @@ export function daysLeft(expiresAt: string | null): number | null {
   const ms = new Date(expiresAt).getTime() - Date.now()
   return Math.max(0, Math.ceil(ms / 86_400_000))
 }
+
+/** Usernames are stored lowercase because they live in URLs; they are shown
+ *  with a capital because they are how a member is addressed. */
+export const asName = (username: string | null | undefined) =>
+  username ? username.charAt(0).toUpperCase() + username.slice(1) : null

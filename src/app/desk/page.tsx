@@ -88,7 +88,7 @@ export default function DeskLive() {
     <div onClick={() => unlockAudio()}>
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-4xl md:text-5xl">Live check-in</h1>
+          <h1 className="text-3xl lg:text-4xl">Live check-in</h1>
           <p className="mt-2 flex items-center gap-2 text-sm text-mute">
             <span className={cn('h-2 w-2 rounded-full', live ? 'bg-live' : 'bg-mute')} />
             {live ? 'Connected' : 'Reconnecting'}
@@ -110,7 +110,6 @@ export default function DeskLive() {
         </div>
       </header>
 
-      <div className="rule mt-6" />
 
       {feed.length === 0 ? (
         <p className="py-24 text-center text-mute">

@@ -31,14 +31,12 @@ interface Summary {
   referrals_rewarded: number
 }
 
-type RangeKey = '7d' | '30d' | '3m' | '12m' | 'custom'
+type RangeKey = '7d' | '30d' | 'custom'
 
 const RANGES: { key: RangeKey; label: string }[] = [
   { key: '7d', label: '7 days' },
   { key: '30d', label: '30 days' },
-  { key: '3m', label: '3 months' },
-  { key: '12m', label: '1 year' },
-  { key: 'custom', label: 'Custom' },
+  { key: 'custom', label: 'Pick dates' },
 ]
 
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate())
@@ -56,8 +54,6 @@ function windowFor(range: RangeKey, from: string, to: string) {
   const start = startOfDay(new Date())
   if (range === '7d') start.setDate(start.getDate() - 6)
   if (range === '30d') start.setDate(start.getDate() - 29)
-  if (range === '3m') start.setMonth(start.getMonth() - 2, 1)
-  if (range === '12m') start.setMonth(start.getMonth() - 11, 1)
   return { from: start, to: end }
 }
 
@@ -125,16 +121,13 @@ export default function AdminOverview() {
           <p className="pb-1 text-sm text-mute">{naira(data.revenue_all)} all time</p>
         </div>
 
-        <div className="no-scrollbar mt-4 flex gap-1.5 overflow-x-auto">
+        <div className="mt-4 flex gap-1">
           {RANGES.map(option => (
             <button
               key={option.key}
               onClick={() => setRange(option.key)}
               aria-pressed={range === option.key}
-              className={cn(
-                'flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-semibold transition-colors',
-                range === option.key ? 'bg-live text-ink' : 'border border-edge text-mute hover:text-chalk'
-              )}
+              className={cn(range === option.key ? 'seg-on' : 'seg-off')}
             >
               {option.key === 'custom' && <CalendarRange size={14} aria-hidden />}
               {option.label}

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, Upload, CreditCard, Landmark } from 'lucide-react'
+import { Check, Upload, CreditCard, Landmark, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/stores/auth'
 import { useToasts } from '@/stores/toast'
@@ -32,16 +32,16 @@ function PlanRow({ plan, on, onPick }: { plan: Plan; on: boolean; onPick: () => 
         aria-pressed={on}
         onClick={onPick}
         className={cn(
-          'flex w-full items-center justify-between rounded-md border px-4 py-3.5 text-left transition-all',
-          on ? 'border-chalk bg-base-panel' : 'border-edge hover:border-mute'
+          'flex w-full items-center justify-between rounded-md px-4 py-3.5 text-left transition-colors',
+          on ? 'bg-base-raised' : 'bg-base-panel hover:bg-base-raised'
         )}
       >
         <span className="flex items-center gap-3">
           <span
             aria-hidden
             className={cn(
-              'grid h-5 w-5 shrink-0 place-items-center rounded-sm border transition-colors',
-              on ? 'border-chalk bg-chalk' : 'border-edge'
+              'grid h-5 w-5 shrink-0 place-items-center rounded-full transition-colors',
+              on ? 'bg-chalk' : 'bg-edge'
             )}
           >
             {on && <Check size={13} className="text-ink" strokeWidth={3} />}
@@ -234,8 +234,8 @@ export default function RenewPage() {
                 aria-pressed={method === 'card'}
                 onClick={() => setMethod('card')}
                 className={cn(
-                  'flex h-11 items-center justify-center gap-2 rounded-md border text-[15px] font-semibold transition-all',
-                  method === 'card' ? 'border-chalk bg-chalk text-ink' : 'border-edge text-chalk hover:bg-base-panel'
+                  'flex h-11 items-center justify-center gap-2 rounded-md text-[15px] font-semibold transition-colors',
+                  method === 'card' ? 'bg-chalk text-ink' : 'bg-base-panel text-chalk hover:bg-base-raised'
                 )}
               >
                 <CreditCard size={17} aria-hidden /> Card
@@ -246,8 +246,8 @@ export default function RenewPage() {
               aria-pressed={method === 'transfer'}
               onClick={() => setMethod('transfer')}
               className={cn(
-                'flex h-11 items-center justify-center gap-2 rounded-md border text-[15px] font-semibold transition-all',
-                method === 'transfer' ? 'border-chalk bg-chalk text-ink' : 'border-edge text-chalk hover:bg-base-panel'
+                'flex h-11 items-center justify-center gap-2 rounded-md text-[15px] font-semibold transition-colors',
+                method === 'transfer' ? 'bg-chalk text-ink' : 'bg-base-panel text-chalk hover:bg-base-raised'
               )}
             >
               <Landmark size={17} aria-hidden /> Transfer
@@ -259,14 +259,34 @@ export default function RenewPage() {
               <label htmlFor="proof" className="text-sm font-semibold text-mute">
                 Proof of transfer
               </label>
-              <div className="mt-2 flex items-center gap-3 rounded-md border border-dashed border-edge px-4 py-3">
+              <div className="mt-2 flex items-center gap-3 rounded-md bg-base-panel px-4 py-3">
                 <Upload size={17} className="shrink-0 text-mute" aria-hidden />
+                {proof ? (
+                  <>
+                    <span className="min-w-0 flex-1 truncate text-sm text-chalk">{proof.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProof(null)
+                        const field = document.getElementById('proof') as HTMLInputElement | null
+                        if (field) field.value = ''
+                      }}
+                      aria-label="Remove this file"
+                      className="-mr-1.5 grid h-8 w-8 shrink-0 place-items-center rounded-full text-mute transition-colors hover:bg-out-tint hover:text-out"
+                    >
+                      <X size={16} aria-hidden />
+                    </button>
+                  </>
+                ) : null}
                 <input
                   id="proof"
                   type="file"
                   accept="image/*,application/pdf"
                   onChange={e => setProof(e.target.files?.[0] ?? null)}
-                  className="min-w-0 flex-1 text-sm text-mute file:mr-3 file:rounded file:border-0 file:bg-base-raised file:px-3 file:py-1.5 file:text-chalk"
+                  className={cn(
+                    'min-w-0 flex-1 text-sm text-mute file:mr-3 file:rounded file:border-0 file:bg-base-raised file:px-3 file:py-1.5 file:text-chalk',
+                    proof && 'sr-only'
+                  )}
                 />
               </div>
             </div>
@@ -276,7 +296,7 @@ export default function RenewPage() {
 
       {chosen && (
         <div
-          className="sticky z-30 -mx-5 mt-7 border-t border-edge bg-base px-5 pb-4 pt-3"
+          className="sticky z-30 -mx-5 mt-7 bg-base px-5 pb-4 pt-3"
           style={{ bottom: 'calc(68px + env(safe-area-inset-bottom))' }}
         >
           <div className="flex items-baseline justify-between">

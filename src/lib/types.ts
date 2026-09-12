@@ -20,6 +20,7 @@ export interface Profile {
   registration_paid: boolean
   notifications_enabled: boolean
   expires_at: string | null
+  pending_days: number
   created_at: string
 }
 
@@ -73,6 +74,7 @@ export interface CheckInResult {
   photo_url: string | null
   expires_at: string | null
   days_left: number | null
+  just_started?: boolean
   is_active: boolean
   last_check_in: string | null
 }

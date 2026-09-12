@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/stores/auth'
 import { useToasts } from '@/stores/toast'
 import { BackLink } from '@/components/BackLink'
+import { Select } from '@/components/Select'
 import type { Branch } from '@/lib/types'
 
 export default function RegisterMember() {
@@ -54,8 +55,8 @@ export default function RegisterMember() {
       <div className="max-w-md animate-rise">
         <h1 className="text-4xl">Member registered</h1>
         <p className="mt-3 text-[15px] text-chalk-dim">Give these sign-in details to the member.</p>
-        <dl className="mt-6 border border-edge">
-          <div className="flex justify-between border-b border-edge px-4 py-3">
+        <dl className="mt-6 overflow-hidden rounded-lg bg-base-panel">
+          <div className="flex justify-between border-b border-edge-soft px-4 py-3">
             <dt className="text-xs uppercase tracking-[0.2em] text-mute">Email</dt>
             <dd className="truncate pl-3 font-mono text-sm">{created.email}</dd>
           </div>
@@ -99,9 +100,14 @@ export default function RegisterMember() {
         {branches.length > 1 && (
           <label className="block">
             <span className="label">Branch</span>
-            <select value={form.branch_id} onChange={set('branch_id')} className="field mt-1.5">
-              {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-            </select>
+            <span className="mt-1.5 block">
+              <Select
+                value={form.branch_id}
+                label="Branch"
+                onChange={value => setForm(f => ({ ...f, branch_id: value }))}
+                options={branches.map(b => ({ value: b.id, label: b.name, hint: b.address ?? undefined }))}
+              />
+            </span>
           </label>
         )}
         <button type="submit" disabled={busy} className="btn-primary mt-2 w-full">

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   BarChart3, Users, Tags, Building2, Shield, Settings as Cog, LogOut, Activity,
-  UserPlus, Bell, LayoutGrid,
+  Bell, LayoutGrid, Banknote,
 } from 'lucide-react'
 import { useAuth } from '@/stores/auth'
 import { BottomNav } from '@/components/BottomNav'
@@ -14,6 +14,8 @@ import { cn } from '@/lib/cn'
 const RAIL = [
   { href: '/admin',          label: 'Overview', icon: BarChart3 },
   { href: '/admin/members',  label: 'Members',  icon: Users },
+  { href: '/desk',           label: 'Live',     icon: Activity },
+  { href: '/desk/payments',  label: 'Payments', icon: Banknote },
   { href: '/admin/plans',    label: 'Plans',    icon: Tags },
   { href: '/admin/branches', label: 'Branches', icon: Building2 },
   { href: '/admin/staff',    label: 'Staff',    icon: Shield },
@@ -42,9 +44,6 @@ export function AdminChrome({ children }: { children: React.ReactNode }) {
               </Link>
             )
           })}
-          <Link href="/desk" className="mt-2 flex items-center gap-3 border-t border-edge px-3 pt-5 text-sm font-semibold uppercase tracking-wide text-mute hover:text-live">
-            <Activity size={17} aria-hidden /> Front desk
-          </Link>
         </nav>
         <div className="border-t border-edge p-3">
           <p className="px-3 pb-1 text-xs uppercase tracking-[0.2em] text-mute">Signed in</p>
@@ -56,25 +55,21 @@ export function AdminChrome({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex min-h-dvh flex-col">
-        <header className="flex h-14 items-center justify-between border-b border-edge px-4 lg:hidden">
-          <span className="font-display text-lg uppercase tracking-tightest">
-            Zenthos<span className="text-live">Gym</span>
-          </span>
+        <header className="flex h-14 items-center justify-end px-4 lg:hidden">
           <AlertBell href="/admin/alerts" home="/admin" />
         </header>
 
-        <main className="pad-nav flex-1 px-4 pt-6 lg:px-10 lg:pb-10">{children}</main>
+        <main className="pad-nav flex-1 px-4 lg:px-10 lg:pb-10 lg:pt-6">{children}</main>
 
         <div className="lg:hidden">
           <BottomNav
             label="Admin"
-
-            swipe={{ right: '/m' }}
+            swipe={{ right: { href: '/m', label: 'My membership' } }}
             left={[
               { href: '/admin', label: 'Overview', icon: BarChart3 },
               { href: '/admin/members', label: 'Members', icon: Users },
             ]}
-            action={{ href: '/desk/members/new', label: 'Register', icon: UserPlus }}
+            action={{ href: '/desk', label: 'Live', icon: Activity }}
             right={[
               { href: '/admin/plans', label: 'Plans', icon: Tags },
               { href: '/admin/more', label: 'More', icon: LayoutGrid },

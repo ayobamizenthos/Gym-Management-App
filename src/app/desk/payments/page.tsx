@@ -85,19 +85,17 @@ export default function DeskPayments() {
 
   return (
     <div>
-      <h1 className="text-4xl md:text-5xl">Payments</h1>
+      <h1 className="text-3xl lg:text-4xl">Payments</h1>
 
-      <div className="mt-5 flex gap-2" role="tablist" aria-label="Payment status">
+      <div className="mt-5 flex gap-1" role="tablist" aria-label="Payment status">
         {(['pending', 'confirmed'] as const).map(t => (
           <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}
-            className={cn('h-10 rounded-sm px-5 text-sm font-semibold uppercase tracking-wide transition-colors',
-              tab === t ? 'bg-live text-ink' : 'border border-edge text-mute hover:text-chalk')}>
+            className={cn('capitalize', tab === t ? 'seg-on' : 'seg-off')}>
             {t}
           </button>
         ))}
       </div>
 
-      <div className="rule mt-5" />
 
       {!ready ? (
         <div className="mt-5 space-y-2" aria-busy="true" aria-label="Loading payments">
@@ -138,7 +136,7 @@ export default function DeskPayments() {
                       {busy === row.id ? <span className="dots">Processing</span> : <><Check size={16} aria-hidden /> Confirm</>}
                     </button>
                     <button disabled={busy === row.id} onClick={() => setRejecting(row)}
-                      className="btn h-10 rounded-sm border border-out px-4 text-sm text-out hover:bg-out-tint">
+                      className="btn h-10 rounded-md bg-out-tint px-4 text-sm text-out hover:brightness-125">
                       <X size={16} aria-hidden /> Reject
                     </button>
                   </>

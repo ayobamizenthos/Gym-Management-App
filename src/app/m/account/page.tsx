@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Camera, LogOut, ChevronRight, LayoutDashboard, Users } from 'lucide-react'
+import { Camera, LogOut, ChevronRight, LayoutDashboard } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/stores/auth'
 import { useToasts } from '@/stores/toast'
@@ -138,15 +138,15 @@ export default function AccountPage() {
         <Link
           href="/m/renew"
           className={cn(
-            'mt-6 flex items-center justify-between gap-3 rounded-lg px-4 py-3.5 transition-opacity hover:opacity-90',
+            'mt-6 flex items-center justify-between gap-3 rounded-lg px-4 py-3.5 transition-colors hover:bg-base-raised',
             profile.expires_at ? 'bg-out-tint' : 'bg-base-panel'
           )}
         >
           <span className="text-[15px] font-medium">
             {profile.expires_at ? 'Membership expired' : 'No plan yet'}
           </span>
-          <span className="flex shrink-0 items-center gap-1 font-display text-lg text-live">
-            Choose a plan <ChevronRight size={18} aria-hidden />
+          <span className="flex shrink-0 items-center gap-1 text-[15px] font-medium text-chalk-dim">
+            Choose a plan <ChevronRight size={17} aria-hidden />
           </span>
         </Link>
       )}
@@ -154,7 +154,7 @@ export default function AccountPage() {
       {(profile.role === 'admin' || profile.role === 'receptionist') && (
         <Link
           href={profile.role === 'admin' ? '/admin' : '/desk'}
-          className="mt-3 flex items-center justify-between rounded-lg border border-live px-4 py-3.5 transition-colors hover:bg-live-tint"
+          className="mt-3 flex items-center justify-between rounded-lg bg-live-tint px-4 py-3.5 transition-opacity hover:opacity-90"
         >
           <span className="flex items-center gap-2.5 text-[15px] font-medium">
             <LayoutDashboard size={18} className="text-live" aria-hidden />
@@ -166,22 +166,12 @@ export default function AccountPage() {
 
       <Link
         href="/m/history"
-        className="mt-3 flex items-center justify-between rounded-lg border border-edge px-4 py-3.5 transition-colors hover:bg-base-panel"
+        className="row mt-3 justify-between"
       >
         <span className="text-[15px] font-medium">Payment history</span>
         <ChevronRight size={18} className="text-mute" aria-hidden />
       </Link>
 
-      <Link
-        href="/m/referrals"
-        className="mt-2 flex items-center justify-between rounded-lg border border-edge px-4 py-3.5 transition-colors hover:bg-base-panel"
-      >
-        <span className="flex items-center gap-2.5 text-[15px] font-medium">
-          <Users size={18} className="text-mute" aria-hidden />
-          Invite &amp; earn
-        </span>
-        <ChevronRight size={18} className="text-mute" aria-hidden />
-      </Link>
 
       <section className="mt-8">
         <h2 className="text-xl">Your details</h2>

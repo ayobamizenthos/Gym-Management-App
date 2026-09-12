@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { SwitchCamera } from 'lucide-react'
 
 type Detector = {
   detect: (source: CanvasImageSource) => Promise<Array<{ rawValue: string }>>
@@ -19,6 +20,8 @@ interface Props {
   onResult: (value: string) => void
 }
 
+type Facing = 'environment' | 'user'
+
 /**
  * Rear-camera QR reader tuned for speed over ceremony.
  *
@@ -29,12 +32,13 @@ interface Props {
  */
 export function Scanner({ onResult }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const rafRef = useRef<number>()
   const doneRef = useRef(false)
   const [error, setError] = useState<string | null>(null)
   const [ready, setReady] = useState(false)
+  const [facing, setFacing] = useState<Facing>('environment')
+  const [canSwitch, setCanSwitch] = useState(false)
 
   const finish = useCallback(
     (value: string) => {
@@ -53,19 +57,33 @@ export function Scanner({ onResult }: Props) {
 
   useEffect(() => {
     let fallback: { stop: () => Promise<void> } | null = null
+    let cancelled = false
 
     const start = async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
-            facingMode: { ideal: 'environment' },
+            facingMode: { ideal: facing },
             width: { ideal: 1920 },
             height: { ideal: 1080 },
             frameRate: { ideal: 30 },
           },
           audio: false,
         })
+        if (cancelled) {
+          stream.getTracks().forEach(track => track.stop())
+          return
+        }
         streamRef.current = stream
+
+        // Labels only appear once permission is granted, so the count of real
+        // cameras can only be taken after the stream opens.
+        void navigator.mediaDevices
+          .enumerateDevices()
+          .then(devices => {
+            if (!cancelled) setCanSwitch(devices.filter(d => d.kind === 'videoinput').length > 1)
+          })
+          .catch(() => {})
 
         // Continuous autofocus keeps close and far codes sharp without tapping.
         const track = stream.getVideoTracks()[0]
@@ -79,12 +97,14 @@ export function Scanner({ onResult }: Props) {
         video.srcObject = stream
         video.setAttribute('playsinline', 'true')
         await video.play()
+        if (cancelled) return
         setReady(true)
+        setError(null)
 
         if (window.BarcodeDetector) {
           const detector = new window.BarcodeDetector({ formats: ['qr_code'] })
           const tick = async () => {
-            if (doneRef.current) return
+            if (doneRef.current || cancelled) return
             try {
               const codes = await detector.detect(video)
               if (codes.length > 0 && codes[0].rawValue) {
@@ -109,13 +129,14 @@ export function Scanner({ onResult }: Props) {
         fallback = reader as unknown as { stop: () => Promise<void> }
         stop()
         await reader.start(
-          { facingMode: 'environment' },
+          { facingMode: facing },
           { fps: 25, aspectRatio: 1.777 },
           text => finish(text),
           () => {}
         )
-        setReady(true)
+        if (!cancelled) setReady(true)
       } catch (e) {
+        if (cancelled) return
         const name = (e as Error).name
         setError(
           name === 'NotAllowedError'
@@ -127,33 +148,54 @@ export function Scanner({ onResult }: Props) {
 
     void start()
     return () => {
-      doneRef.current = true
+      cancelled = true
       stop()
       void fallback?.stop().catch(() => {})
     }
-  }, [finish, stop])
+  }, [finish, stop, facing])
+
+  const flip = () => {
+    setReady(false)
+    setFacing(current => (current === 'environment' ? 'user' : 'environment'))
+  }
 
   return (
-    <div className="relative overflow-hidden bg-black">
-      <video ref={videoRef} muted playsInline className="h-[62vh] w-full object-cover" />
+    <div className="relative h-full w-full overflow-hidden bg-black">
+      <video
+        ref={videoRef}
+        muted
+        playsInline
+        className={`h-full w-full object-cover ${facing === 'user' ? '-scale-x-100' : ''}`}
+      />
       <div id="scanner-fallback" className="absolute inset-0" />
-      <canvas ref={canvasRef} className="hidden" />
 
       {/* Corner brackets only - the whole frame is live, so no cropping box. */}
       <div className="pointer-events-none absolute inset-0 grid place-items-center">
         <div className="relative h-56 w-56">
           {['left-0 top-0 border-l-2 border-t-2', 'right-0 top-0 border-r-2 border-t-2',
             'left-0 bottom-0 border-l-2 border-b-2', 'right-0 bottom-0 border-r-2 border-b-2'].map(pos => (
-            <span key={pos} className={`absolute h-8 w-8 border-live ${pos}`} />
+            <span key={pos} className={`absolute h-8 w-8 rounded-[3px] border-white/90 ${pos}`} />
           ))}
         </div>
       </div>
 
+      {/* Sits where a camera app puts it: bottom right, clear of the brackets
+          and of the status line that runs along the bottom centre. */}
+      {canSwitch && !error && (
+        <button
+          onClick={flip}
+          aria-label={facing === 'environment' ? 'Switch to front camera' : 'Switch to back camera'}
+          className="absolute bottom-[max(1.25rem,calc(env(safe-area-inset-bottom)+0.75rem))] right-5 grid h-12 w-12 place-items-center rounded-full bg-black/45 text-white backdrop-blur-md transition-transform active:scale-90"
+        >
+          <SwitchCamera size={21} aria-hidden />
+        </button>
+      )}
+
       {!ready && !error && (
-        <p className="absolute inset-x-0 bottom-5 text-center text-sm text-white/70">Starting camera</p>
+        <p className="absolute inset-x-0 top-1/2 mt-24 text-center text-sm text-white/70">Starting camera</p>
       )}
       {error && (
-        <p className="absolute inset-x-0 bottom-5 px-6 text-center text-sm text-out">{error}</p>
+        <p className="absolute inset-x-0 top-1/2 mt-24 px-8 text-center text-sm text-out">{error}</p>
       )}
     </div>
   )

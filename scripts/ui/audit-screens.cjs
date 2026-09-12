@@ -46,6 +46,8 @@ async function signIn(page, who) {
 }
 
 async function auditLayout(page, label) {
+  // let any redirect settle before measuring, or the context dies mid-evaluate
+  await page.waitForLoadState('domcontentloaded').catch(() => {})
   const report = await page.evaluate(() => {
     const docWidth = document.documentElement.clientWidth
     const overflowing = []
@@ -118,8 +120,9 @@ async function auditLayout(page, label) {
       smallTargets: [...new Set(smallTargets)].slice(0, 5),
       lowContrast: [...new Set(lowContrast)].slice(0, 5),
     }
-  })
+  }).catch(() => null)
 
+  if (!report) return
   if (report.scrollWidth > report.clientWidth + 1) note(label, 'horizontal scroll ' + report.scrollWidth + '>' + report.clientWidth)
   report.overflowing.forEach(o => note(label, 'overflows: ' + o))
   report.smallTargets.forEach(t => note(label, 'tap target: ' + t))

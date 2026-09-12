@@ -1,6 +1,6 @@
 require('dotenv').config({ path: '.env.local' })
 const { chromium } = require('playwright')
-const { contextFor } = require('./session.cjs')
+const { contextFor, removeMember } = require('./session.cjs')
 process.env.APP_URL = process.env.APP_URL || 'https://zenthosgym.netlify.app'
 const BASE = process.env.APP_URL
 
@@ -101,5 +101,6 @@ const check = (ok, what) => { results.push((ok ? 'ok   ' : 'FAIL ') + what); if 
   await ctx.close()
 
   await browser.close()
+  await removeMember()
   results.forEach(r => console.log(r))
 })()

@@ -1,5 +1,6 @@
 require('dotenv').config({ path: '.env.local' })
 const { chromium } = require('playwright')
+const { ensureMember, removeMember } = require('./session.cjs')
 const BASE = process.env.APP_URL || 'https://zenthosgym.netlify.app'
 const SB = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SECRET = process.env.SUPABASE_SECRET_KEY
@@ -10,6 +11,8 @@ const check = (ok, what) => { results.push((ok ? 'ok   ' : 'FAIL ') + what); if 
 const ago = mins => new Date(Date.now() - mins * 60000).toISOString()
 
 ;(async () => {
+  process.env.APP_URL = BASE
+  await ensureMember()
   const [me] = await (await fetch(SB + '/rest/v1/profiles?select=id&email=eq.' + process.env.TEST_MEMBER + '', { headers: H })).json()
   await fetch(SB + '/rest/v1/notifications?user_id=eq.' + me.id, { method: 'DELETE', headers: H })
 
@@ -74,5 +77,6 @@ const ago = mins => new Date(Date.now() - mins * 60000).toISOString()
 
   await browser.close()
   await fetch(SB + '/rest/v1/notifications?user_id=eq.' + me.id, { method: 'DELETE', headers: H })
+  await removeMember()
   results.forEach(r => console.log(r))
 })()

@@ -49,12 +49,7 @@ export function NotificationToggle() {
       disabled={busy}
       className="flex w-full items-center justify-between gap-4 py-3.5 text-left"
     >
-      <span className="min-w-0">
-        <span className="block text-[15px] font-medium">Notification sounds and pop-ups</span>
-        <span className="block text-sm text-mute">
-          {on ? 'You hear and see notifications as they arrive.' : 'Notifications arrive quietly, in your inbox only.'}
-        </span>
-      </span>
+      <span className="min-w-0 text-[15px] font-medium">Notifications</span>
       <span className={cn('relative h-6 w-11 shrink-0 rounded-full transition-colors', on ? 'bg-live' : 'bg-edge')}>
         <span
           className={cn(

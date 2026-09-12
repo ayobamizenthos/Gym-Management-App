@@ -1,15 +1,23 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { ArrowUpRight } from 'lucide-react'
+import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
+import { ArrowUpRight, CalendarRange } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { naira, daysLeft } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { Loader } from '@/components/Loader'
 import type { Profile } from '@/lib/types'
 
-interface Overview {
+interface Bucket {
+  bucket: string
+  total: number
+}
+
+interface Summary {
+  grain: 'day' | 'month'
+  series: Bucket[]
   revenue: string
   revenue_all: string
   members_total: number
@@ -17,27 +25,66 @@ interface Overview {
   members_expired: number
   joined_period: number
   renewals_due: number
+  visits_period: number
   visits_today: number
   pending_payments: number
   referrals_rewarded: number
 }
 
-const RANGES = [
-  { days: 7, label: '7 days' },
-  { days: 30, label: '30 days' },
-  { days: 90, label: '3 months' },
-  { days: 365, label: '1 year' },
+type RangeKey = '7d' | '30d' | '3m' | '12m' | 'custom'
+
+const RANGES: { key: RangeKey; label: string }[] = [
+  { key: '7d', label: '7 days' },
+  { key: '30d', label: '30 days' },
+  { key: '3m', label: '3 months' },
+  { key: '12m', label: '1 year' },
+  { key: 'custom', label: 'Custom' },
 ]
 
+const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate())
+const iso = (d: Date) => d.toISOString().slice(0, 10)
+
+function windowFor(range: RangeKey, from: string, to: string) {
+  const end = new Date()
+  end.setHours(23, 59, 59, 999)
+  if (range === 'custom') {
+    if (!from || !to) return null
+    const a = new Date(from + 'T00:00:00')
+    const b = new Date(to + 'T23:59:59')
+    return b > a ? { from: a, to: b } : null
+  }
+  const start = startOfDay(new Date())
+  if (range === '7d') start.setDate(start.getDate() - 6)
+  if (range === '30d') start.setDate(start.getDate() - 29)
+  if (range === '3m') start.setMonth(start.getMonth() - 2, 1)
+  if (range === '12m') start.setMonth(start.getMonth() - 11, 1)
+  return { from: start, to: end }
+}
+
+const tickFor = (bucket: string, grain: 'day' | 'month') => {
+  const d = new Date(grain === 'month' ? bucket + '-01' : bucket)
+  return grain === 'month'
+    ? d.toLocaleDateString('en-NG', { month: 'short' })
+    : d.toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })
+}
+
 export default function AdminOverview() {
-  const [days, setDays] = useState(30)
-  const [data, setData] = useState<Overview | null>(null)
+  const [range, setRange] = useState<RangeKey>('30d')
+  const [from, setFrom] = useState(() => iso(new Date(Date.now() - 29 * 86_400_000)))
+  const [to, setTo] = useState(() => iso(new Date()))
+  const [data, setData] = useState<Summary | null>(null)
   const [due, setDue] = useState<Profile[]>([])
 
+  const span = useMemo(() => windowFor(range, from, to), [range, from, to])
+
   const load = useCallback(async () => {
-    const { data: res } = await supabase.rpc('admin_overview', { p_days: days })
-    setData(res as Overview)
-  }, [days])
+    if (!span) return
+    const { data: res } = await supabase.rpc('admin_summary', {
+      p_from: span.from.toISOString(),
+      p_to: span.to.toISOString(),
+    })
+    if (res) setData(res as Summary)
+  }, [span])
 
   useEffect(() => { void load() }, [load])
 
@@ -55,49 +102,112 @@ export default function AdminOverview() {
 
   if (!data) return <Loader />
 
+  const series = data.series ?? []
+  const peak = Math.max(...series.map(b => Number(b.total)), 0)
+  const busiest = series.reduce<Bucket | null>(
+    (best, b) => (best === null || Number(b.total) > Number(best.total) ? b : best),
+    null
+  )
+
   return (
     <div className="animate-rise">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-4xl lg:text-5xl">Overview</h1>
-        <div className="flex gap-1">
-          {RANGES.map(r => (
-            <button key={r.days} onClick={() => setDays(r.days)}
-              className={cn('flex h-10 items-center rounded-sm px-3.5 text-xs font-semibold uppercase tracking-wide transition-colors',
-                days === r.days ? 'bg-live text-ink' : 'text-mute hover:text-chalk')}>
-              {r.label}
+      <h1 className="text-3xl lg:text-4xl">Overview</h1>
+
+      {/* Revenue leads, but as a shape you can read at a glance rather than a wall of digits. */}
+      <section className="mt-5 rounded-lg bg-base-panel p-4 sm:p-5">
+        <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
+          <div>
+            <p className="label">Revenue</p>
+            <p className="font-display text-4xl leading-none tabular-nums text-live sm:text-5xl">
+              {naira(data.revenue)}
+            </p>
+          </div>
+          <p className="pb-1 text-sm text-mute">{naira(data.revenue_all)} all time</p>
+        </div>
+
+        <div className="no-scrollbar mt-4 flex gap-1.5 overflow-x-auto">
+          {RANGES.map(option => (
+            <button
+              key={option.key}
+              onClick={() => setRange(option.key)}
+              aria-pressed={range === option.key}
+              className={cn(
+                'flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-semibold transition-colors',
+                range === option.key ? 'bg-live text-ink' : 'border border-edge text-mute hover:text-chalk'
+              )}
+            >
+              {option.key === 'custom' && <CalendarRange size={14} aria-hidden />}
+              {option.label}
             </button>
           ))}
         </div>
-      </header>
 
-      {/* Revenue leads. No card chrome - the number is the design. */}
-      <section className="mt-8">
-        <p className="text-xs uppercase tracking-[0.28em] text-mute">Revenue · last {days} days</p>
-        <p className="mt-2 font-display text-[4.5rem] leading-none tabular-nums text-live lg:text-[6rem]">
-          {naira(data.revenue)}
-        </p>
-        <p className="mt-1 text-sm text-mute">{naira(data.revenue_all)} all time</p>
+        {range === 'custom' && (
+          <div className="mt-3 grid animate-rise grid-cols-2 gap-2.5">
+            <label className="block">
+              <span className="label">From</span>
+              <input type="date" value={from} max={to} onChange={e => setFrom(e.target.value)} className="field mt-1 h-11" />
+            </label>
+            <label className="block">
+              <span className="label">To</span>
+              <input type="date" value={to} min={from} max={iso(new Date())} onChange={e => setTo(e.target.value)} className="field mt-1 h-11" />
+            </label>
+          </div>
+        )}
+
+        <div className="mt-4 h-40 sm:h-52">
+          {peak === 0 ? (
+            <p className="grid h-full place-items-center text-center text-sm text-mute">
+              No payments in this period.
+            </p>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={series} margin={{ top: 6, right: 2, bottom: 0, left: 2 }}>
+                <XAxis
+                  dataKey="bucket"
+                  tickFormatter={b => tickFor(b, data.grain)}
+                  tickLine={false}
+                  axisLine={false}
+                  interval="preserveStartEnd"
+                  minTickGap={24}
+                  tick={{ fill: '#8A8A93', fontSize: 11 }}
+                />
+                <Tooltip cursor={{ fill: 'rgba(53,208,127,.08)' }} content={<ChartTip grain={data.grain} />} />
+                <Bar dataKey="total" radius={[5, 5, 0, 0]} maxBarSize={44}>
+                  {series.map(b => (
+                    <Cell key={b.bucket} fill={Number(b.total) === peak ? '#35D07F' : '#2C6A4E'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {busiest && peak > 0 && (
+          <p className="mt-2 text-sm text-mute">
+            Best {data.grain === 'month' ? 'month' : 'day'}:{' '}
+            <span className="text-chalk">{tickFor(busiest.bucket, data.grain)}</span> at {naira(busiest.total)}
+          </p>
+        )}
       </section>
 
-      <div className="rule mt-9" />
-
-      <section className="mt-7 grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-4">
-        <Metric label="Active members" value={data.members_active} tone="good" />
-        <Metric label="Renewals due" value={data.renewals_due} tone={data.renewals_due > 0 ? 'warn' : 'plain'} href="/admin/members?f=due" />
-        <Metric label="Expired" value={data.members_expired} tone={data.members_expired > 0 ? 'alert' : 'plain'} />
-        <Metric label="Visits today" value={data.visits_today} tone="plain" />
-        <Metric label="New members" value={data.joined_period} tone="plain" />
-        <Metric label="Payments pending" value={data.pending_payments} tone={data.pending_payments > 0 ? 'warn' : 'plain'} href="/desk/payments" />
-        <Metric label="Referral rewards" value={data.referrals_rewarded} tone="plain" />
-        <Metric label="Members on file" value={data.members_total} tone="plain" />
+      <section className="mt-4 grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+        <Tile label="Active members" value={data.members_active} tone="good" />
+        <Tile label="Renewals due" value={data.renewals_due} tone={data.renewals_due > 0 ? 'warn' : 'plain'} href="/admin/members?f=due" />
+        <Tile label="Expired" value={data.members_expired} tone={data.members_expired > 0 ? 'alert' : 'plain'} />
+        <Tile label="Visits today" value={data.visits_today} tone="plain" />
+        <Tile label="New members" value={data.joined_period} tone="plain" />
+        <Tile label="Visits this period" value={data.visits_period} tone="plain" />
+        <Tile label="Payments pending" value={data.pending_payments} tone={data.pending_payments > 0 ? 'warn' : 'plain'} href="/desk/payments" />
+        <Tile label="Members on file" value={data.members_total} tone="plain" />
       </section>
-
-      <div className="rule mt-10" />
 
       <section className="mt-7">
         <div className="flex items-baseline justify-between">
           <h2 className="text-2xl">Expiring next</h2>
-          <Link href="/admin/members" className="-my-2 py-2 text-sm text-live underline-offset-4 hover:underline">All members</Link>
+          <Link href="/admin/members" className="-my-2 py-2 text-sm text-live underline-offset-4 hover:underline">
+            All members
+          </Link>
         </div>
         {due.length === 0 ? (
           <p className="mt-4 text-sm text-mute">Nobody is close to expiring.</p>
@@ -132,7 +242,27 @@ export default function AdminOverview() {
   )
 }
 
-function Metric({ label, value, tone, href }: {
+function ChartTip({
+  active,
+  payload,
+  label,
+  grain,
+}: {
+  active?: boolean
+  payload?: { value: number }[]
+  label?: string
+  grain: 'day' | 'month'
+}) {
+  if (!active || !payload?.length || !label) return null
+  return (
+    <div className="rounded-sm border border-edge bg-base-raised px-3 py-2 shadow-lift">
+      <p className="text-[11px] uppercase tracking-wide text-mute">{tickFor(label, grain)}</p>
+      <p className="font-display text-lg tabular-nums text-live">{naira(payload[0].value)}</p>
+    </div>
+  )
+}
+
+function Tile({ label, value, tone, href }: {
   label: string
   value: number
   tone: 'good' | 'warn' | 'alert' | 'plain'
@@ -140,15 +270,18 @@ function Metric({ label, value, tone, href }: {
 }) {
   const body = (
     <>
-      <p className={cn('font-display text-5xl leading-none tabular-nums',
+      <p className={cn('font-display text-3xl leading-none tabular-nums sm:text-4xl',
         tone === 'good' && 'text-live', tone === 'warn' && 'text-due',
         tone === 'alert' && 'text-out', tone === 'plain' && 'text-chalk')}>
         {value}
       </p>
-      <p className="mt-2 flex items-center gap-1 text-xs uppercase tracking-[0.2em] text-mute">
-        {label}{href && <ArrowUpRight size={13} />}
+      <p className="mt-1.5 flex items-center gap-1 text-[11px] uppercase tracking-[0.16em] text-mute">
+        {label}{href && <ArrowUpRight size={12} aria-hidden />}
       </p>
     </>
   )
-  return href ? <Link href={href} className="block transition-opacity hover:opacity-80">{body}</Link> : <div>{body}</div>
+  const className = 'rounded-lg bg-base-panel px-4 py-3.5'
+  return href
+    ? <Link href={href} className={cn(className, 'block transition-colors hover:bg-base-raised')}>{body}</Link>
+    : <div className={className}>{body}</div>
 }

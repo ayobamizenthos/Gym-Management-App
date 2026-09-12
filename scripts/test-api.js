@@ -154,6 +154,16 @@ const call = (path, token, body) =>
     const renamed = await (await service("/rest/v1/profiles?id=eq." + victim.id + "&select=full_name")).json()
     expect(renamed[0].full_name === "Corrected Spelling", "a receptionist can correct a member name")
 
+    // ---- deleting an account is an owner-only capability ----
+    expect((await call("/api/admin/delete-member", null, { user_id: victim.id })).status === 403, "anonymous call to /api/admin/delete-member is refused")
+    expect((await call("/api/admin/delete-member", member.token, { user_id: victim.id })).status === 403, "a member cannot delete an account")
+    expect((await call("/api/admin/delete-member", desk.token, { user_id: victim.id })).status === 403, "a receptionist cannot delete an account")
+    expect((await call("/api/admin/delete-member", boss.token, { user_id: boss.id })).status === 400, "an admin cannot delete their own account")
+    const gone = await call("/api/admin/delete-member", boss.token, { user_id: victim.id })
+    expect(gone.ok, "an admin can delete a member account")
+    const after = await (await service("/rest/v1/profiles?id=eq." + victim.id + "&select=id")).json()
+    expect(Array.isArray(after) && after.length === 0, "the deleted profile is really gone")
+
     // ---- a forged Paystack reference must never confirm anything ----
     const forged = await call('/api/paystack/verify', member.token, {
       reference: 'zg_forged_' + Date.now(),
@@ -179,7 +189,7 @@ const call = (path, token, body) =>
       console.log('\nNo route vulnerabilities found.')
     }
   } finally {
-    for (const account of [member, desk, boss, victim, named]) {
+    for (const account of [member, desk, boss, named]) {
       await service('/auth/v1/admin/users/' + account.id, { method: 'DELETE' })
     }
   }

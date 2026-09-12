@@ -93,7 +93,7 @@ export function NotificationInbox() {
       </header>
 
       {families.length > 1 && (
-        <div className="no-scrollbar -mx-5 mt-5 flex gap-2 overflow-x-auto px-5">
+        <div className="no-scrollbar mt-5 flex gap-2 overflow-x-auto">
           {(['all', ...families] as const).map(key => (
             <button
               key={key}

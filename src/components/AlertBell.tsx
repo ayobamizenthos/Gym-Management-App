@@ -17,7 +17,7 @@ export function AlertBell({ href }: { href: string }) {
       {unread > 0 && (
         <span
           aria-hidden
-          className="absolute right-1.5 top-2 grid h-4 min-w-[16px] place-items-center rounded-full bg-out px-1 text-[9px] font-bold leading-none text-white"
+          className="absolute right-1.5 top-2 grid h-4 min-w-[16px] place-items-center rounded-full bg-out-deep px-1 text-[9px] font-bold leading-none text-white"
         >
           {unread > 99 ? '99+' : unread}
         </span>

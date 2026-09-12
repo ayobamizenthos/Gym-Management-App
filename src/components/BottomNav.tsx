@@ -58,7 +58,7 @@ export function BottomNav({ label, left, right, action }: Props) {
           {item.badge && unread > 0 && (
             <span
               aria-hidden
-              className="absolute -right-2 -top-1.5 grid h-4 min-w-[16px] place-items-center rounded-full bg-out px-1 text-[9px] font-bold leading-none text-white"
+              className="absolute -right-2 -top-1.5 grid h-4 min-w-[16px] place-items-center rounded-full bg-out-deep px-1 text-[9px] font-bold leading-none text-white"
             >
               {unread > 99 ? '99+' : unread}
             </span>

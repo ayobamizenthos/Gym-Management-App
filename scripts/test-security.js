@@ -89,6 +89,20 @@ const attack = (wasBlocked, description) => (wasBlocked ? blocked.push(descripti
       problems.push('LEGIT: a member cannot update their own contact details')
     }
 
+    // ---- an inbox you can mark read but not rewrite ----
+    const alert = (await serviceJson("/rest/v1/notifications", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ user_id: uid, type: "payment_rejected", title: "Payment rejected", message: "Wrong amount" }) }))[0]
+    await asMember("/rest/v1/notifications?id=eq." + alert.id, { method: "PATCH", body: JSON.stringify({ title: "Payment confirmed", message: "All good" }) })
+    truth = await serviceJson("/rest/v1/notifications?id=eq." + alert.id + "&select=title,message,is_read")
+    attack(truth[0].title === "Payment rejected" && truth[0].message === "Wrong amount", "rewriting an alert you received")
+
+    await asMemberJson("/rest/v1/rpc/mark_notifications_read", { method: "POST", body: JSON.stringify({ p_ids: [alert.id] }) })
+    truth = await serviceJson("/rest/v1/notifications?id=eq." + alert.id + "&select=is_read")
+    if (truth[0].is_read === true) blocked.push("a member can mark their own alert read")
+    else problems.push("LEGIT: a member cannot mark their own alert read")
+
+    const otherInbox = await asMemberJson("/rest/v1/notifications?select=id,title&user_id=neq." + uid)
+    attack(Array.isArray(otherInbox) && otherInbox.length === 0, "reading another member inbox")
+
     const everyone = await asMemberJson('/rest/v1/profiles?select=id,full_name,phone')
     attack(Array.isArray(everyone) && everyone.length <= 1, 'harvesting the member database')
 

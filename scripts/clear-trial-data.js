@@ -22,13 +22,20 @@ const TABLES = ['notifications', 'audit_log', 'referrals', 'check_ins', 'payment
     console.log(table.padEnd(14) + before + ' -> ' + after + (res.ok ? '' : '  (' + res.status + ')'))
   }
 
-  // membership clocks reset with the ledger
+  // membership clocks and anything typed in while trialling reset with the ledger
   await call('/rest/v1/profiles?id=not.is.null', {
     method: 'PATCH',
     headers: { Prefer: 'return=minimal' },
-    body: JSON.stringify({ expires_at: null, registration_paid: false }),
+    body: JSON.stringify({
+      expires_at: null,
+      registration_paid: false,
+      phone: null,
+      address: null,
+      emergency_contact: null,
+      date_of_birth: null,
+    }),
   })
-  console.log('profiles       membership dates and joining fees reset')
+  console.log('profiles       membership dates, joining fees and trial contact details cleared')
 
   // transfer screenshots belong to the payments that just went
   const files = await (await call('/storage/v1/object/list/proofs', {

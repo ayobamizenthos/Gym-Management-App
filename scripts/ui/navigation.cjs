@@ -9,8 +9,8 @@ const results = []
 const check = (ok, what) => { results.push((ok ? 'ok   ' : 'FAIL ') + what); if (!ok) process.exitCode = 1 }
 
 const ROLES = [
-  ['member', process.env.TEST_MEMBER, '/m', ['Home', 'Renew', 'Payments', 'Account']],
-  ['desk', process.env.TEST_DESK, '/desk', ['Live', 'Members', 'Payments', 'More']],
+  ['member', process.env.TEST_MEMBER, '/m', ['Home', 'Renew', 'Invite', 'Account']],
+  ['desk', process.env.TEST_DESK, '/desk/overview', ['Overview', 'Members', 'Payments', 'More']],
   ['admin', process.env.TEST_ADMIN, '/admin', ['Overview', 'Members', 'Plans', 'More']],
 ]
 

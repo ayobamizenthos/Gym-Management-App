@@ -16,7 +16,7 @@ export function MemberChrome({ children }: { children: React.ReactNode }) {
     role === 'admin'
       ? { href: '/admin', label: 'Dashboard' }
       : role === 'receptionist'
-        ? { href: '/desk', label: 'Front desk' }
+        ? { href: '/desk/overview', label: 'Front desk' }
         : null
 
   return (

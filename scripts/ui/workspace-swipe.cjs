@@ -35,7 +35,7 @@ async function drag(page, dx) {
   const b = await chromium.launch()
   for (const [who, email, dash] of [
     ['admin', process.env.TEST_ADMIN, '/admin'],
-    ['receptionist', process.env.TEST_DESK, '/desk'],
+    ['receptionist', process.env.TEST_DESK, '/desk/overview'],
   ]) {
     const c = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
     const p = await c.newPage()

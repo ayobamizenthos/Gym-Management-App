@@ -68,8 +68,18 @@ const expect = (condition, message) => { if (!condition) failures.push(message) 
     }
 
     await pay(first, monthly, true)
-    let [row] = await query('select expires_at, registration_paid from profiles where id = $1', [first])
-    expect(row.expires_at && new Date(row.expires_at) > new Date(Date.now() + 29 * 864e5), 'a monthly plan did not grant 30 days')
+    let [row] = await query('select expires_at, pending_days, registration_paid from profiles where id = $1', [first])
+    expect(row.pending_days === 30, 'a monthly plan did not hold 30 days for the first scan')
+
+    // Walking in starts the clock. check_in itself is covered end to end in
+    // test-lifecycle.js; here we only need the clock running to test the maths.
+    await query(
+      'update profiles set expires_at = now() + make_interval(days => pending_days), pending_days = 0 where id = $1',
+      [first]
+    )
+    ;[row] = await query('select expires_at, pending_days, registration_paid from profiles where id = $1', [first])
+    expect(row.pending_days === 0 && row.expires_at && new Date(row.expires_at) > new Date(Date.now() + 29 * 864e5),
+      'the first scan did not start the 30 days')
     expect(row.registration_paid === true, 'the registration flag was not set')
     const afterFirst = new Date(row.expires_at)
 
@@ -81,16 +91,16 @@ const expect = (condition, message) => { if (!condition) failures.push(message) 
     try { await query('select public.confirm_payment($1)', [renewal]); doubleConfirmed = true } catch {}
     expect(!doubleConfirmed, 'a confirmed payment could be confirmed twice')
 
-    ;[row] = await query('select expires_at from profiles where id = $1', [referrer])
-    expect(row.expires_at === null, 'the referrer was rewarded before the target was met')
+    ;[row] = await query('select expires_at, pending_days from profiles where id = $1', [referrer])
+    expect(row.expires_at === null && row.pending_days === 0, 'the referrer was rewarded before the target was met')
 
     await pay(second, monthly, true)
-    ;[row] = await query('select expires_at from profiles where id = $1', [referrer])
-    expect(row.expires_at === null, 'the referrer was rewarded on the second referral')
+    ;[row] = await query('select expires_at, pending_days from profiles where id = $1', [referrer])
+    expect(row.expires_at === null && row.pending_days === 0, 'the referrer was rewarded on the second referral')
 
     await pay(third, monthly, true)
-    ;[row] = await query('select expires_at from profiles where id = $1', [referrer])
-    expect(row.expires_at && new Date(row.expires_at) > new Date(Date.now() + 6 * 864e5), 'the referrer was not rewarded on the third referral')
+    ;[row] = await query('select expires_at, pending_days from profiles where id = $1', [referrer])
+    expect(row.pending_days === 7, 'the referrer was not given 7 free days on the third referral')
 
     // a walk-in is not joining, so it must never attract the joining fee
     const walkIn = await createUser('walk', { full_name: 'Test Walk' })

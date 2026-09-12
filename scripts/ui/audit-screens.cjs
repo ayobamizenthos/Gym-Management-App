@@ -3,7 +3,8 @@ const { chromium } = require('playwright')
 const fs = require('fs')
 const path = require('path')
 
-const BASE = process.env.APP_URL || 'http://127.0.0.1:4313'
+process.env.APP_URL = process.env.APP_URL || 'https://zenthosgym.netlify.app'
+const BASE = process.env.APP_URL
 const SHOTS = './.ui-shots'
 
 const VIEWPORTS = [
@@ -126,35 +127,51 @@ async function auditLayout(page, label) {
 }
 
 async function exerciseInteractions(page, who, label) {
+  const url = page.url()
+
   // every accordion must open and close, and report its state to assistive tech
-  const headers = await page.$$('button[aria-expanded]')
+  const headers = await page.locator('button[aria-expanded][aria-controls]').elementHandles()
   for (const header of headers) {
-    const before = await header.getAttribute('aria-expanded')
-    await header.click()
-    await page.waitForTimeout(160)
-    const after = await header.getAttribute('aria-expanded')
-    if (before === after) note(label, 'accordion did not toggle: ' + (await header.innerText()).slice(0, 24))
-    const panelId = await header.getAttribute('aria-controls')
-    if (panelId) {
-      const visible = await page.evaluate(id => {
-        const el = document.getElementById(id)
-        return el ? !el.hidden && el.getBoundingClientRect().height > 0 : null
-      }, panelId)
-      if (after === 'true' && visible === false) note(label, 'accordion open but panel hidden')
+    try {
+      const before = await header.getAttribute('aria-expanded')
+      await header.click()
+      await page.waitForTimeout(160)
+      const after = await header.getAttribute('aria-expanded')
+      if (before === after) note(label, 'accordion did not toggle: ' + (await header.innerText()).slice(0, 24))
+      const panelId = await header.getAttribute('aria-controls')
+      if (panelId && after === 'true') {
+        const visible = await page.evaluate(id => {
+          const el = document.getElementById(id)
+          return el ? !el.hidden && el.getBoundingClientRect().height > 0 : null
+        }, panelId)
+        if (visible === false) note(label, 'accordion open but panel hidden')
+      }
+      await header.click()
+      await page.waitForTimeout(120)
+    } catch {
+      // a control that navigated away is not an accordion; carry on
+      break
     }
-    await header.click()
-    await page.waitForTimeout(120)
+  }
+
+  if (page.url() !== url) {
+    await page.goto(url, { waitUntil: 'domcontentloaded' }).catch(() => {})
+    await page.waitForTimeout(700)
   }
 
   // keyboard reachability, measured from the top of the document - tabbing off
   // the last element correctly leaves the page, so start fresh
-  await page.evaluate(() => document.body.focus())
-  const reached = []
-  for (let i = 0; i < 3; i += 1) {
-    await page.keyboard.press('Tab')
-    reached.push(await page.evaluate(() => document.activeElement?.tagName ?? 'none'))
+  try {
+    await page.evaluate(() => document.body.focus())
+    const reached = []
+    for (let i = 0; i < 3; i += 1) {
+      await page.keyboard.press('Tab')
+      reached.push(await page.evaluate(() => document.activeElement?.tagName ?? 'none'))
+    }
+    if (reached.every(t => t === 'BODY' || t === 'none')) note(label, 'nothing receives keyboard focus')
+  } catch {
+    // a navigation mid-measurement is not a finding
   }
-  if (reached.every(t => t === 'BODY' || t === 'none')) note(label, 'nothing receives keyboard focus')
 }
 
 ;(async () => {

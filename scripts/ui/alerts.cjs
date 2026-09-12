@@ -38,8 +38,8 @@ const ago = mins => new Date(Date.now() - mins * 60000).toISOString()
   await Promise.all([page.waitForURL(u => !u.pathname.startsWith('/login'), { timeout: 45000 }), page.click('button[type="submit"]')])
   await page.waitForTimeout(2500)
 
-  const badge = await page.locator('nav.rounded-full a:has-text("Alerts") span').first().innerText().catch(() => '')
-  check(badge.trim() === '7', 'the bottom bar badge shows every unread alert (' + badge.trim() + ')')
+  const badge = await page.locator('button[aria-expanded] span').first().innerText().catch(() => '')
+  check(badge.trim() === '7', 'the bell badge shows every unread alert (' + badge.trim() + ')')
 
   await page.goto(BASE + '/m/alerts', { waitUntil: 'networkidle' })
   await page.waitForTimeout(1800)

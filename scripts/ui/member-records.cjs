@@ -1,35 +1,30 @@
 require('dotenv').config({ path: '.env.local' })
 const { chromium } = require('playwright')
-const BASE = process.env.APP_URL || 'http://127.0.0.1:4318'
+const { contextFor } = require('./session.cjs')
+process.env.APP_URL = process.env.APP_URL || 'https://zenthosgym.netlify.app'
+const BASE = process.env.APP_URL
 
 const results = []
 const check = (ok, what) => { results.push((ok ? 'ok   ' : 'FAIL ') + what); if (!ok) process.exitCode = 1 }
 
-async function signIn(page, identifier, password) {
-  await page.goto(BASE + '/login', { waitUntil: 'domcontentloaded' })
-  await page.waitForSelector('button[type="submit"]:not([disabled])')
-  await page.fill('form input:not([type="password"])', identifier)
-  await page.fill('input[type="password"]', password)
-  await Promise.all([page.waitForURL(u => !u.pathname.startsWith('/login'), { timeout: 40000 }), page.click('button[type="submit"]')])
-}
 
 ;(async () => {
   const browser = await chromium.launch()
 
   for (const vp of [{ name: 'phone', width: 390, height: 844 }, { name: 'desktop', width: 1440, height: 900 }]) {
-    const ctx = await browser.newContext({ viewport: vp, isMobile: vp.width < 700, hasTouch: vp.width < 700 })
-    const page = await ctx.newPage()
+    const { context: ctx, page } = await contextFor(browser, 'desk', process.env.TEST_DESK, { viewport: vp })
     const errors = []
     page.on('pageerror', e => errors.push(e.message))
 
-    await signIn(page, process.env.TEST_DESK, process.env.TEST_PASSWORD)
-    await page.goto(BASE + '/desk/members', { waitUntil: 'networkidle' })
+    await page.goto(BASE + '/desk/members', { waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(1000)
 
+    await page.waitForSelector('ul[role="list"] a', { timeout: 30000 })
     const firstMember = page.locator('ul[role="list"] a').first()
     check(await firstMember.count() > 0, vp.name + ': the desk sees a member list')
     await firstMember.click()
-    await page.waitForTimeout(1400)
+    await page.waitForURL('**/desk/members/*', { timeout: 30000 })
+    await page.waitForTimeout(1500)
 
     check(page.url().includes('/desk/members/'), vp.name + ': a member record opens')
 
@@ -49,7 +44,7 @@ async function signIn(page, identifier, password) {
     await page.click('button:has-text("Save details")')
     await page.waitForTimeout(2200)
 
-    await page.reload({ waitUntil: 'networkidle' })
+    await page.reload({ waitUntil: 'domcontentloaded' })
     await page.waitForTimeout(1400)
     const afterReload = await page.locator('body').innerText()
     check(afterReload.includes(stamp), vp.name + ': a corrected phone number persists')
@@ -65,11 +60,10 @@ async function signIn(page, identifier, password) {
   }
 
   // a member must not be offered a name field any more
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
-  const page = await ctx.newPage()
-  await signIn(page, process.env.TEST_MEMBER, process.env.TEST_PASSWORD)
-  await page.goto(BASE + '/m/account', { waitUntil: 'networkidle' })
+  const { context: ctx, page } = await contextFor(browser, 'member', process.env.TEST_MEMBER)
+  await page.goto(BASE + '/m/account', { waitUntil: 'domcontentloaded' })
   await page.waitForTimeout(1200)
+  await page.waitForSelector('label:has-text("Phone") input', { timeout: 30000 })
   const labels = await page.locator('label').allInnerTexts()
   check(!labels.some(l => /full name/i.test(l)), 'member: the name is no longer an editable field')
   const body = await page.locator('body').innerText()
@@ -81,9 +75,13 @@ async function signIn(page, identifier, password) {
   // and their own contact details must still save
   const stamp = '0805' + String(Date.now()).slice(-7)
   await page.locator('label:has-text("Phone") input').fill(stamp)
-  await page.click('button:has-text("Save changes")')
-  await page.waitForTimeout(2200)
-  await page.reload({ waitUntil: 'networkidle' })
+  const save = page.locator('button:has-text("Save changes")')
+  await save.waitFor({ state: 'visible', timeout: 15000 })
+  await save.click()
+  // the write has to land before the reload, or the reload races it
+  await page.waitForResponse(r => r.url().includes('/rest/v1/profiles') && r.request().method() === 'PATCH', { timeout: 30000 })
+  await page.waitForTimeout(800)
+  await page.reload({ waitUntil: 'domcontentloaded' })
   await page.waitForTimeout(1400)
   // the value lives in an input, which innerText does not expose
   check((await page.locator('label:has-text("Phone") input').inputValue()) === stamp, 'member: their own phone still saves')

@@ -1,6 +1,7 @@
 require('dotenv').config({ path: '.env.local' })
 const { chromium } = require('playwright')
-const BASE = process.env.APP_URL || 'http://127.0.0.1:4316'
+process.env.APP_URL = process.env.APP_URL || 'https://zenthosgym.netlify.app'
+const BASE = process.env.APP_URL
 
 const VIEWPORTS = [
   { name: 'iphone-se', width: 375, height: 667 },

@@ -5,6 +5,7 @@ import { AlertsProvider } from '@/stores/alerts'
 import { ToastHost } from '@/components/ToastHost'
 import { NotificationWatcher } from '@/components/NotificationWatcher'
 import { InstallPrompt } from '@/components/InstallPrompt'
+import { OfflineFlag } from '@/components/OfflineFlag'
 import './globals.css'
 
 // Anton is a poster face: it does headlines and figures only.
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AlertsProvider>
             <NotificationWatcher />
             {children}
+            <OfflineFlag />
             <ToastHost />
             <InstallPrompt />
           </AlertsProvider>

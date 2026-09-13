@@ -10,6 +10,7 @@ interface Body {
   full_name?: string
   phone?: string
   email?: string
+  date_of_birth?: string
   username?: string
   password?: string
   branch_id?: string | null
@@ -27,6 +28,7 @@ export async function POST(request: Request) {
   const fullName = body.full_name?.trim()
   const phone = body.phone?.trim()
   const email = body.email?.trim().toLowerCase()
+  const dateOfBirth = body.date_of_birth?.trim() || null
   const username = body.username?.trim().toLowerCase()
 
   if (!fullName || !phone) {
@@ -52,7 +54,7 @@ export async function POST(request: Request) {
     email: login,
     password,
     email_confirm: true,
-    user_metadata: { full_name: fullName, phone, username: username ?? null },
+    user_metadata: { full_name: fullName, phone, date_of_birth: dateOfBirth, username: username ?? null },
   })
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 

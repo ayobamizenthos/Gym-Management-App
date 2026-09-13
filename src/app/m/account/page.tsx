@@ -145,7 +145,7 @@ export default function AccountPage() {
           <span className="text-[15px] font-medium">
             {profile.expires_at ? 'Membership expired' : 'No plan yet'}
           </span>
-          <span className="flex shrink-0 items-center gap-1 text-[15px] font-medium text-chalk-dim">
+          <span className="flex shrink-0 items-center gap-1 font-display text-lg uppercase tracking-tightest text-mute">
             Choose a plan <ChevronRight size={17} aria-hidden />
           </span>
         </Link>
@@ -154,7 +154,7 @@ export default function AccountPage() {
       {(profile.role === 'admin' || profile.role === 'receptionist') && (
         <Link
           href={profile.role === 'admin' ? '/admin' : '/desk'}
-          className="mt-3 flex items-center justify-between rounded-lg bg-live-tint px-4 py-3.5 transition-opacity hover:opacity-90"
+          className="row mt-3 justify-between"
         >
           <span className="flex items-center gap-2.5 text-[15px] font-medium">
             <LayoutDashboard size={18} className="text-live" aria-hidden />

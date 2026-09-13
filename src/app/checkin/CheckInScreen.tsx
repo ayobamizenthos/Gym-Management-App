@@ -10,6 +10,7 @@ import { asName, shortDate } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { Loader } from '@/components/Loader'
 import { StatusMark } from '@/components/StatusMark'
+import { BirthdayCard, type Celebrant } from '@/components/BirthdayCard'
 import type { CheckInResult, CheckInKind } from '@/lib/types'
 
 const COPY: Record<CheckInKind, { title: string; note: (r: CheckInResult) => string; tone: string }> = {
@@ -41,6 +42,8 @@ export default function CheckInScreen() {
   const { session, loading } = useAuth()
   const [result, setResult] = useState<CheckInResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [celebrants, setCelebrants] = useState<Celebrant[]>([])
+  const [dismissed, setDismissed] = useState(false)
   const fired = useRef(false)
 
   const branch = params.get('b')
@@ -55,6 +58,12 @@ export default function CheckInScreen() {
     const payload = data as CheckInResult
     setResult(payload)
     playDeskAlert(payload.kind)
+
+    if (payload.kind === 'valid') {
+      void supabase
+        .rpc('birthdays_today', { p_branch: branch })
+        .then(({ data: today }) => setCelebrants((today ?? []) as Celebrant[]))
+    }
     if (navigator.vibrate) navigator.vibrate(payload.kind === 'expired' ? [90, 60, 90, 60, 90] : 45)
   }, [branch])
 
@@ -112,6 +121,10 @@ export default function CheckInScreen() {
           {who}
         </p>
       </section>
+
+      {!dismissed && celebrants.length > 0 && (
+        <BirthdayCard people={celebrants} onClose={() => setDismissed(true)} />
+      )}
 
       <footer className="animate-lift-3 relative p-6">
         {welcomed ? (

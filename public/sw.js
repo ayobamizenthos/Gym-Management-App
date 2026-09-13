@@ -13,6 +13,7 @@ const TAG_GROUPS = {
   renewals_due: 'membership',
   referral_reward: 'rewards',
   referral_joined: 'rewards',
+  birthday: 'rewards',
 }
 
 const ROUTES = {
@@ -23,6 +24,7 @@ const ROUTES = {
   renewals_due: '/m/renew',
   referral_reward: '/m/referrals',
   referral_joined: '/m/referrals',
+  birthday: '/m',
 }
 
 self.addEventListener('install', () => self.skipWaiting())

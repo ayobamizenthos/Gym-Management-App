@@ -1,4 +1,4 @@
-import { BadgeCheck, Hourglass, CircleX, Clock, Gift, UserPlus } from 'lucide-react'
+import { BadgeCheck, Hourglass, CircleX, Clock, Gift, UserPlus, PartyPopper } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 export interface Notification {
@@ -30,6 +30,7 @@ const KINDS: Record<string, Kind> = {
   renewals_due:      { icon: Clock,           tone: 'warn',  family: 'membership', href: r => (r === 'member' ? '/m/renew' : '/desk/members') },
   referral_reward:   { icon: Gift,            tone: 'good',  family: 'rewards',    href: () => '/m/referrals' },
   referral_joined:   { icon: UserPlus,        tone: 'good',  family: 'rewards',    href: () => '/m/referrals' },
+  birthday:          { icon: PartyPopper,     tone: 'good',  family: 'rewards',    href: () => '/m' },
 }
 
 const FALLBACK: Kind = { icon: BadgeCheck, tone: 'plain', family: 'membership', href: () => '/m' }

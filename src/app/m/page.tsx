@@ -47,6 +47,7 @@ export default function MemberHome() {
       <section className="relative -mx-5 -mt-6 overflow-hidden">
         <Image
           src="/img/weights.jpg"
+          quality={70}
           alt=""
           width={1600}
           height={997}

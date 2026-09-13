@@ -74,6 +74,7 @@ export interface CheckInResult {
   expires_at: string | null
   days_left: number | null
   just_started?: boolean
+  is_birthday?: boolean
   is_active: boolean
   last_check_in: string | null
 }

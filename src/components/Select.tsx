@@ -71,7 +71,7 @@ export function Select({ value, options, onChange, label, placeholder = 'Select'
           {/* on a phone the list rises from the bottom, where the thumb already is */}
           <div
             aria-hidden
-            className="fixed inset-0 z-[70] bg-base/60 backdrop-blur-[2px] sm:hidden"
+            className="fixed inset-0 z-[70] bg-base/60 backdrop-blur-[2px] sm:bg-transparent sm:backdrop-blur-none"
             onClick={() => setOpen(false)}
           />
           <ul

@@ -6,6 +6,9 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/stores/auth'
 import { useToasts } from '@/stores/toast'
 import { BackLink } from '@/components/BackLink'
+
+// nobody registering today was born after today
+const TODAY = new Date().toISOString().slice(0, 10)
 import { Select } from '@/components/Select'
 import { UsernameField } from '@/components/UsernameField'
 import type { Branch } from '@/lib/types'
@@ -15,9 +18,9 @@ export default function RegisterMember() {
   const { profile } = useAuth()
   const push = useToasts(s => s.push)
   const [branches, setBranches] = useState<Branch[]>([])
-  const [form, setForm] = useState({ full_name: '', phone: '', email: '', username: '', branch_id: '' })
+  const [form, setForm] = useState({ full_name: '', phone: '', email: '', date_of_birth: '', username: '', branch_id: '' })
   const [busy, setBusy] = useState(false)
-  const [usernameOk, setUsernameOk] = useState(true)
+  const [usernameOk, setUsernameOk] = useState(false)
   const [created, setCreated] = useState<{ email: string; password: string } | null>(null)
 
   useEffect(() => {
@@ -68,7 +71,7 @@ export default function RegisterMember() {
           </div>
         </dl>
         <div className="mt-6 flex gap-2">
-          <button onClick={() => { setCreated(null); setForm({ full_name: '', phone: '', email: '', username: '', branch_id: form.branch_id }) }}
+          <button onClick={() => { setCreated(null); setForm({ full_name: '', phone: '', email: '', date_of_birth: '', username: '', branch_id: form.branch_id }) }}
             className="btn-primary flex-1">Register another</button>
           <button onClick={() => router.push('/desk/members')} className="btn-quiet flex-1">Done</button>
         </div>
@@ -80,7 +83,7 @@ export default function RegisterMember() {
     <div className="max-w-md animate-rise">
       <BackLink fallback="/desk/members" label="Members" />
       <h1 className="mt-4 text-4xl">Register member</h1>
-      <p className="mt-2 text-[15px] text-chalk-dim">From the paper form. Email is optional.</p>
+      <p className="mt-2 text-[15px] text-chalk-dim">Straight from the paper form.</p>
 
       <form onSubmit={submit} className="mt-7 flex flex-col gap-4">
         <label className="block">
@@ -92,12 +95,22 @@ export default function RegisterMember() {
           <input required inputMode="tel" value={form.phone} onChange={set('phone')} className="field mt-1.5" />
         </label>
         <label className="block">
-          <span className="label">Email (optional)</span>
-          <input type="email" value={form.email} onChange={set('email')} className="field mt-1.5" />
+          <span className="label">Email</span>
+          <input required type="email" inputMode="email" value={form.email} onChange={set('email')} className="field mt-1.5" />
+        </label>
+        <label className="block">
+          <span className="label">Date of birth</span>
+          <input
+            required
+            type="date"
+            max={TODAY}
+            value={form.date_of_birth}
+            onChange={set('date_of_birth')}
+            className="field mt-1.5"
+          />
         </label>
         <UsernameField
-          label="Username (optional)"
-          hint="How they sign in. Leave it blank and they can pick one later."
+          required
           value={form.username}
           onChange={value => setForm(f => ({ ...f, username: value }))}
           onStateChange={setUsernameOk}

@@ -74,17 +74,15 @@ export function NotificationToggle() {
       className="flex w-full items-center justify-between gap-4 py-3.5 text-left disabled:opacity-60"
     >
       <span className="min-w-0">
-        <span className="block text-[15px] font-medium">Notification sounds and pop-ups</span>
+        <span className="block text-[15px] font-medium">Notifications</span>
         <span className="block text-sm text-mute">
           {unsupported
             ? 'This browser cannot show notifications.'
             : blocked
               ? 'Blocked in your browser settings.'
-              : on && permission === 'granted'
+              : on
                 ? 'On your phone, even when the app is closed.'
-                : on
-                  ? 'Tap to also get them when the app is closed.'
-                  : 'Quiet. They still collect in Alerts.'}
+                : 'Quiet. They still collect in Alerts.'}
         </span>
       </span>
       <span className={cn('relative h-6 w-11 shrink-0 rounded-full transition-colors',

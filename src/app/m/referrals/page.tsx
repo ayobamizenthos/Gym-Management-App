@@ -106,7 +106,7 @@ export default function ReferralsPage() {
             <UsernameField
               required
               label=""
-              hint="3-20 letters, numbers or underscore. You sign in with it too. Cannot be changed."
+              hint=""
               value={wanted}
               onChange={setWanted}
               onStateChange={setWantedOk}

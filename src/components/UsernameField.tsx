@@ -27,7 +27,7 @@ export function UsernameField({
   onChange,
   onStateChange,
   label = 'Username',
-  hint = '3-20 letters, numbers or underscore. You sign in with it too.',
+  hint = '',
   required,
 }: Props) {
   const [state, setState] = useState<State>('idle')
@@ -76,6 +76,7 @@ export function UsernameField({
       </span>
       <span
         role={state === 'taken' || state === 'invalid' ? 'alert' : undefined}
+        hidden={state === 'idle' && !hint}
         className={cn(
           'mt-1.5 block text-sm',
           state === 'taken' || state === 'invalid' ? 'text-out' : 'text-mute'
@@ -84,7 +85,7 @@ export function UsernameField({
         {state === 'taken'
           ? 'Username already exists'
           : state === 'invalid'
-            ? '3-20 letters, numbers or underscore'
+            ? 'Use 3-20 letters, numbers or underscore'
             : state === 'free'
               ? 'Available'
               : hint}

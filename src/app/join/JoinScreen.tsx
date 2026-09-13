@@ -7,6 +7,9 @@ import { supabase } from '@/lib/supabase'
 import { unlockAudio } from '@/lib/sounds'
 import { PasswordField } from '@/components/PasswordField'
 import { UsernameField } from '@/components/UsernameField'
+
+// nobody signing up today was born after today
+const TODAY = new Date().toISOString().slice(0, 10)
 import { useHydrated } from '@/hooks/useHydrated'
 
 export default function JoinScreen() {
@@ -19,6 +22,7 @@ export default function JoinScreen() {
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [address, setAddress] = useState('')
+  const [dateOfBirth, setDateOfBirth] = useState('')
   const [username, setUsername] = useState('')
   const [usernameOk, setUsernameOk] = useState(false)
   const [password, setPassword] = useState('')
@@ -50,6 +54,7 @@ export default function JoinScreen() {
         phone,
         email,
         address,
+        date_of_birth: dateOfBirth,
         username,
         password,
         referral,
@@ -103,6 +108,17 @@ export default function JoinScreen() {
         <label className="block">
           <span className="text-xs uppercase tracking-[0.2em] text-mute">Address</span>
           <input required value={address} onChange={e => setAddress(e.target.value)} className="field mt-2" />
+        </label>
+        <label className="block">
+          <span className="text-xs uppercase tracking-[0.2em] text-mute">Date of birth</span>
+          <input
+            required
+            type="date"
+            max={TODAY}
+            value={dateOfBirth}
+            onChange={e => setDateOfBirth(e.target.value)}
+            className="field mt-2"
+          />
         </label>
         <UsernameField required value={username} onChange={setUsername} onStateChange={setUsernameOk} />
         <PasswordField label="Password" value={password} onChange={setPassword} autoComplete="new-password" minLength={8} />

@@ -9,6 +9,7 @@ interface Body {
   phone?: string
   email?: string
   address?: string
+  date_of_birth?: string
   username?: string
   password?: string
   referral?: string
@@ -32,6 +33,7 @@ export async function POST(request: Request) {
   const phone = body.phone?.trim()
   const email = body.email?.trim().toLowerCase()
   const address = body.address?.trim() ?? null
+  const dateOfBirth = body.date_of_birth?.trim() || null
   const username = body.username?.trim().toLowerCase()
   const password = body.password ?? ''
   const referral = body.referral?.trim().toLowerCase() ?? null
@@ -67,7 +69,7 @@ export async function POST(request: Request) {
     email,
     password,
     email_confirm: true,
-    user_metadata: { full_name: fullName, phone, address, username, referral },
+    user_metadata: { full_name: fullName, phone, address, date_of_birth: dateOfBirth, username, referral },
   })
 
   if (error) {

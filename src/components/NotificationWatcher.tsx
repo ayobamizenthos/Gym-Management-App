@@ -22,6 +22,7 @@ const ALERTS: Record<string, Alert> = {
   payment_rejected:  { sound: playNoMembership,  tone: 'bad',  buzz: [70, 50, 70] },
   referral_reward:   { sound: playReward,        tone: 'good', buzz: [35, 40, 35] },
   referral_joined:   { sound: playReward,        tone: 'good', buzz: [35, 40, 35] },
+  birthday:          { sound: playReward,        tone: 'good', buzz: [35, 40, 35] },
   renewals_due:      { sound: playRepeat,        tone: 'info', buzz: 35 },
 }
 

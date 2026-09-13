@@ -146,43 +146,21 @@ function strike(at = 0, level = 0.13, decay = 0.09, colour = 2600) {
 
 let preferred: SpeechSynthesisVoice | null = null
 
-const VOICE_CHOICE = 'zg.voice'
 // An announcement voice reads as official when it is measured and even. These
 // are the calm, clearly-articulated engines each platform ships.
-const FEMALE = /(zira|samantha|karen|moira|tessa|fiona|serena|hazel|susan|aria|jenny|libby|sonia|female|woman)/i
 
-export function availableVoices(): SpeechSynthesisVoice[] {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return []
+function pickVoice(): SpeechSynthesisVoice | null {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null
   const all = window.speechSynthesis.getVoices()
   const english = all.filter(v => /^en(-|_|$)/i.test(v.lang))
   const pool = english.length > 0 ? english : all
   // a local engine answers instantly; a network one can arrive after the member
   const local = pool.filter(v => v.localService)
   const candidates = local.length > 0 ? local : pool
-  // an official-sounding woman first, which is what a gym door wants
-  return [...candidates].sort((a, b) => (FEMALE.test(b.name) ? 1 : 0) - (FEMALE.test(a.name) ? 1 : 0))
-}
-
-function pickVoice(): SpeechSynthesisVoice | null {
-  const voices = availableVoices()
-  if (voices.length === 0) return null
-  let saved: string | null = null
-  try { saved = localStorage.getItem(VOICE_CHOICE) } catch {}
-  return voices.find(v => v.name === saved) ?? voices[0]
-}
-
-export function setVoice(name: string) {
-  try { localStorage.setItem(VOICE_CHOICE, name) } catch {}
-  preferred = availableVoices().find(v => v.name === name) ?? preferred
-  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    window.speechSynthesis.cancel()
-    announcing = false
-  }
-}
-
-export function currentVoice(): SpeechSynthesisVoice | null {
-  if (!preferred) preferred = pickVoice()
-  return preferred
+  if (candidates.length === 0) return null
+  // the measured, lower voices read as an announcement rather than a toy
+  const wanted = /(daniel|alex|arthur|oliver|google uk english male|guy|david|mark|male|man)/i
+  return candidates.find(v => wanted.test(v.name)) ?? candidates[0]
 }
 
 /**
@@ -217,9 +195,7 @@ function announce(words: string, delay = 0, { rate = 0.92, pitch = 0.85 } = {}) 
         line.voice = preferred
       }
       line.rate = rate
-      // a woman's voice sits naturally; dropping its pitch is what makes a
-      // synthesised voice sound like a toy
-      line.pitch = preferred && FEMALE.test(preferred.name) ? 1 : pitch
+      line.pitch = pitch
       line.volume = 1
       announcing = true
       line.onend = () => { announcing = false }
@@ -231,11 +207,6 @@ function announce(words: string, delay = 0, { rate = 0.92, pitch = 0.85 } = {}) 
   }, delay)
 }
 
-/** Says a line now, with whatever voice is currently chosen. Used to audition. */
-export function sayNow(words: string) {
-  unlockSpeech()
-  announce(words, 0)
-}
 
 const C5 = 523.25
 const E5 = 659.25

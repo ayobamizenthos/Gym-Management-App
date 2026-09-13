@@ -62,7 +62,7 @@ export default function LoginPage() {
     <main className="min-h-dvh lg:grid lg:grid-cols-[1.1fr_1fr]">
       {/* Desktop: the photograph is the statement, the copy sits on it. */}
       <section className="relative hidden lg:block">
-        <Image src="/img/rack.jpg" alt="" fill priority sizes="55vw" className="object-cover opacity-55" />
+        <Image src="/img/rack.jpg" alt="" fill priority sizes="(max-width: 1024px) 100vw, 55vw" className="object-cover opacity-55" />
         <div aria-hidden className="absolute inset-0 bg-gradient-to-tr from-base via-base/60 to-transparent" />
         <div className="relative flex h-full flex-col justify-between p-14">
           <span className="font-display text-2xl uppercase tracking-tightest">Zenthos Gym</span>

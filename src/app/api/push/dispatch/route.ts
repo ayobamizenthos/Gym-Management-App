@@ -30,6 +30,7 @@ const ROUTES: Record<string, string> = {
   renewals_due: '/m/renew',
   referral_reward: '/m/referrals',
   referral_joined: '/m/referrals',
+  birthday: '/m',
 }
 
 function configure() {

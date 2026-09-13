@@ -62,6 +62,7 @@ export function BirthdayCard({ people, onClose }: { people: Celebrant[]; onClose
       )}
     >
       <div
+        data-card="birthday"
         className={cn(
           'pointer-events-auto relative w-full max-w-[340px] overflow-hidden rounded-2xl',
           'bg-base-raised shadow-[0_20px_50px_-12px_rgba(0,0,0,.9)] transition-all duration-300',

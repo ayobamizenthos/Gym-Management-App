@@ -40,6 +40,65 @@ const THRESHOLD = 56
 /** Past this, the finger is scrolling the page, not crossing the bar. */
 const SLOP = 18
 
+
+function Slot({
+  item,
+  active,
+  unread,
+  dragged,
+}: {
+  item: NavItem
+  active: boolean
+  unread: number
+  dragged: React.MutableRefObject<boolean>
+}) {
+  return (
+    <Link
+      href={item.href}
+      replace
+      aria-current={active ? 'page' : undefined}
+      onClick={event => {
+        // the release of a swipe is not a tap on whatever it ended over
+        if (dragged.current) {
+          event.preventDefault()
+          dragged.current = false
+        }
+      }}
+      className="group relative flex h-full flex-1 flex-col items-center justify-center gap-1 px-0.5"
+    >
+      <span className="relative">
+        <item.icon
+          size={21}
+          strokeWidth={active ? 2.3 : 1.8}
+          aria-hidden
+          className={cn('transition-colors', active ? 'text-live' : 'text-mute group-hover:text-chalk')}
+        />
+        {item.badge && unread > 0 && (
+          <span
+            aria-hidden
+            className="absolute -right-2 -top-1.5 grid h-4 min-w-[16px] place-items-center rounded-full bg-out-deep px-1 text-[9px] font-bold leading-none text-white"
+          >
+            {unread > 99 ? '99+' : unread}
+          </span>
+        )}
+      </span>
+      <span
+        className={cn(
+          'max-w-full truncate text-[10px] font-semibold leading-none transition-colors',
+          active ? 'text-live' : 'text-mute group-hover:text-chalk'
+        )}
+      >
+        {item.label}
+      </span>
+      <span
+        aria-hidden
+        className={cn('h-1 w-1 rounded-full transition-colors', active ? 'bg-live' : 'bg-transparent')}
+      />
+      {item.badge && unread > 0 && <span className="sr-only">{unread} unread</span>}
+    </Link>
+  )
+}
+
 export function BottomNav({ label, left, right, action, swipe }: Props) {
   const path = usePathname()
   const router = useRouter()
@@ -119,54 +178,6 @@ export function BottomNav({ label, left, right, action, swipe }: Props) {
   const isOn = (item: NavItem) =>
     item.section ? path === item.section || path.startsWith(item.section + '/') : path === item.href
 
-  const Slot = ({ item }: { item: NavItem }) => {
-    const active = isOn(item)
-    return (
-      <Link
-        href={item.href}
-        replace
-        aria-current={active ? 'page' : undefined}
-        onClick={event => {
-          // the release of a swipe is not a tap on whatever it ended over
-          if (dragged.current) {
-            event.preventDefault()
-            dragged.current = false
-          }
-        }}
-        className="group relative flex h-full flex-1 flex-col items-center justify-center gap-1 px-0.5"
-      >
-        <span className="relative">
-          <item.icon
-            size={21}
-            strokeWidth={active ? 2.3 : 1.8}
-            aria-hidden
-            className={cn('transition-colors', active ? 'text-live' : 'text-mute group-hover:text-chalk')}
-          />
-          {item.badge && unread > 0 && (
-            <span
-              aria-hidden
-              className="absolute -right-2 -top-1.5 grid h-4 min-w-[16px] place-items-center rounded-full bg-out-deep px-1 text-[9px] font-bold leading-none text-white"
-            >
-              {unread > 99 ? '99+' : unread}
-            </span>
-          )}
-        </span>
-        <span
-          className={cn(
-            'max-w-full truncate text-[10px] font-semibold leading-none transition-colors',
-            active ? 'text-live' : 'text-mute group-hover:text-chalk'
-          )}
-        >
-          {item.label}
-        </span>
-        <span
-          aria-hidden
-          className={cn('h-1 w-1 rounded-full transition-colors', active ? 'bg-live' : 'bg-transparent')}
-        />
-        {item.badge && unread > 0 && <span className="sr-only">{unread} unread</span>}
-      </Link>
-    )
-  }
 
   return (
     <>
@@ -194,8 +205,8 @@ export function BottomNav({ label, left, right, action, swipe }: Props) {
           style={swipe ? { touchAction: 'pan-y' } : undefined}
           className="pointer-events-auto relative flex h-[62px] w-full max-w-md items-stretch rounded-full bg-base-panel shadow-[0_10px_30px_-8px_rgba(0,0,0,.75)] will-change-transform"
         >
-          <Slot item={left[0]} />
-          <Slot item={left[1]} />
+          <Slot item={left[0]} active={isOn(left[0])} unread={unread} dragged={dragged} />
+          <Slot item={left[1]} active={isOn(left[1])} unread={unread} dragged={dragged} />
 
           {/* the raised action keeps its own column so the four tabs stay evenly spaced */}
           <div className="relative w-[74px] shrink-0">
@@ -217,8 +228,8 @@ export function BottomNav({ label, left, right, action, swipe }: Props) {
             </span>
           </div>
 
-          <Slot item={right[0]} />
-          <Slot item={right[1]} />
+          <Slot item={right[0]} active={isOn(right[0])} unread={unread} dragged={dragged} />
+          <Slot item={right[1]} active={isOn(right[1])} unread={unread} dragged={dragged} />
         </nav>
         </span>
       </div>

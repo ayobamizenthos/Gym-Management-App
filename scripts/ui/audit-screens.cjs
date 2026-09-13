@@ -1,5 +1,6 @@
 require('dotenv').config({ path: '.env.local' })
 const { chromium } = require('playwright')
+const { ensureMember } = require('./session.cjs')
 const fs = require('fs')
 const path = require('path')
 
@@ -22,27 +23,34 @@ const ACCOUNTS = {
 
 const ROUTES = {
   admin: ['/admin', '/admin/members', '/admin/plans', '/admin/branches', '/admin/staff', '/admin/settings', '/admin/alerts', '/admin/more'],
-  desk: ['/desk/overview', '/desk', '/desk/members', '/desk/members/new', '/desk/payments', '/desk/alerts', '/desk/more'],
+  desk: ['/desk', '/desk/overview', '/desk/members', '/desk/members/new', '/desk/payments', '/desk/alerts', '/desk/more'],
   member: ['/m', '/m/renew', '/m/referrals', '/m/account', '/m/history', '/m/alerts'],
 }
 
 const PUBLIC = ['/login', '/join', '/forgot-password', '/reset-password']
 
 const problems = []
+let visited = 0
 const note = (where, what) => { problems.push(where + ' :: ' + what); console.log('  ! ' + what) }
 
-async function signIn(page, who) {
+async function signIn(page, who, attempt = 1) {
   const { email, password } = ACCOUNTS[who]
-  await page.goto(BASE + '/login', { waitUntil: 'domcontentloaded' })
-  // the submit button stays disabled until React takes over, so waiting for it
-  // to enable is the honest signal that the page is interactive
-  await page.waitForSelector('button[type="submit"]:not([disabled])', { timeout: 45000 })
-  await page.fill('form input:not([type="password"])', email)
-  await page.fill('input[type="password"]', password)
-  await Promise.all([
-    page.waitForURL(u => !u.pathname.startsWith('/login'), { timeout: 30000 }),
-    page.click('button[type="submit"]'),
-  ])
+  try {
+    await page.goto(BASE + '/login', { waitUntil: 'domcontentloaded' })
+    // the submit button stays disabled until React takes over, so waiting for it
+    // to enable is the honest signal that the page is interactive
+    await page.waitForSelector('button[type="submit"]:not([disabled])', { timeout: 45000 })
+    await page.fill('form input:not([type="password"])', email)
+    await page.fill('input[type="password"]', password)
+    await Promise.all([
+      page.waitForURL(u => !u.pathname.startsWith('/login'), { timeout: 30000 }),
+      page.click('button[type="submit"]'),
+    ])
+  } catch (e) {
+    if (attempt >= 3 || !/ERR_|net::|Timeout/i.test(e.message)) throw e
+    await page.waitForTimeout(4000 * attempt)
+    return signIn(page, who, attempt + 1)
+  }
 }
 
 async function auditLayout(page, label) {
@@ -78,21 +86,34 @@ async function auditLayout(page, label) {
     }
 
     // any near-invisible text - the white-on-white class of bug
-    const luminance = (rgb) => {
-      const [r, g, b] = rgb.match(/\d+(\.\d+)?/g).slice(0, 3).map(Number).map(v => {
+    const channels = (color) => {
+      const n = (String(color).match(/[0-9.]+/g) || []).map(Number)
+      return [n[0] || 0, n[1] || 0, n[2] || 0, n.length > 3 ? n[3] : 1]
+    }
+    const luminance = ([r, g, b]) => {
+      const [lr, lg, lb] = [r, g, b].map(v => {
         const c = v / 255
         return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
       })
-      return 0.2126 * r + 0.7152 * g + 0.0722 * b
+      return 0.2126 * lr + 0.7152 * lg + 0.0722 * lb
     }
+    const over = ([r, g, b, a], [br, bg, bb]) =>
+      [r * a + br * (1 - a), g * a + bg * (1 - a), b * a + bb * (1 - a)]
+    // Composite every translucent layer down to the page ground. A 12% tint
+    // over near-black paints near-black, not the solid hue, and reading it as
+    // solid invents contrast failures that are not on the screen.
     const backdrop = (el) => {
+      const layers = []
       let node = el
       while (node && node !== document.documentElement) {
-        const bg = getComputedStyle(node).backgroundColor
-        if (bg && !bg.includes('rgba(0, 0, 0, 0)') && !bg.startsWith('rgba(0,0,0,0')) return bg
+        const layer = channels(getComputedStyle(node).backgroundColor)
+        if (layer[3] > 0) {
+          layers.push(layer)
+          if (layer[3] >= 1) break
+        }
         node = node.parentElement
       }
-      return 'rgb(10, 10, 11)'
+      return layers.reduceRight((ground, layer) => over(layer, ground), [10, 10, 11])
     }
     for (const el of document.querySelectorAll('p, span, h1, h2, h3, a, button, dt, dd, li, legend, label')) {
       if (!el.textContent.trim()) continue
@@ -102,8 +123,9 @@ async function auditLayout(page, label) {
       const style = getComputedStyle(el)
       if (style.visibility === 'hidden' || Number(style.opacity) < 0.2) continue
       try {
-        const fg = luminance(style.color)
-        const bg = luminance(backdrop(el))
+        const ground = backdrop(el)
+        const fg = luminance(over(channels(style.color), ground))
+        const bg = luminance(ground)
         const ratio = (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05)
         const size = parseFloat(style.fontSize)
         const large = size >= 24 || (size >= 18.66 && Number(style.fontWeight) >= 700)
@@ -179,6 +201,9 @@ async function exerciseInteractions(page, who, label) {
 
 ;(async () => {
   fs.mkdirSync(SHOTS, { recursive: true })
+  // the session-based suites delete the member when they finish, so make
+  // sure there is one before signing in as them
+  await ensureMember()
   const browser = await chromium.launch()
 
   for (const vp of VIEWPORTS) {
@@ -195,6 +220,7 @@ async function exerciseInteractions(page, who, label) {
     for (const route of PUBLIC) {
       const label = vp.name + ' ' + route
       console.log('· ' + label)
+      visited += 1
       await pubPage.goto(BASE + route, { waitUntil: 'networkidle' }).catch(() => {})
       await pubPage.waitForTimeout(700)
       await auditLayout(pubPage, label)
@@ -220,6 +246,7 @@ async function exerciseInteractions(page, who, label) {
       for (const route of ROUTES[who]) {
         const label = vp.name + ' ' + route
         console.log('· ' + label)
+      visited += 1
         await page.goto(BASE + route, { waitUntil: 'networkidle' }).catch(() => {})
         await page.waitForTimeout(900)
         await auditLayout(page, label)
@@ -228,7 +255,7 @@ async function exerciseInteractions(page, who, label) {
       }
 
       for (const err of consoleErrors) {
-        if (/favicon|manifest|React DevTools|paystack|js\.paystack/i.test(err)) continue
+        if (/favicon|manifest|React DevTools|paystack|js\.paystack|RSC payload/i.test(err)) continue
         note(vp.name + '/' + who, 'console: ' + err.slice(0, 150))
       }
       await context.close()
@@ -236,7 +263,7 @@ async function exerciseInteractions(page, who, label) {
   }
 
   await browser.close()
-  console.log('\n=========== ' + problems.length + ' findings ===========')
+  console.log('\n=========== ' + visited + ' screens, ' + problems.length + ' findings ===========')
   fs.writeFileSync(path.join(SHOTS, 'findings.txt'), problems.join('\n'))
   const unique = [...new Set(problems.map(p => p.split(' :: ')[1]))]
   unique.forEach(u => console.log('  ' + u))

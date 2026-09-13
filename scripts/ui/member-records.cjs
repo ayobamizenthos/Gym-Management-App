@@ -32,8 +32,9 @@ const check = (ok, what) => { results.push((ok ? 'ok   ' : 'FAIL ') + what); if 
     await page.click('button:has-text("Details")')
     await page.waitForTimeout(400)
     const summary = await page.locator('dl').first().innerText()
-    check(/Member code/i.test(summary), vp.name + ': member code is on the record')
+    check(!/Member code/i.test(summary), vp.name + ': the retired member code is not on the record')
     check(/Username/i.test(summary), vp.name + ': username is on the record')
+    check(/Date of birth/i.test(summary), vp.name + ': date of birth is on the record')
 
     // correct a detail and confirm it sticks
     await page.click('button:has-text("Correct details")')
@@ -42,7 +43,13 @@ const check = (ok, what) => { results.push((ok ? 'ok   ' : 'FAIL ') + what); if 
     const phone = page.locator('label:has-text("Phone") input').last()
     await phone.fill(stamp)
     await page.click('button:has-text("Save details")')
-    await page.waitForTimeout(2200)
+    // wait for the save to be acknowledged rather than guessing at a duration,
+    // or a slow connection reloads the page before the write has landed
+    const saved = await page
+      .waitForFunction(() => /Details updated/i.test(document.body.innerText), null, { timeout: 30000 })
+      .then(() => true)
+      .catch(() => false)
+    check(saved, vp.name + ': the save is acknowledged')
 
     await page.reload({ waitUntil: 'domcontentloaded' })
     const persisted = await page

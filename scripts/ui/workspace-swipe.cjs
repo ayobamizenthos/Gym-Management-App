@@ -1,5 +1,6 @@
 require('dotenv').config({ path: '.env.local' })
 const { chromium } = require('playwright')
+const { ensureMember } = require('./session.cjs')
 const BASE = process.env.APP_URL || 'https://zenthosgym.netlify.app'
 const out = []
 const check = (ok, what) => { out.push((ok ? 'ok   ' : 'FAIL ') + what); if (!ok) process.exitCode = 1 }
@@ -32,6 +33,9 @@ async function drag(page, dx) {
 }
 
 ;(async () => {
+  // the session-based suites delete the member when they finish, so make
+  // sure there is one before signing in as them
+  await ensureMember()
   const b = await chromium.launch()
   for (const [who, email, dash] of [
     ['admin', process.env.TEST_ADMIN, '/admin'],

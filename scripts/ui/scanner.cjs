@@ -1,5 +1,6 @@
 require('dotenv').config({ path: '.env.local' })
 const { chromium } = require('playwright')
+const { ensureMember } = require('./session.cjs')
 const BASE = process.env.APP_URL || 'https://zenthosgym.netlify.app'
 const OUT = './.ui-shots'
 const out = []
@@ -8,6 +9,9 @@ const check = (ok, what) => { out.push((ok ? 'ok   ' : 'FAIL ') + what); if (!ok
 ;(async () => {
   require('fs').mkdirSync(OUT, { recursive: true })
   // two fake cameras, so the switch control has a reason to exist
+  // the session-based suites delete the member when they finish, so make
+  // sure there is one before signing in as them
+  await ensureMember()
   const browser = await chromium.launch({
     args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'],
   })

@@ -1,5 +1,6 @@
 require('dotenv').config({ path: '.env.local' })
 const { chromium } = require('playwright')
+const { ensureMember } = require('./session.cjs')
 process.env.APP_URL = process.env.APP_URL || 'https://zenthosgym.netlify.app'
 const BASE = process.env.APP_URL
 
@@ -19,6 +20,9 @@ const overlap = (a, b) => {
 }
 
 ;(async () => {
+  // the session-based suites delete the member when they finish, so make
+  // sure there is one before signing in as them
+  await ensureMember()
   const browser = await chromium.launch()
   let failures = 0
 

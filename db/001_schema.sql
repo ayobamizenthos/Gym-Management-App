@@ -1,4 +1,4 @@
--- Zenthos Gym — core schema.
+-- Zenthos Gym - core schema.
 -- Money, membership expiry and roles are never writable by a client. Every
 -- balance-affecting change runs through a SECURITY DEFINER function and is
 -- mirrored into an append-only audit trail.

@@ -93,6 +93,9 @@ async function drag(page, from, to, y) {
     body: JSON.stringify({ expires_at: new Date(Date.now() + 30 * 86400000).toISOString(), pending_days: 0 }),
   })
 
+  await svc('/rest/v1/check_ins?user_id=eq.' + me.id, { method: 'DELETE' })
+  await svc('/rest/v1/notifications?user_id=eq.' + me.id, { method: 'DELETE' })
+
   await page.goto(BASE + '/checkin', { waitUntil: 'networkidle' })
   await page.waitForTimeout(3200)
 

@@ -59,7 +59,7 @@ export default function CheckInScreen() {
     setResult(payload)
     playDeskAlert(payload.kind)
 
-    if (payload.kind === 'valid') {
+    if (payload.kind === 'valid' || payload.kind === 'duplicate') {
       void supabase
         .rpc('birthdays_today', { p_branch: branch })
         .then(({ data: today }) => setCelebrants((today ?? []) as Celebrant[]))

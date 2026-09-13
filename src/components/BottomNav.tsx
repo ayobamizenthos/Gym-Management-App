@@ -176,11 +176,12 @@ export function BottomNav({ label, left, right, action, swipe }: Props) {
 
       <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex flex-col items-center px-3.5 pb-[max(0.625rem,env(safe-area-inset-bottom))]">
         {hint && (
-          <span className="mb-2 animate-rise text-[11px] font-semibold uppercase tracking-[0.18em] text-live">
+          <span className="pointer-events-none absolute bottom-full mb-2 animate-rise whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.18em] text-live">
             {swipe?.left === hint ? '← ' : ''}{hint.label}{swipe?.right === hint ? ' →' : ''}
           </span>
         )}
 
+        <span className="pointer-events-none relative flex w-full max-w-md justify-center">
         <nav
           ref={bar}
           aria-label={label}
@@ -219,6 +220,7 @@ export function BottomNav({ label, left, right, action, swipe }: Props) {
           <Slot item={right[0]} />
           <Slot item={right[1]} />
         </nav>
+        </span>
       </div>
     </>
   )

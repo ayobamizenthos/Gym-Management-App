@@ -84,11 +84,12 @@ export function BirthdayCard({ people, onClose }: { people: Celebrant[]; onClose
 
           <span className="min-w-0 flex-1">
             <span className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-live">
-              Today
+              Birthday today
             </span>
-            <span className="mt-0.5 block truncate text-[15px] font-semibold text-chalk">
-              Wish {name} a happy birthday
-            </span>
+            {/* the name gets its own line so a long one truncates on its own
+                rather than eating the sentence around it */}
+            <span className="mt-0.5 block truncate text-[15px] font-semibold text-chalk">{name}</span>
+            <span className="block text-sm text-mute">Say happy birthday</span>
             {people.length > 1 && (
               <span className="mt-1 flex gap-1" aria-hidden>
                 {people.map((_, i) => (

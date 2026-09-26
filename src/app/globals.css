@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --nav-height: 62px;
+    --nav-gap: 0.625rem;
+    /* distance from the bottom of the viewport to the top of the bottom bar */
+    --nav-offset: calc(var(--nav-height) + max(var(--nav-gap), env(safe-area-inset-bottom)));
+    --member-top: calc(1.5rem + env(safe-area-inset-top));
+  }
+  html { -webkit-tap-highlight-color: transparent; }
+  body {
+    @apply bg-base text-chalk font-body antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  /* Anton is a poster face - it carries headings and figures, nothing else. */
+  h1, h2 { @apply font-display uppercase tracking-tightest leading-[0.95]; }
+  h3 { @apply font-body font-semibold; }
+  ::selection { @apply bg-chalk text-ink; }
+
+  /* Keyboard users get a ring in the palette; pointer users get nothing. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-live ring-offset-2 ring-offset-base;
+  }
+}
+
+@layer components {
+  /* 16px on phones: iOS zooms the page into any smaller input on focus */
+  .field {
+    @apply w-full rounded-md bg-base-panel px-4 h-12 text-base text-chalk
+           outline-none border-0 transition-colors placeholder:text-mute
+           focus:bg-base-raised md:text-[15px];
+  }
+
+  /* Segmented controls: the chosen one is filled, the rest are just words. */
+  .seg {
+    @apply flex h-11 shrink-0 items-center gap-1.5 rounded-full px-4 text-[13px]
+           font-semibold transition-colors;
+  }
+  .seg-on  { @apply seg bg-live text-ink; }
+  .seg-off { @apply seg text-mute hover:text-chalk; }
+
+  /* A row that is its own surface, used wherever a list used to be boxed. */
+  .row {
+    @apply flex items-center gap-3.5 rounded-lg bg-base-panel px-4 py-3.5
+           transition-colors hover:bg-base-raised;
+  }
+
+  .btn {
+    @apply inline-flex h-12 items-center justify-center gap-2 rounded-sm px-5 text-[15px]
+           font-semibold transition-all active:scale-[.985]
+           disabled:opacity-40 disabled:pointer-events-none select-none;
+  }
+  .btn-primary { @apply btn bg-chalk text-ink hover:bg-white; }
+  .btn-quiet   { @apply btn bg-base-panel text-chalk hover:bg-base-raised; }
+
+  .panel { @apply rounded-lg bg-base-panel; }
+
+  .figure { @apply font-display tabular-nums leading-none; }
+
+  .label { @apply text-[13px] font-medium text-mute; }
+
+  /* The scroll container clears the bar and its raised action, or the last row is unreachable. */
+  .pad-nav { padding-bottom: calc(var(--nav-offset) + 2.5rem); }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .dots::after {
+    content: '';
+    animation: dots 1.2s steps(4, end) infinite;
+  }
+}
+
+@keyframes dots {
+  0%   { content: ''; }
+  25%  { content: '.'; }
+  50%  { content: '..'; }
+  75%  { content: '...'; }
+  100% { content: ''; }
+}
+
+/* Printing the entrance code should yield the poster and nothing else. */
+@media print {
+  body { background: #fff !important; }
+  aside, nav, header, footer, .no-print { display: none !important; }
+  /* the sheet paints its own colours - do not flatten them */
+  .print-sheet, .print-sheet * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  main { padding: 0 !important; }
+  .print-sheet {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    max-width: none !important;
+    /* one page, the poster centred on it top to bottom */
+    aspect-ratio: auto !important;
+    height: calc(100vh - 2px);
+    page-break-inside: avoid;
+  }
+  .print-sheet img { width: 62% !important; }
+}

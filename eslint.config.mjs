@@ -13,10 +13,6 @@ const config = [
       'react-hooks/preserve-manual-memoization': 'off',
     },
   },
-  {
-    files: ['scripts/**/*.js', 'scripts/**/*.cjs'],
-    rules: { '@typescript-eslint/no-require-imports': 'off' },
-  },
   { ignores: ['.next/**', '.netlify/**', '.ui-shots/**', 'node_modules/**', 'next-env.d.ts'] },
 ]
 

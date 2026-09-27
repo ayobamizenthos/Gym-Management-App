@@ -1,6 +1,5 @@
 import { BadgeCheck, Hourglass, CircleX, Clock, Gift, UserPlus, PartyPopper } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import type { Role } from './types'
 import { plural } from './format'
 
 export interface AlertItem {
@@ -24,29 +23,23 @@ interface AlertKind {
   tone: AlertTone
   family: Family
   /** Where tapping the alert should take you. */
-  href: (role: Role | null) => string
 }
 
 /** Every notification type the database emits, and how the app presents it. */
 export const ALERT_KINDS = {
-  payment_confirmed: { icon: BadgeCheck, tone: 'good', family: 'money', href: () => '/m/history' },
-  payment_rejected: { icon: CircleX, tone: 'bad', family: 'money', href: () => '/m/history' },
-  payment_pending: { icon: Hourglass, tone: 'warn', family: 'money', href: () => '/desk/payments' },
-  member_joined: { icon: UserPlus, tone: 'good', family: 'membership', href: () => '/desk/members' },
-  renewals_due: {
-    icon: Clock,
-    tone: 'warn',
-    family: 'membership',
-    href: role => (role === 'member' ? '/m/renew' : '/desk/members'),
-  },
-  referral_reward: { icon: Gift, tone: 'good', family: 'rewards', href: () => '/m/referrals' },
-  referral_joined: { icon: UserPlus, tone: 'good', family: 'rewards', href: () => '/m/referrals' },
-  birthday: { icon: PartyPopper, tone: 'good', family: 'rewards', href: () => '/m' },
+  payment_confirmed: { icon: BadgeCheck, tone: 'good', family: 'money' },
+  payment_rejected: { icon: CircleX, tone: 'bad', family: 'money' },
+  payment_pending: { icon: Hourglass, tone: 'warn', family: 'money' },
+  member_joined: { icon: UserPlus, tone: 'good', family: 'membership' },
+  renewals_due: { icon: Clock, tone: 'warn', family: 'membership' },
+  referral_reward: { icon: Gift, tone: 'good', family: 'rewards' },
+  referral_joined: { icon: UserPlus, tone: 'good', family: 'rewards' },
+  birthday: { icon: PartyPopper, tone: 'good', family: 'rewards' },
 } satisfies Record<string, AlertKind>
 
 export type AlertType = keyof typeof ALERT_KINDS
 
-const FALLBACK_KIND: AlertKind = { icon: BadgeCheck, tone: 'plain', family: 'membership', href: () => '/m' }
+const FALLBACK_KIND: AlertKind = { icon: BadgeCheck, tone: 'plain', family: 'membership' }
 
 const isAlertType = (type: string): type is AlertType => type in ALERT_KINDS
 

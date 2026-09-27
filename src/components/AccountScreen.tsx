@@ -14,6 +14,7 @@ import { asName, daysLeft, plural } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { isReachableEmail } from '@/lib/members'
 import { NotificationToggle } from '@/components/NotificationToggle'
+import { ChangePassword } from '@/components/ChangePassword'
 
 const SAVED_FEEDBACK_MS = 2000
 
@@ -211,8 +212,10 @@ export function AccountScreen({ workspace }: Props) {
             <dd className="truncate text-right text-[15px]">
               {profile.username ? (
                 asName(profile.username)
-              ) : (
+              ) : inMemberArea ? (
                 <Link href="/m/referrals" className="text-live underline-offset-4 hover:underline">Pick one</Link>
+              ) : (
+                '--'
               )}
             </dd>
           </div>
@@ -245,6 +248,13 @@ export function AccountScreen({ workspace }: Props) {
           <div className="mt-3 rounded-lg bg-base-panel px-4">
             <NotificationToggle />
           </div>
+        </section>
+      )}
+
+      {profile.email && (
+        <section className="mt-8">
+          <h2 className="text-xl">Password</h2>
+          <ChangePassword email={profile.email} />
         </section>
       )}
 

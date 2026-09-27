@@ -2,6 +2,9 @@
 
 import { supabase } from '@/lib/supabase'
 
+// A push service that has not answered by now is treated as refusing.
+const SUBSCRIBE_TIMEOUT_MS = 45_000
+
 /** A VAPID key travels as base64url; PushManager wants raw bytes. */
 function toBytes(base64Url: string) {
   const padded = (base64Url + '='.repeat((4 - (base64Url.length % 4)) % 4))
@@ -26,7 +29,8 @@ export async function registerWorker() {
   }
 }
 
-export type PushState = 'unsupported' | 'default' | 'granted' | 'denied'
+/** blocked: the phone allowed notifications but its push service refused to register (Brave by default). */
+export type PushState = 'unsupported' | 'default' | 'granted' | 'denied' | 'blocked'
 
 export function pushState(): PushState {
   if (!pushSupported()) return 'unsupported'
@@ -51,13 +55,17 @@ export async function enablePush(): Promise<PushState> {
   const key = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
   if (!key) return 'unsupported'
 
-  const existing = await registration.pushManager.getSubscription()
-  const subscription =
-    existing ??
-    (await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: toBytes(key),
-    }))
+  let subscription = await registration.pushManager.getSubscription()
+  if (!subscription) {
+    try {
+      subscription = await Promise.race([
+        registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: toBytes(key) }),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('push service timed out')), SUBSCRIBE_TIMEOUT_MS)),
+      ])
+    } catch {
+      return 'blocked'
+    }
+  }
 
   await saveSubscription(subscription)
   return 'granted'
@@ -69,12 +77,13 @@ export async function saveSubscription(subscription: PushSubscription) {
 
   // Registering an endpoint someone else signed in with moves it to this
   // account, which is what a shared front desk phone needs.
-  await supabase.rpc('register_push_device', {
+  const { error } = await supabase.rpc('register_push_device', {
     p_endpoint: raw.endpoint,
     p_p256dh: raw.keys.p256dh,
     p_auth: raw.keys.auth,
     p_agent: navigator.userAgent,
   })
+  if (error) throw error
 }
 
 /** Stops this phone receiving the signed-out account's alerts. The browser
@@ -89,10 +98,12 @@ export async function forgetDevice() {
 /** Keeps a device that already said yes registered against the current account,
  *  which matters when two people share one phone at the front desk. */
 export async function syncSubscription() {
-  if (!pushSupported() || Notification.permission !== 'granted') return
+  if (!pushSupported() || Notification.permission !== 'granted') return false
   const registration = await navigator.serviceWorker.getRegistration('/')
   const subscription = await registration?.pushManager.getSubscription()
-  if (subscription) await saveSubscription(subscription)
+  if (!subscription) return false
+  await saveSubscription(subscription)
+  return true
 }
 
 export async function disablePush() {

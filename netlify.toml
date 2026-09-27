@@ -1,5 +1,5 @@
 [build]
-  command = "next build"
+  command = "npm run build"
   publish = ".next"
 
 [build.environment]
@@ -7,3 +7,57 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+[[redirects]]
+  from = "/api/signin"
+  to = "https://bzwazfarriziiwodqltu.supabase.co/functions/v1/sign-in"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/join"
+  to = "https://bzwazfarriziiwodqltu.supabase.co/functions/v1/join"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/paystack/verify"
+  to = "https://bzwazfarriziiwodqltu.supabase.co/functions/v1/paystack-verify"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/paystack/webhook"
+  to = "https://bzwazfarriziiwodqltu.supabase.co/functions/v1/paystack-webhook"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/push/resubscribe"
+  to = "https://bzwazfarriziiwodqltu.supabase.co/functions/v1/push-resubscribe"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/staff/create-member"
+  to = "https://bzwazfarriziiwodqltu.supabase.co/functions/v1/create-member"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/staff/reset-password"
+  to = "https://bzwazfarriziiwodqltu.supabase.co/functions/v1/reset-password"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/admin/create-staff"
+  to = "https://bzwazfarriziiwodqltu.supabase.co/functions/v1/create-staff"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/admin/delete-member"
+  to = "https://bzwazfarriziiwodqltu.supabase.co/functions/v1/delete-member"
+  status = 200
+  force = true

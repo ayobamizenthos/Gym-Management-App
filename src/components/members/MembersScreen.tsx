@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Search, UserPlus } from 'lucide-react'
@@ -15,7 +15,9 @@ import type { Branch, Profile } from '@/lib/types'
 type Filter = 'all' | 'active' | 'due' | 'expired'
 type Standing = 'waiting' | 'none' | 'expired' | 'due' | 'active'
 
-const MEMBER_LIMIT = 5000
+const PAGE_SIZE = 40
+const SEARCH_DELAY_MS = 250
+const DAY_MS = 86_400_000
 const SKELETON_ROWS = 6
 
 /** What each filter means, in the words the desk would use. */
@@ -40,23 +42,75 @@ export function MembersScreen() {
   const [members, setMembers] = useState<Profile[]>([])
   const [branches, setBranches] = useState<Branch[]>([])
   const [query, setQuery] = useState('')
+  const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<Filter>(isFilter(requestedFilter) ? requestedFilter : 'all')
   const [branch, setBranch] = useState('all')
   const [ready, setReady] = useState(false)
+  const [total, setTotal] = useState(0)
+  const [counts, setCounts] = useState<Partial<Record<Filter, number>>>({})
+  const [loadingMore, setLoadingMore] = useState(false)
   const noticeDays = useSettings().settings.expiry_notice_days
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSearch(query), SEARCH_DELAY_MS)
+    return () => window.clearTimeout(timer)
+  }, [query])
+
+  // One query for the list and for every count, so they always agree.
+  const membersQuery = useCallback(
+    (show: Filter, head: boolean) => {
+      let request = supabase
+        .from('profiles')
+        .select(head ? 'id' : '*', head ? { count: 'exact', head: true } : undefined)
+        .eq('role', 'member')
+      if (branch !== 'all') request = request.eq('branch_id', branch)
+      // characters PostgREST reads as filter syntax are dropped from the search
+      const needle = search.trim().replace(/[,()*%\\]/g, '')
+      if (needle) {
+        const pattern = '%' + needle + '%'
+        request = request.or('full_name.ilike.' + pattern + ',phone.ilike.' + pattern + ',username.ilike.' + pattern)
+      }
+      const now = Date.now()
+      const noticeEnds = new Date(now + noticeDays * DAY_MS).toISOString()
+      const today = new Date(now).toISOString()
+      if (show === 'active') request = request.gt('expires_at', noticeEnds)
+      if (show === 'due') request = request.gt('expires_at', today).lte('expires_at', noticeEnds)
+      if (show === 'expired') request = request.lte('expires_at', today)
+      return request
+    },
+    [branch, search, noticeDays]
+  )
+
+  const loadPage = useCallback(
+    async (offset: number) => {
+      const { data } = await membersQuery(filter, false)
+        .order('created_at', { ascending: false })
+        .range(offset, offset + PAGE_SIZE - 1)
+      const page = (data ?? []) as unknown as Profile[]
+      setMembers(current => (offset === 0 ? page : [...current, ...page]))
+    },
+    [membersQuery, filter]
+  )
+
   const load = useCallback(async () => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('role', 'member')
-      .order('created_at', { ascending: false })
-      .limit(MEMBER_LIMIT)
-    setMembers((data ?? []) as Profile[])
+    const counted = FILTERS.filter(option => option.key !== 'all')
+    const [shown, ...perFilter] = await Promise.all([
+      membersQuery(filter, true),
+      ...counted.map(option => membersQuery(option.key, true)),
+    ])
+    await loadPage(0)
+    setTotal(shown.count ?? 0)
+    setCounts(Object.fromEntries(counted.map((option, index) => [option.key, perFilter[index].count ?? 0])))
     setReady(true)
-  }, [])
+  }, [membersQuery, filter, loadPage])
 
   useEffect(() => { void load() }, [load])
+
+  const loadMore = async () => {
+    setLoadingMore(true)
+    await loadPage(members.length)
+    setLoadingMore(false)
+  }
 
   // A member changing their photo or details shows here without a refresh.
   useEffect(() => {
@@ -78,27 +132,7 @@ export function MembersScreen() {
       .then(({ data }) => setBranches((data ?? []) as Branch[]))
   }, [])
 
-  const standings = useMemo(
-    () => new Map(members.map(member => [member.id, standingOf(member, noticeDays)])),
-    [members, noticeDays]
-  )
-
-  const shown = useMemo(() => {
-    const needle = query.trim().toLowerCase()
-    return members.filter(member => {
-      if (branch !== 'all' && member.branch_id !== branch) return false
-      if (filter !== 'all' && standings.get(member.id) !== filter) return false
-      if (!needle) return true
-      return [member.full_name, member.phone, member.username]
-        .some(value => value?.toLowerCase().includes(needle))
-    })
-  }, [members, standings, query, filter, branch])
-
-  const counts = useMemo(() => {
-    const tally: Partial<Record<Standing, number>> = {}
-    standings.forEach(standing => { tally[standing] = (tally[standing] ?? 0) + 1 })
-    return tally
-  }, [standings])
+  const filtered = Boolean(search.trim()) || filter !== 'all' || branch !== 'all'
 
   return (
     <div className="animate-rise">
@@ -108,9 +142,9 @@ export function MembersScreen() {
           <p className="mt-1 text-sm text-mute">
             {!ready
               ? 'Loading'
-              : query || filter !== 'all' || branch !== 'all'
-                ? shown.length + ' of ' + members.length + ' shown'
-                : members.length + ' ' + plural(members.length, 'member')}
+              : filtered
+                ? total + ' ' + plural(total, 'match', 'matches')
+                : total + ' ' + plural(total, 'member')}
           </p>
         </div>
         <Link href="/desk/members/new" className="btn-primary h-11 shrink-0 px-4 text-sm">
@@ -160,14 +194,14 @@ export function MembersScreen() {
             <div key={i} className="h-[68px] animate-pulse rounded-lg bg-base-panel" />
           ))}
         </div>
-      ) : shown.length === 0 ? (
+      ) : members.length === 0 ? (
         <p className="py-20 text-center text-[15px] text-mute">
-          {members.length === 0 ? 'No members yet. Register the first one.' : 'Nobody matches that.'}
+          {filtered ? 'Nobody matches that.' : 'No members yet. Register the first one.'}
         </p>
       ) : (
         <ul role="list" className="mt-4 flex flex-col gap-2">
-          {shown.map(member => {
-            const standing = standings.get(member.id)
+          {members.map(member => {
+            const standing = standingOf(member, noticeDays)
             const left = daysLeft(member.expires_at) ?? 0
             return (
               <li key={member.id}>
@@ -204,6 +238,12 @@ export function MembersScreen() {
             )
           })}
         </ul>
+      )}
+
+      {ready && members.length < total && (
+        <button onClick={() => void loadMore()} disabled={loadingMore} className="btn-quiet mt-4 w-full">
+          {loadingMore ? <span className="dots">Loading</span> : 'Show more'}
+        </button>
       )}
     </div>
   )

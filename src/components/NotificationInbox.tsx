@@ -6,6 +6,7 @@ import { BellOff, CheckCheck } from 'lucide-react'
 import { useAlerts } from '@/stores/alerts'
 import { useAuth } from '@/stores/auth'
 import { cn } from '@/lib/cn'
+import { alertRoute } from '@/lib/alert-routes'
 import {
   BUCKET_ORDER,
   FAMILIES,
@@ -53,7 +54,7 @@ export function NotificationInbox() {
 
   const open = (item: AlertItem) => {
     if (!item.is_read) void markRead([item.id])
-    router.push(kindOf(item.type).href(role))
+    router.push(alertRoute(item.type, role))
   }
 
   if (loading && items.length === 0) {

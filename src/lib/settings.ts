@@ -2,7 +2,7 @@ import type { Settings } from './types'
 
 export const FALLBACK_GYM_NAME = 'Gym'
 
-// Column defaults from db/001_schema.sql, shown until the row arrives. The name
+// Column defaults from the first migration, shown until the row arrives. The name
 // stays neutral so an unbranded screen never shows another gym's name.
 export const SETTINGS_DEFAULTS: Settings = {
   id: true,

@@ -91,7 +91,7 @@ export default function MemberHome() {
         {state !== 'none' && (
           <span
             className={cn(
-              'absolute right-5 top-[calc(1.25rem+env(safe-area-inset-top))] rounded-full px-3 py-1 text-[12px] font-semibold uppercase tracking-wide backdrop-blur',
+              'absolute right-14 top-[calc(1.125rem+env(safe-area-inset-top))] rounded-full px-3 py-1 text-[12px] font-semibold uppercase tracking-wide backdrop-blur',
               state === 'live' && 'bg-live-tint text-live',
               state === 'due' && 'bg-due-tint text-due',
               state === 'out' && 'bg-out-tint text-out',

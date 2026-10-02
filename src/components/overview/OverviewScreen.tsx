@@ -146,7 +146,7 @@ export function OverviewScreen({ base }: Props) {
           <p className="pb-1 text-sm text-mute">{naira(summary.revenue_all)} all time</p>
         </div>
 
-        <div className="mt-4 flex gap-1">
+        <div className="mt-4 flex gap-5 border-b border-edge-soft">
           {RANGES.map(option => (
             <button
               key={option.key}

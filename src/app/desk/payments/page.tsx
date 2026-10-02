@@ -101,7 +101,7 @@ export default function DeskPayments() {
     <div>
       <h1 className="text-3xl lg:text-4xl">Payments</h1>
 
-      <div className="mt-5 flex gap-1" role="tablist" aria-label="Payment status">
+      <div className="mt-5 flex gap-5 border-b border-edge-soft" role="tablist" aria-label="Payment status">
         {(['pending', 'confirmed'] as const).map(t => (
           <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}
             className={cn('capitalize', tab === t ? 'seg-on' : 'seg-off')}>

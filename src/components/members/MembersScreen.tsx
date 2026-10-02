@@ -174,13 +174,13 @@ export function MembersScreen() {
         )}
       </div>
 
-      <div className="no-scrollbar mt-3 flex gap-1 overflow-x-auto">
+      <div className="no-scrollbar mt-3 flex gap-5 overflow-x-auto border-b border-edge-soft">
         {FILTERS.map(option => (
           <button
             key={option.key}
             onClick={() => setFilter(option.key)}
             aria-pressed={filter === option.key}
-            className={cn('px-3.5', filter === option.key ? 'seg-on' : 'seg-off')}
+            className={filter === option.key ? 'seg-on' : 'seg-off'}
           >
             {option.label}
             {option.key !== 'all' && counts[option.key] ? ' ' + counts[option.key] : ''}

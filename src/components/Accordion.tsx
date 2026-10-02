@@ -30,7 +30,7 @@ export function Accordion({ title, count, defaultOpen = false, children }: Props
           <span className="flex items-center gap-2.5">
             <span className="text-[17px] font-semibold">{title}</span>
             {count !== undefined && (
-              <span className="rounded-full bg-base-raised px-2 py-0.5 text-xs font-semibold text-mute">
+              <span className="text-[14px] font-medium tabular-nums text-mute">
                 {count}
               </span>
             )}

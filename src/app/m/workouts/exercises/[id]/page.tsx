@@ -105,16 +105,16 @@ export default function ExercisePage() {
 
       <h1 className="mt-5 text-[34px]">{exercise?.name ?? ' '}</h1>
       {exercise && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          <span className="seg h-9 bg-live-tint text-live">{muscleLabel(exercise.target)}</span>
+        <div className="mt-2 flex flex-wrap gap-x-1.5 gap-y-1">
+          <span className="text-[15px] font-semibold text-live">{muscleLabel(exercise.target)}</span>
           {exercise.secondary.slice(0, 2).map(muscle => (
-            <span key={muscle} className="seg h-9 bg-base-panel text-chalk">{muscleLabel(muscle)}</span>
+            <span key={muscle} className="text-[15px] text-chalk-dim">· {muscleLabel(muscle)}</span>
           ))}
-          <span className="seg h-9 bg-base-panel text-chalk">{equipmentLabel(exercise.equipment)}</span>
+          <span className="text-[15px] text-chalk-dim">· {equipmentLabel(exercise.equipment)}</span>
         </div>
       )}
 
-      <div role="tablist" className="mt-6 grid grid-cols-3 gap-1 rounded-full bg-base-panel p-1">
+      <div role="tablist" className="mt-6 flex gap-6 border-b border-edge-soft">
         {(
           [
             ['progress', 'Progress'],
@@ -122,7 +122,7 @@ export default function ExercisePage() {
             ['history', 'History'],
           ] as const
         ).map(([key, label]) => (
-          <button key={key} role="tab" type="button" aria-selected={shown === key} onClick={() => setTab(key)} className={cn('justify-center', shown === key ? 'seg-on' : 'seg-off')}>
+          <button key={key} role="tab" type="button" aria-selected={shown === key} onClick={() => setTab(key)} className={shown === key ? 'seg-on' : 'seg-off'}>
             {label}
           </button>
         ))}

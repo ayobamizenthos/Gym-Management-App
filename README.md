@@ -27,3 +27,5 @@ Tech stack
 - Supabase (Postgres, auth, realtime, storage, cron)
 - Paystack
 - ExerciseDB
+
+Bell tone: "Boxing Round Bell" by BudgetPixel, CC BY 4.0.

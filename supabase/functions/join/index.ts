@@ -12,6 +12,7 @@ interface Body {
   username?: string
   password?: string
   referral?: string
+  branch_id?: string
 }
 
 /**
@@ -71,7 +72,7 @@ Deno.serve(async (request: Request) => {
     email,
     password,
     email_confirm: true,
-    user_metadata: { full_name: fullName, phone, address, date_of_birth: dateOfBirth, username, referral },
+    user_metadata: { full_name: fullName, phone, address, date_of_birth: dateOfBirth, username, referral, branch_id: body.branch_id ?? null },
   })
 
   if (error) {

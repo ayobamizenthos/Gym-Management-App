@@ -64,13 +64,13 @@
            focus:bg-base-raised md:text-[15px];
   }
 
-  /* Segmented controls: the chosen one is filled, the rest are just words. */
+  /* Filters and tabs are words with an underline under the chosen one, nothing boxed. */
   .seg {
-    @apply flex h-11 shrink-0 items-center gap-1.5 rounded-full px-4 text-[13px]
+    @apply flex h-11 shrink-0 items-center gap-1.5 border-b-2 px-1 text-[14px]
            font-semibold transition-colors;
   }
-  .seg-on  { @apply seg bg-live text-ink; }
-  .seg-off { @apply seg text-mute hover:text-chalk; }
+  .seg-on  { @apply seg border-live text-chalk; }
+  .seg-off { @apply seg border-transparent text-mute hover:text-chalk; }
 
   /* A row that is its own surface, used wherever a list used to be boxed. */
   .row {

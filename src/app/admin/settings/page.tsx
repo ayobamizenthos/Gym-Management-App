@@ -21,7 +21,7 @@ const NUMBER_FIELDS = [
   'checkin_window_hours',
 ] as const
 
-const FIELDS = ['gym_name', ...NUMBER_FIELDS] as const
+const FIELDS = NUMBER_FIELDS
 const SAVED_FEEDBACK_MS = 2200
 const SKELETON_ROWS = 5
 
@@ -55,7 +55,7 @@ export default function AdminSettings() {
   )
 
   const complete = Boolean(
-    draft && draft.gym_name.trim() && NUMBER_FIELDS.every(key => parseWholeNumber(draft[key]) !== null)
+    draft && NUMBER_FIELDS.every(key => parseWholeNumber(draft[key]) !== null)
   )
 
   if (!draft && settled && !loaded) {
@@ -88,7 +88,7 @@ export default function AdminSettings() {
     const numbers = Object.fromEntries(NUMBER_FIELDS.map(key => [key, parseWholeNumber(draft[key])]))
     const { error } = await supabase
       .from('settings')
-      .update({ ...numbers, gym_name: draft.gym_name.trim(), updated_at: new Date().toISOString() })
+      .update({ ...numbers, updated_at: new Date().toISOString() })
       .eq('id', true)
     setBusy(false)
     if (error) {
@@ -109,9 +109,6 @@ export default function AdminSettings() {
 
       <div className="mt-7">
         <Accordion title="Gym" defaultOpen>
-          <SettingField label="Gym name">
-            <input {...bind('gym_name')} className="field" />
-          </SettingField>
           <SettingField label="Registration fee">
             <input type="number" min="0" inputMode="numeric" {...bind('registration_fee')} className="field" />
           </SettingField>

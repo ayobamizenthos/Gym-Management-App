@@ -7,6 +7,8 @@ import { supabase } from '@/lib/supabase'
 import { unlockAudio } from '@/lib/sounds'
 import { PasswordField } from '@/components/PasswordField'
 import { AuthShell } from '@/components/AuthShell'
+import { Check } from 'lucide-react'
+import type { Branch } from '@/lib/types'
 import { UsernameField } from '@/components/UsernameField'
 import { useHydrated } from '@/hooks/useHydrated'
 import { postJson } from '@/lib/post-json'
@@ -33,6 +35,22 @@ export default function JoinScreen() {
   const [inviter, setInviter] = useState<string | null>(null)
 
   const [checked, setChecked] = useState('')
+  const [branches, setBranches] = useState<Pick<Branch, 'id' | 'name' | 'address'>[]>([])
+  const [branchId, setBranchId] = useState('')
+
+  useEffect(() => {
+    void supabase
+      .from('branches')
+      .select('id, name, address')
+      .eq('is_active', true)
+      .order('name')
+      .then(({ data }) => {
+        const open = data ?? []
+        setBranches(open)
+        // one branch needs no choosing
+        if (open.length === 1) setBranchId(open[0].id)
+      })
+  }, [])
 
   useEffect(() => {
     if (!referral) {
@@ -64,6 +82,7 @@ export default function JoinScreen() {
       username,
       password,
       referral: inviter ? referral : '',
+      branch_id: branchId,
     })
     if (!reply.ok) {
       setError(reply.error)
@@ -83,14 +102,10 @@ export default function JoinScreen() {
   return (
     <AuthShell title="Join the gym" subtitle="Two minutes, then you can check in, follow workouts and track every lift.">
       {linked && inviter && (
-        <div className="mt-6 flex items-center gap-3 rounded-lg bg-live-tint px-4 py-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-live font-display text-lg uppercase text-ink">
-            {inviter.charAt(0)}
-          </span>
-          <p className="text-[14px] leading-snug">
-            <span className="font-semibold text-live">{inviter}</span> invited you
-          </p>
-        </div>
+        <p className="mt-4 flex items-center gap-2 text-[15px] text-chalk-dim">
+          <span aria-hidden className="h-2 w-2 rounded-full bg-live" />
+          Invited by <span className="font-semibold text-chalk">{inviter}</span>
+        </p>
       )}
 
       <form onSubmit={submit} className="mt-7 flex flex-col gap-4">
@@ -106,6 +121,26 @@ export default function JoinScreen() {
           <span className="label">Email</span>
           <input required type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} className="field mt-1.5" />
         </label>
+        <fieldset>
+          <legend className="label">Your branch</legend>
+          <div className="mt-1.5 divide-y divide-edge-soft">
+            {branches.map(branch => (
+              <label key={branch.id} className="flex min-h-[56px] cursor-pointer items-center gap-3">
+                <input type="radio" name="branch" value={branch.id} checked={branchId === branch.id} onChange={() => setBranchId(branch.id)} className="sr-only" />
+                <span className="min-w-0 flex-1">
+                  <span className={branchId === branch.id ? 'block text-[16px] font-semibold text-chalk' : 'block text-[16px] font-medium text-chalk-dim'}>{branch.name}</span>
+                  {branch.address && <span className="block text-[13px] text-mute">{branch.address}</span>}
+                </span>
+                <span
+                  aria-hidden
+                  className={branchId === branch.id ? 'grid h-6 w-6 place-items-center rounded-full bg-live text-ink' : 'h-6 w-6 rounded-full shadow-[inset_0_0_0_2px_rgb(var(--edge))]'}
+                >
+                  {branchId === branch.id && <Check size={14} strokeWidth={3} />}
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
         <UsernameField required value={username} onChange={setUsername} onStateChange={setUsernameOk} />
         <PasswordField label="Password" value={password} onChange={setPassword} autoComplete="new-password" minLength={8} />
         {!linked && (
@@ -131,7 +166,7 @@ export default function JoinScreen() {
           </p>
         )}
 
-        <button type="submit" disabled={busy || !hydrated || !usernameOk || unknownInviter} className="btn-primary mt-2 h-[52px] w-full">
+        <button type="submit" disabled={busy || !hydrated || !usernameOk || unknownInviter || !branchId} className="btn-primary mt-2 h-[52px] w-full">
           {busy ? <span className="dots">Creating account</span> : 'Create account'}
         </button>
       </form>

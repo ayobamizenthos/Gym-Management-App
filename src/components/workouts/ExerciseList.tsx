@@ -112,14 +112,14 @@ export function ExerciseList({ mode, selected = [], onToggle, recent = [], autoF
         )}
       </label>
 
-      <div className="no-scrollbar -mx-5 mt-3 flex gap-2 overflow-x-auto px-5">
+      <div className="no-scrollbar -mx-5 mt-2 flex gap-5 overflow-x-auto border-b border-edge-soft px-5">
         {[{ key: null, label: 'All' }, ...MUSCLE_GROUPS].map(option => (
           <button
             key={option.label}
             type="button"
             aria-pressed={group === option.key}
             onClick={() => setGroup(option.key)}
-            className={group === option.key ? 'seg-on h-9' : 'seg-off h-9 bg-base-panel text-chalk'}
+            className={group === option.key ? 'seg-on' : 'seg-off'}
           >
             {option.label}
           </button>

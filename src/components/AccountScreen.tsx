@@ -10,7 +10,7 @@ import { useToasts } from '@/stores/toast'
 import { AvatarCropper } from '@/components/AvatarCropper'
 import { Avatar } from '@/components/Avatar'
 import { forgetAvatar } from '@/lib/avatar'
-import { asName, daysLeft, localDate, plural } from '@/lib/format'
+import { asName, daysLeft, plural } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { isReachableEmail } from '@/lib/members'
 import { NotificationToggle } from '@/components/NotificationToggle'
@@ -18,6 +18,7 @@ import { ChangePassword } from '@/components/ChangePassword'
 import { InstallRow } from '@/components/InstallRow'
 import { PhoneField } from '@/components/PhoneField'
 import { FoldRow } from '@/components/FoldRow'
+import { DateField } from '@/components/DateField'
 
 const SAVED_FEEDBACK_MS = 2000
 
@@ -239,10 +240,13 @@ export function AccountScreen({ workspace }: Props) {
               <span className="label">Address</span>
               <input value={form.address} onChange={edit('address')} autoComplete="street-address" className="field mt-1.5" />
             </label>
-            <label className="block">
+            <div>
               <span className="label">Date of birth</span>
-              <input type="date" max={localDate()} value={form.date_of_birth} onChange={edit('date_of_birth')} className="field mt-1.5" />
-            </label>
+              <DateField value={form.date_of_birth} onChange={date_of_birth => {
+                  setForm({ ...form, date_of_birth })
+                  setDirty(true)
+                }} />
+            </div>
             <label className="block">
               <span className="label">Emergency contact</span>
               <input value={form.emergency_contact} onChange={edit('emergency_contact')} placeholder="Name and phone" className="field mt-1.5" />

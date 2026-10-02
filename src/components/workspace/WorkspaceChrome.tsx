@@ -45,8 +45,8 @@ const WORKSPACES: Record<Workspace, WorkspaceLayout> = {
       { href: '/admin/members', label: 'Members', icon: Users },
       LIVE,
       { href: '/desk/payments', label: 'Payments', icon: Banknote },
-      { href: '/admin/plans', label: 'Plans', icon: Tags },
       { href: '/admin/branches', label: 'Branches', icon: Building2 },
+      { href: '/admin/plans', label: 'Plans', icon: Tags },
       { href: '/admin/staff', label: 'Staff', icon: Shield },
       { href: '/admin/alerts', label: 'Alerts', icon: Bell },
       { href: '/admin/settings', label: 'Settings', icon: Cog },
@@ -56,7 +56,7 @@ const WORKSPACES: Record<Workspace, WorkspaceLayout> = {
       { href: '/admin/members', label: 'Members', icon: Users },
     ],
     right: [
-      { href: '/admin/plans', label: 'Plans', icon: Tags },
+      { href: '/admin/branches', label: 'Branches', icon: Building2 },
       { href: '/admin/more', label: 'More', icon: LayoutGrid },
     ],
   },

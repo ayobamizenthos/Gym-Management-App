@@ -20,7 +20,7 @@ export function FoldRow({ title, children, className }: { title: string; childre
         <span className="text-[15px] font-medium">{title}</span>
         <ChevronDown size={18} aria-hidden className={cn('shrink-0 text-mute transition-transform duration-200', open && 'rotate-180')} />
       </button>
-      <div id={panelId} hidden={!open} className={cn(open && 'animate-rise px-4 pb-4')}>
+      <div id={panelId} hidden={!open} className={cn(open && 'animate-rise px-4 pb-4 [&_.field]:bg-base-raised')}>
         {children}
       </div>
     </div>

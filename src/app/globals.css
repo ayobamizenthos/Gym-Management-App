@@ -54,6 +54,10 @@
   :focus-visible {
     @apply outline-none ring-2 ring-live ring-offset-2 ring-offset-base;
   }
+  /* a field shows focus by its fill; a ring around typing is noise */
+  input:focus-visible, textarea:focus-visible {
+    @apply ring-0 ring-offset-0;
+  }
 }
 
 @layer components {

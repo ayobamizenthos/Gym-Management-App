@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { CheckCircle2, AlertTriangle, RotateCcw, UserX, Volume2, VolumeX } from 'lucide-react'
+import Link from 'next/link'
+import { CheckCircle2, AlertTriangle, QrCode, RotateCcw, UserX, Volume2, VolumeX } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { playDeskAlert, unlockAudio } from '@/lib/sounds'
 import { timeOnly, shortDate } from '@/lib/format'
@@ -97,7 +98,7 @@ export default function DeskLive() {
             {live ? 'Connected' : 'Reconnecting'}
           </p>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3">
           <div>
             <p className="label">Visits today</p>
             <p className="figure text-live">{today.length}</p>
@@ -108,12 +109,15 @@ export default function DeskLive() {
               if (!sound) playDeskAlert('valid')
               setSound(s => !s)
             }}
-            className={cn('btn-quiet h-11 px-4', !sound && 'text-out')}
+            className={cn('btn-quiet ml-3 h-11 px-4', !sound && 'text-out')}
             aria-pressed={sound}
           >
             {sound ? <Volume2 size={17} aria-hidden /> : <VolumeX size={17} aria-hidden />}
             {sound ? 'Sound on' : 'Muted'}
           </button>
+          <Link href="/desk/code" aria-label="Entrance code" className="btn-quiet h-11 w-11 shrink-0 px-0">
+            <QrCode size={20} aria-hidden />
+          </Link>
         </div>
       </header>
 

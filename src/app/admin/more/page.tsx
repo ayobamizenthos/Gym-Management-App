@@ -1,6 +1,6 @@
 'use client'
 
-import { Activity, Banknote, Building2, Settings as Cog, Shield, UserRound } from 'lucide-react'
+import { Activity, Banknote, Settings as Cog, Shield, Tags, UserRound } from 'lucide-react'
 import { MoreMenu } from '@/components/MoreMenu'
 
 export default function AdminMore() {
@@ -11,7 +11,7 @@ export default function AdminMore() {
         {
           heading: 'Run the gym',
           links: [
-            { href: '/admin/branches', label: 'Branches', icon: Building2 },
+            { href: '/admin/plans', label: 'Plans', icon: Tags },
             { href: '/admin/staff', label: 'Staff', icon: Shield },
             { href: '/admin/settings', label: 'Settings', icon: Cog },
           ],

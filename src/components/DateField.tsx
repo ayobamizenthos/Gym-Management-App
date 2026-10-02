@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { CalendarDays } from 'lucide-react'
 import { useModal } from '@/hooks/useModal'
 import { cn } from '@/lib/cn'
+import { CalendarIcon } from '@/components/CalendarIcon'
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const OLDEST_AGE = 90
@@ -107,7 +107,7 @@ export function DateField({ value, onChange, required }: { value: string; onChan
     <>
       <button type="button" onClick={() => setOpen(true)} className="field mt-1.5 flex items-center justify-between text-left">
         <span className={cn(!parts && 'text-mute')}>{parts ? `${parts.day} ${MONTHS[parts.month]} ${parts.year}` : 'Choose date'}</span>
-        <CalendarDays size={18} aria-hidden className="text-mute" />
+        <CalendarIcon size={19} className="text-mute" />
       </button>
       {required && <input tabIndex={-1} aria-hidden required value={value} onChange={() => undefined} className="pointer-events-none absolute h-px w-px opacity-0" />}
       {open && (

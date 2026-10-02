@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { ArrowUpRight, CalendarRange } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
+import { CalendarIcon } from '@/components/CalendarIcon'
 import { supabase } from '@/lib/supabase'
 import { naira, daysLeft, plural } from '@/lib/format'
 import { cn } from '@/lib/cn'
@@ -154,7 +155,7 @@ export function OverviewScreen({ base }: Props) {
               aria-pressed={range === option.key}
               className={range === option.key ? 'seg-on' : 'seg-off'}
             >
-              {option.key === 'custom' && <CalendarRange size={14} aria-hidden />}
+              {option.key === 'custom' && <CalendarIcon size={15} />}
               {option.label}
             </button>
           ))}

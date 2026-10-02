@@ -4,6 +4,8 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 
 // the router settles its own scroll a frame or two after a history step, so the page is put back more than once
 const RESTORE_AFTER_MS = [0, 60, 180]
+// long enough for a navigation started by the sheet's own button to land
+const ROUTER_SETTLE_MS = 250
 
 /**
  * Phones close an open sheet with their Back gesture, the way native apps do. Opening adds a
@@ -37,12 +39,19 @@ export function useBackToClose(open: boolean, onClose: () => void) {
       pushed = true
       window.addEventListener('popstate', onPop)
     }, 0)
+    const openedAt = window.location.href
     return () => {
       window.clearTimeout(timer)
       window.removeEventListener('popstate', onPop)
-      if (!pushed || closedByBack || window.history.state?.sheet !== marker) return
-      window.history.back()
-      putPageBack()
+      if (!pushed || closedByBack) return
+      // a sheet whose button navigates (Finish, Start) closes as the router moves on; taking the
+      // step back then would undo that navigation, so wait for the router and only step back
+      // when the page is still the one the sheet opened on
+      window.setTimeout(() => {
+        if (window.location.href !== openedAt || window.history.state?.sheet !== marker) return
+        window.history.back()
+        putPageBack()
+      }, ROUTER_SETTLE_MS)
     }
   }, [open])
 }

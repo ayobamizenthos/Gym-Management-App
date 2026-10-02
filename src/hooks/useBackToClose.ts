@@ -9,6 +9,8 @@ const RESTORE_AFTER_MS = [0, 60, 180]
  * Phones close an open sheet with their Back gesture, the way native apps do. Opening adds a
  * history step on the same page, so Back closes the sheet and leaves the page exactly where it
  * was; closing from inside the sheet takes that step away again, so Back still leaves the page.
+ * The step is added a tick after opening, so a sheet mounted and unmounted at once (React's
+ * development double mount) never leaves a step behind that would close its successor.
  */
 export function useBackToClose(open: boolean, onClose: () => void) {
   const closeRef = useRef(onClose)
@@ -23,17 +25,22 @@ export function useBackToClose(open: boolean, onClose: () => void) {
     const putPageBack = () => {
       for (const delay of RESTORE_AFTER_MS) window.setTimeout(() => window.scrollTo(0, scrolledTo), delay)
     }
-    window.history.pushState({ ...window.history.state, sheet: marker }, '')
+    let pushed = false
     let closedByBack = false
     const onPop = () => {
       closedByBack = true
       closeRef.current()
       putPageBack()
     }
-    window.addEventListener('popstate', onPop)
+    const timer = window.setTimeout(() => {
+      window.history.pushState({ ...window.history.state, sheet: marker }, '')
+      pushed = true
+      window.addEventListener('popstate', onPop)
+    }, 0)
     return () => {
+      window.clearTimeout(timer)
       window.removeEventListener('popstate', onPop)
-      if (closedByBack || window.history.state?.sheet !== marker) return
+      if (!pushed || closedByBack || window.history.state?.sheet !== marker) return
       window.history.back()
       putPageBack()
     }

@@ -40,6 +40,10 @@ const nextConfig = {
     formats: ['image/webp'],
     minimumCacheTTL: 31536000,
   },
+  // exercise animations served from our own origin, so the share card can draw them onto a canvas
+  async rewrites() {
+    return [{ source: '/media/:file', destination: 'https://static.exercisedb.dev/media/:file' }]
+  },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]
   },

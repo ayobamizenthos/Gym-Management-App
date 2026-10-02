@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { PasswordField } from '@/components/PasswordField'
 import { useHydrated } from '@/hooks/useHydrated'
-import { Wordmark } from '@/components/Wordmark'
+import { Logo } from '@/components/Logo'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
@@ -39,7 +39,7 @@ export default function ResetPasswordPage() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-6">
       <span className="font-display text-2xl uppercase tracking-tightest">
-        <Wordmark />
+        <Logo />
       </span>
       <h1 className="mt-8 text-4xl">New password</h1>
 

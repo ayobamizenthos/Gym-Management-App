@@ -7,7 +7,6 @@ import QRCode from 'qrcode'
 import { supabase } from '@/lib/supabase'
 import { Loader } from '@/components/Loader'
 import { BackLink } from '@/components/BackLink'
-import { Wordmark } from '@/components/Wordmark'
 import type { Branch } from '@/lib/types'
 
 const QR_SIZE = 1200
@@ -64,9 +63,8 @@ export function EntranceCode({ branchId, back }: Props) {
 
       {/* A4 in proportion, and white so it survives any printer */}
       <div className="print-sheet mx-auto mt-5 flex aspect-[210/297] w-full max-w-[560px] flex-col items-center justify-center bg-white px-[8%] text-center text-black">
-        <p className="font-display text-[clamp(1.75rem,8vw,2.75rem)] uppercase leading-none tracking-tightest">
-          <Wordmark />
-        </p>
+        {/* eslint-disable-next-line @next/next/no-img-element -- a vector that must print sharp */}
+        <img src="/icon.svg" alt="Zenthos" className="h-[clamp(4rem,16vw,6rem)] w-[clamp(4rem,16vw,6rem)]" />
 
         <Image
           src={png}

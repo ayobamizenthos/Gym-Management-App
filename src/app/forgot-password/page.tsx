@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useHydrated } from '@/hooks/useHydrated'
-import { Wordmark } from '@/components/Wordmark'
+import { Logo } from '@/components/Logo'
 
 export default function ForgotPasswordPage() {
   const hydrated = useHydrated()
@@ -27,7 +27,7 @@ export default function ForgotPasswordPage() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-6">
       <span className="font-display text-2xl uppercase tracking-tightest">
-        <Wordmark />
+        <Logo />
       </span>
       <h1 className="mt-8 text-4xl">Reset password</h1>
 

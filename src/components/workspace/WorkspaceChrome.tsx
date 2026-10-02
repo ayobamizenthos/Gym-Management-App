@@ -10,7 +10,7 @@ import type { LucideIcon } from 'lucide-react'
 import { useAuth } from '@/stores/auth'
 import { BottomNav, type NavItem } from '@/components/BottomNav'
 import { AlertBell } from '@/components/AlertBell'
-import { Wordmark } from '@/components/Wordmark'
+import { Logo } from '@/components/Logo'
 import { cn } from '@/lib/cn'
 
 export type Workspace = 'admin' | 'desk'
@@ -100,7 +100,7 @@ export function WorkspaceChrome({ workspace, children }: { workspace: Workspace;
     <div className="min-h-dvh md:grid md:grid-cols-[220px_1fr]">
       <aside className="hidden border-r border-edge pt-[env(safe-area-inset-top)] md:flex md:flex-col">
         <div className="flex h-16 items-center px-5 font-display text-xl uppercase tracking-tightest">
-          <Wordmark />
+          <Logo />
         </div>
         <nav aria-label={layout.label} className="flex flex-1 flex-col gap-1 p-3">
           {layout.rail.map(link => {

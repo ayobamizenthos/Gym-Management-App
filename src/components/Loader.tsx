@@ -1,6 +1,6 @@
 'use client'
 
-import { Wordmark } from '@/components/Wordmark'
+import { Logo } from '@/components/Logo'
 import { cn } from '@/lib/cn'
 
 export function Loader({ full, label }: { full?: boolean; label?: string }) {
@@ -15,7 +15,7 @@ export function Loader({ full, label }: { full?: boolean; label?: string }) {
     >
       <div className="flex flex-col items-center gap-5">
         <span aria-hidden className="font-display text-3xl uppercase tracking-tightest text-chalk">
-          <Wordmark />
+          <Logo />
         </span>
         <span aria-hidden className="relative block h-[3px] w-40 overflow-hidden bg-edge">
           <span className="absolute inset-y-0 w-1/2 animate-sweep bg-live" />

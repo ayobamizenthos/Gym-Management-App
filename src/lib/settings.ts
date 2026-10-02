@@ -13,19 +13,3 @@ export const SETTINGS_DEFAULTS: Settings = {
   expiry_notice_days: 5,
   checkin_window_hours: 24,
 }
-
-/** Splits the name so the wordmark can accent its last word. */
-export function wordmarkParts(gymName: string): { lead: string; accent: string } {
-  const cut = gymName.lastIndexOf(' ')
-  return cut > 0
-    ? { lead: gymName.slice(0, cut + 1), accent: gymName.slice(cut + 1) }
-    : { lead: gymName, accent: '' }
-}
-
-export const initialsOf = (gymName: string) =>
-  gymName
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map(word => word.charAt(0).toUpperCase())
-    .join('')

@@ -6,7 +6,6 @@ import { ChevronLeft, Printer } from 'lucide-react'
 import { RoleGate } from '@/components/RoleGate'
 import { supabase } from '@/lib/supabase'
 import { naira } from '@/lib/format'
-import { useSettings } from '@/hooks/useSettings'
 import type { Payment } from '@/lib/types'
 
 interface ReceiptRow extends Payment {
@@ -63,7 +62,6 @@ function Line({ label, value }: { label: string; value: string }) {
 function Receipt() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
-  const { settings } = useSettings()
   const [row, setRow] = useState<ReceiptRow | null | undefined>(undefined)
 
   useEffect(() => {
@@ -101,8 +99,7 @@ function Receipt() {
         <div className="flex flex-col items-center text-center">
           {/* eslint-disable-next-line @next/next/no-img-element -- prints sharp at any size */}
           <img src="/logo-dark.png" alt="Zenthos" className="h-5 w-auto" />
-          <p className="mt-2 font-semibold">{settings.gym_name}</p>
-          {row.branch && <p>{row.branch.name} · {row.branch.address}</p>}
+          {row.branch && <p className="mt-2">{row.branch.name} · {row.branch.address}</p>}
         </div>
 
         <p className="my-4 text-center tracking-[0.3em]">SALES RECEIPT</p>

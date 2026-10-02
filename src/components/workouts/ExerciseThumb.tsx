@@ -32,7 +32,7 @@ export function ExerciseThumb({ id, size, className, eager = false }: Props) {
   return (
     <span
       className={cn(
-        'relative grid shrink-0 place-items-center overflow-hidden transition-colors',
+        'relative grid shrink-0 place-items-center overflow-hidden shadow-[inset_0_0_0_1px_rgb(0_0_0/.06)] transition-colors',
         state === 'failed' ? 'bg-base-raised' : 'bg-white',
         fill ? 'aspect-square w-full rounded-xl' : size >= 120 ? 'rounded-lg' : 'rounded-[12px]',
         className

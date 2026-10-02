@@ -244,11 +244,11 @@ export function BottomNav({ label, left, right, action, swipe }: Props) {
             style={swipe ? { touchAction: 'pan-y' } : undefined}
             className="pointer-events-auto relative will-change-transform"
           >
-            <div ref={shape} aria-hidden className="absolute inset-x-0 top-0 h-full drop-shadow-[0_-8px_22px_rgba(0,0,0,.55)]">
+            <div ref={shape} aria-hidden className="absolute inset-x-0 top-0 h-full drop-shadow-[0_-6px_18px_rgba(0,0,0,.18)]">
               {width === 0 && <div className="h-full rounded-t-[40px] bg-base-panel" />}
               {width > 0 && (
                 <svg width={width} height="100%" className="block h-full" preserveAspectRatio="none">
-                  <path d={barPath(width)} fill="#141417" />
+                  <path d={barPath(width)} fill="rgb(var(--base-panel))" />
                 </svg>
               )}
             </div>

@@ -37,7 +37,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#0A0A0B',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#F4F4F1' },
+    { media: '(prefers-color-scheme: dark)', color: '#0A0A0B' },
+  ],
   width: 'device-width',
   initialScale: 1,
   // an installed app does not pinch-zoom; every field is 16px so iOS never zooms on focus either

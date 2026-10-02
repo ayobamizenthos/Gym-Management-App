@@ -95,7 +95,7 @@ export function NotificationInbox() {
               aria-pressed={family === key}
               className={cn(
                 'h-11 shrink-0 rounded-full px-4 text-[13px] font-semibold transition-colors',
-                family === key ? 'bg-chalk text-ink' : 'border border-edge text-mute hover:text-chalk'
+                family === key ? 'bg-chalk text-inverse' : 'border border-edge text-mute hover:text-chalk'
               )}
             >
               {key === 'all' ? 'All' : FAMILY_LABEL[key]}

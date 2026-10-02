@@ -156,7 +156,7 @@ export default function LiveWorkoutPage() {
             <BellRing size={19} aria-hidden />
           </span>
           <p className="min-w-0 flex-1 text-[14px] leading-snug">Get a buzz when rest is over, even with the app closed.</p>
-          <button type="button" onClick={turnOnPush} className="h-9 shrink-0 rounded-full bg-chalk px-4 text-[13px] font-semibold text-ink">
+          <button type="button" onClick={turnOnPush} className="h-9 shrink-0 rounded-full bg-chalk px-4 text-[13px] font-semibold text-inverse">
             Turn on
           </button>
           <button type="button" onClick={dismissPush} aria-label="Not now" className="-mr-2 grid h-9 w-9 shrink-0 place-items-center text-mute">

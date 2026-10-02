@@ -6,12 +6,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        base:  { DEFAULT: '#0A0A0B', panel: '#141417', raised: '#1C1C21' },
+        // values live in globals.css so the whole app follows the phone's light or dark setting
+        base:  { DEFAULT: 'rgb(var(--base) / <alpha-value>)', panel: 'rgb(var(--base-panel) / <alpha-value>)', raised: 'rgb(var(--base-raised) / <alpha-value>)' },
         ink:   '#0A0A0B',
-        edge:  { DEFAULT: '#2A2A31', soft: '#1F1F25' },
-        chalk: { DEFAULT: '#F6F6F3', dim: '#C9C9CE' },
-        mute:  '#8A8A93',
-        live:  { DEFAULT: '#35D07F', tint: 'rgba(53,208,127,.12)' },
+        inverse: 'rgb(var(--inverse) / <alpha-value>)',
+        edge:  { DEFAULT: 'rgb(var(--edge) / <alpha-value>)', soft: 'rgb(var(--edge-soft) / <alpha-value>)' },
+        chalk: { DEFAULT: 'rgb(var(--chalk) / <alpha-value>)', dim: 'rgb(var(--chalk-dim) / <alpha-value>)' },
+        mute:  'rgb(var(--mute) / <alpha-value>)',
+        live:  { DEFAULT: 'rgb(var(--live) / <alpha-value>)', tint: 'rgb(var(--live) / .12)' },
         due:   { DEFAULT: '#FFB020', tint: 'rgba(255,176,32,.12)' },
         out:   { DEFAULT: '#FF453A', tint: 'rgba(255,69,58,.12)', deep: '#D1281E' },
       },

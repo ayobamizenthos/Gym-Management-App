@@ -268,7 +268,7 @@ export default function RenewPage() {
                 onClick={() => setMethod('card')}
                 className={cn(
                   'flex h-11 items-center justify-center gap-2 rounded-md text-[15px] font-semibold transition-colors',
-                  method === 'card' ? 'bg-chalk text-ink' : 'bg-base-panel text-chalk hover:bg-base-raised'
+                  method === 'card' ? 'bg-chalk text-inverse' : 'bg-base-panel text-chalk hover:bg-base-raised'
                 )}
               >
                 <CreditCard size={17} aria-hidden /> Card
@@ -280,7 +280,7 @@ export default function RenewPage() {
               onClick={() => setMethod('transfer')}
               className={cn(
                 'flex h-11 items-center justify-center gap-2 rounded-md text-[15px] font-semibold transition-colors',
-                method === 'transfer' ? 'bg-chalk text-ink' : 'bg-base-panel text-chalk hover:bg-base-raised'
+                method === 'transfer' ? 'bg-chalk text-inverse' : 'bg-base-panel text-chalk hover:bg-base-raised'
               )}
             >
               <Landmark size={17} aria-hidden /> Transfer

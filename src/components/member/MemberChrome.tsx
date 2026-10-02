@@ -6,6 +6,7 @@ import { BottomNav } from '@/components/BottomNav'
 import { useAuth } from '@/stores/auth'
 import { AlertBell } from '@/components/AlertBell'
 import { WorkoutBar } from '@/components/workouts/WorkoutBar'
+import { ReferralGift } from '@/components/ReferralGift'
 import { useWorkoutBackground } from '@/hooks/useWorkoutBackground'
 import { useHydrated } from '@/hooks/useHydrated'
 import { useWorkout } from '@/stores/workout'
@@ -56,6 +57,7 @@ export function MemberChrome({ children }: { children: React.ReactNode }) {
       {!focused && (
         <>
           <WorkoutBar />
+          {role === 'member' && <ReferralGift />}
           <BottomNav
             label="Main"
             swipe={staffHome ? { left: staffHome } : undefined}

@@ -38,6 +38,10 @@ export default {
         ring: { '0%': { opacity: '.55', transform: 'scale(.7)' }, '100%': { opacity: '0', transform: 'scale(2.6)' } },
         slam: { '0%': { opacity: '0', transform: 'scale(1.6)', letterSpacing: '.08em' }, '100%': { opacity: '1', transform: 'none', letterSpacing: '-0.02em' } },
         glow: { '0%,100%': { opacity: '.55' }, '50%': { opacity: '1' } },
+        // the referral gift: a phone swung left and right, then a pause, like a shake instruction
+        'phone-shake': { '0%, 55%, 100%': { transform: 'rotate(0deg)' }, '8%, 24%, 40%': { transform: 'rotate(-14deg)' }, '16%, 32%, 48%': { transform: 'rotate(14deg)' } },
+        'phone-rattle': { '0%, 100%': { transform: 'rotate(-16deg)' }, '50%': { transform: 'rotate(16deg)' } },
+        arcs: { '0%, 55%, 100%': { opacity: '0' }, '10%, 45%': { opacity: '1' } },
       },
       animation: {
         // backwards, not both: a transform held after the entrance would trap every
@@ -58,6 +62,9 @@ export default {
         ring: 'ring 1.1s cubic-bezier(.2,.8,.2,1) .3s both',
         slam: 'slam .55s cubic-bezier(.2,.9,.25,1) .45s both',
         glow: 'glow 2.4s ease-in-out infinite',
+        'phone-shake': 'phone-shake 1.8s ease-in-out infinite',
+        'phone-rattle': 'phone-rattle 0.18s ease-in-out infinite',
+        arcs: 'arcs 1.8s ease-in-out infinite',
       },
     },
   },

@@ -43,7 +43,7 @@ export default function JoinScreen() {
       .from('branches')
       .select('id, name, address')
       .eq('is_active', true)
-      .order('name')
+      .order('created_at')
       .then(({ data }) => {
         const open = data ?? []
         setBranches(open)

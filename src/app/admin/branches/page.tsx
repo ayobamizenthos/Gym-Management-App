@@ -31,7 +31,7 @@ export default function AdminBranches() {
   const [removing, setRemoving] = useState<Branch | null>(null)
 
   const load = useCallback(async () => {
-    const { data } = await supabase.from('branches').select('*').order('name')
+    const { data } = await supabase.from('branches').select('*').order('created_at')
     const list = (data ?? []) as Branch[]
     setBranches(list)
     setReady(true)

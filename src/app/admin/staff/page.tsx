@@ -35,7 +35,7 @@ export default function AdminStaff() {
 
   useEffect(() => { void load() }, [load])
   useEffect(() => {
-    void supabase.from('branches').select('*').order('name').then(({ data }) => setBranches((data ?? []) as Branch[]))
+    void supabase.from('branches').select('*').order('created_at').then(({ data }) => setBranches((data ?? []) as Branch[]))
   }, [])
 
   const submit = async (event: React.FormEvent) => {

@@ -128,7 +128,7 @@ export function MembersScreen() {
   }, [load])
 
   useEffect(() => {
-    void supabase.from('branches').select('*').eq('is_active', true).order('name')
+    void supabase.from('branches').select('*').eq('is_active', true).order('created_at')
       .then(({ data }) => setBranches((data ?? []) as Branch[]))
   }, [])
 

@@ -24,7 +24,7 @@ export default function RegisterMember() {
   const [created, setCreated] = useState<{ login: string; password: string } | null>(null)
 
   useEffect(() => {
-    void supabase.from('branches').select('*').eq('is_active', true).order('name')
+    void supabase.from('branches').select('*').eq('is_active', true).order('created_at')
       .then(({ data }) => {
         const list = (data ?? []) as Branch[]
         setBranches(list)

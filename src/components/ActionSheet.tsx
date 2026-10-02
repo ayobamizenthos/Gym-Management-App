@@ -28,14 +28,14 @@ export function ActionSheet({ title, actions, onClose }: Props) {
   useModal(panel, onClose)
 
   return createPortal(
-    <div className="fixed inset-0 z-[95] flex items-end justify-center bg-base/75 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-[95] flex items-end justify-center bg-base/70 backdrop-blur-[2px]" onClick={onClose}>
       <div
         ref={panel}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         onClick={event => event.stopPropagation()}
-        className="w-full max-w-md animate-rise rounded-t-xl bg-base-panel px-2 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2"
+        className="w-full max-w-md animate-rise rounded-t-xl bg-base-panel ring-1 ring-black/15 dark:ring-white/10 px-2 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2"
       >
         <span aria-hidden className="mx-auto mb-2 block h-1 w-10 rounded-full bg-edge" />
         {title && (

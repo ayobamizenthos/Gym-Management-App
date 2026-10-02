@@ -3,19 +3,21 @@
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Camera, LogOut, ChevronRight, LayoutDashboard } from 'lucide-react'
+import { LogOut, ChevronRight, LayoutDashboard } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/stores/auth'
 import { useToasts } from '@/stores/toast'
 import { AvatarCropper } from '@/components/AvatarCropper'
 import { Avatar } from '@/components/Avatar'
 import { forgetAvatar } from '@/lib/avatar'
-import { asName, daysLeft, plural } from '@/lib/format'
+import { asName, daysLeft, localDate, plural } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { isReachableEmail } from '@/lib/members'
 import { NotificationToggle } from '@/components/NotificationToggle'
 import { ChangePassword } from '@/components/ChangePassword'
 import { InstallRow } from '@/components/InstallRow'
+import { PhoneField } from '@/components/PhoneField'
+import { FoldRow } from '@/components/FoldRow'
 
 const SAVED_FEEDBACK_MS = 2000
 
@@ -31,7 +33,7 @@ export function AccountScreen({ workspace }: Props) {
   const push = useToasts(s => s.push)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const [form, setForm] = useState({ phone: '', address: '', emergency_contact: '' })
+  const [form, setForm] = useState({ phone: '', address: '', date_of_birth: '', emergency_contact: '' })
   const [formFor, setFormFor] = useState<string | null>(null)
   const [dirty, setDirty] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -45,6 +47,7 @@ export function AccountScreen({ workspace }: Props) {
     setForm({
       phone: profile.phone ?? '',
       address: profile.address ?? '',
+      date_of_birth: profile.date_of_birth ?? '',
       emergency_contact: profile.emergency_contact ?? '',
     })
   }
@@ -57,7 +60,7 @@ export function AccountScreen({ workspace }: Props) {
   const save = async () => {
     if (!profile) return
     setBusy(true)
-    const { error } = await supabase.from('profiles').update(form).eq('id', profile.id)
+    const { error } = await supabase.from('profiles').update({ ...form, date_of_birth: form.date_of_birth || null }).eq('id', profile.id)
     setBusy(false)
     if (error) {
       push({ tone: 'bad', title: 'Not saved', message: error.message })
@@ -125,9 +128,6 @@ export function AccountScreen({ workspace }: Props) {
           className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full border border-edge"
         >
           <Avatar path={profile.photo_url} name={profile.full_name} size={80} />
-          <span className="absolute inset-x-0 bottom-0 grid place-items-center bg-base/70 py-1">
-            <Camera size={13} className="text-white" aria-hidden />
-          </span>
         </button>
         <input
           ref={fileRef}
@@ -222,20 +222,33 @@ export function AccountScreen({ workspace }: Props) {
           </div>
         </dl>
 
-        <div className="mt-5 flex flex-col gap-4">
-          <label className="block">
-            <span className="text-sm font-medium text-mute">Phone</span>
-            <input inputMode="tel" value={form.phone} onChange={edit('phone')} className="field mt-1.5" />
-          </label>
-          <label className="block">
-            <span className="text-sm font-medium text-mute">Address</span>
-            <input value={form.address} onChange={edit('address')} className="field mt-1.5" />
-          </label>
-          <label className="block">
-            <span className="text-sm font-medium text-mute">Emergency contact</span>
-            <input value={form.emergency_contact} onChange={edit('emergency_contact')} className="field mt-1.5" />
-          </label>
+        <div className="mt-5">
+          <PhoneField
+            label="Phone"
+            value={form.phone}
+            onChange={phone => {
+              setForm({ ...form, phone })
+              setDirty(true)
+            }}
+          />
         </div>
+
+        <FoldRow title="Additional information" className="mt-4">
+          <div className="flex flex-col gap-4">
+            <label className="block">
+              <span className="label">Address</span>
+              <input value={form.address} onChange={edit('address')} autoComplete="street-address" className="field mt-1.5" />
+            </label>
+            <label className="block">
+              <span className="label">Date of birth</span>
+              <input type="date" max={localDate()} value={form.date_of_birth} onChange={edit('date_of_birth')} className="field mt-1.5" />
+            </label>
+            <label className="block">
+              <span className="label">Emergency contact</span>
+              <input value={form.emergency_contact} onChange={edit('emergency_contact')} placeholder="Name and phone" className="field mt-1.5" />
+            </label>
+          </div>
+        </FoldRow>
 
         <button onClick={save} disabled={!dirty || busy} className="btn-primary mt-5 w-full">
           {saved ? 'Saved' : busy ? <span className="dots">Saving</span> : 'Save changes'}
@@ -253,10 +266,9 @@ export function AccountScreen({ workspace }: Props) {
       )}
 
       {profile.email && (
-        <section className="mt-8">
-          <h2 className="text-xl">Password</h2>
+        <FoldRow title="Change password" className="mt-8">
           <ChangePassword email={profile.email} />
-        </section>
+        </FoldRow>
       )}
 
       <InstallRow />

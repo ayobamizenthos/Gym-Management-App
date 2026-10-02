@@ -132,14 +132,14 @@ function Sheet({ gift, onClose }: { gift: Gift; onClose: () => void }) {
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[95] flex items-end justify-center bg-base/85 backdrop-blur-sm" onClick={stage === 'open' ? onClose : undefined}>
+    <div className="fixed inset-0 z-[95] flex items-end justify-center bg-base/70 backdrop-blur-[2px]" onClick={stage === 'open' ? onClose : undefined}>
       <div
         ref={panel}
         role="dialog"
         aria-modal="true"
         aria-label={stage === 'open' ? 'Your free week' : 'A gift for you'}
         onClick={event => event.stopPropagation()}
-        className="w-full max-w-md animate-rise rounded-t-xl bg-base-panel px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 text-center"
+        className="w-full max-w-md animate-rise rounded-t-xl bg-base-panel ring-1 ring-black/15 dark:ring-white/10 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 text-center"
       >
         <span aria-hidden className="mx-auto mb-3 block h-1 w-10 rounded-full bg-edge" />
         {stage === 'open' ? (
@@ -169,7 +169,7 @@ function Sheet({ gift, onClose }: { gift: Gift; onClose: () => void }) {
           </>
         ) : (
           <>
-            <div className="h-[230px] w-full overflow-hidden rounded-xl bg-live-tint">
+            <div className="h-[230px] w-full overflow-hidden rounded-xl bg-live-tint ring-1 ring-black/10 dark:ring-0">
               <ShakePhone rattling={rattling} />
             </div>
             <h2 className="mt-5 text-[30px]">{needsTap ? 'Tap, then shake' : 'Shake your phone'}</h2>

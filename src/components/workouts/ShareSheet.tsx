@@ -77,14 +77,14 @@ export function ShareSheet({ workout, ordinal, streakWeeks, onClose }: Props) {
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[95] flex items-end justify-center bg-base/85 backdrop-blur-sm sm:items-center" onClick={onClose}>
+    <div className="fixed inset-0 z-[95] flex items-end justify-center bg-base/70 backdrop-blur-[2px] sm:items-center" onClick={onClose}>
       <div
         ref={panel}
         role="dialog"
         aria-modal="true"
         aria-label="Share your workout"
         onClick={event => event.stopPropagation()}
-        className="w-full max-w-md animate-rise rounded-t-xl bg-base-panel px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:rounded-xl"
+        className="w-full max-w-md animate-rise rounded-t-xl bg-base-panel ring-1 ring-black/15 dark:ring-white/10 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:rounded-xl"
       >
         <div className="flex items-center justify-between">
           <h2 className="font-body text-[17px] font-bold normal-case tracking-normal">Share your workout</h2>

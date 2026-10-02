@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { unlockAudio } from '@/lib/sounds'
 import { PasswordField } from '@/components/PasswordField'
 import { AuthShell } from '@/components/AuthShell'
+import { PhoneField } from '@/components/PhoneField'
 import { Check } from 'lucide-react'
 import type { Branch } from '@/lib/types'
 import { UsernameField } from '@/components/UsernameField'
@@ -113,10 +114,7 @@ export default function JoinScreen() {
           <span className="label">Full name</span>
           <input required autoComplete="name" value={fullName} onChange={e => setFullName(e.target.value)} className="field mt-1.5" />
         </label>
-        <label className="block">
-          <span className="label">Phone</span>
-          <input required type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={e => setPhone(e.target.value)} className="field mt-1.5" />
-        </label>
+        <PhoneField label="Phone" required value={phone} onChange={setPhone} />
         <label className="block">
           <span className="label">Email</span>
           <input required type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} className="field mt-1.5" />

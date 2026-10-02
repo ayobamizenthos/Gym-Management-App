@@ -103,7 +103,11 @@ export default function DeskLive() {
             <p className="figure text-live">{today.length}</p>
           </div>
           <button
-            onClick={() => { setSound(s => !s); unlockAudio() }}
+            onClick={() => {
+              unlockAudio()
+              if (!sound) playDeskAlert('valid')
+              setSound(s => !s)
+            }}
             className={cn('btn-quiet h-11 px-4', !sound && 'text-out')}
             aria-pressed={sound}
           >

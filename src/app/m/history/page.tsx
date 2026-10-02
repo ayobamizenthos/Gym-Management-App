@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/stores/auth'
 import { naira, shortDate } from '@/lib/format'
@@ -59,7 +60,8 @@ export default function HistoryPage() {
 
       <ul role="list" className="mt-6 flex flex-col gap-2">
         {payments.map(payment => (
-          <li key={payment.id} className="flex items-center justify-between gap-3 rounded-lg bg-base-panel px-4 py-4">
+          <li key={payment.id}>
+            <Link href={`/receipt/${payment.id}`} className="flex items-center justify-between gap-3 rounded-lg bg-base-panel px-4 py-4 transition-colors active:bg-base-raised">
             <span className="min-w-0">
               <span className="block font-display text-xl uppercase tracking-tightest">
                 {payment.plan?.name ?? 'Payment'}
@@ -75,6 +77,7 @@ export default function HistoryPage() {
                 {WORD[payment.status]}
               </span>
             </span>
+            </Link>
           </li>
         ))}
       </ul>

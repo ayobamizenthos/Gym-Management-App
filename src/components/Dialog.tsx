@@ -47,7 +47,7 @@ export function Dialog({ title, body, ask, initial = '', requireText, confirmLab
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[95] grid place-items-end bg-base/80 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-sm sm:place-items-center"
+      className="fixed inset-0 z-[95] grid place-items-end bg-base/70 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-[2px] sm:place-items-center"
       onClick={onClose}
     >
       <div
@@ -56,7 +56,7 @@ export function Dialog({ title, body, ask, initial = '', requireText, confirmLab
         aria-modal="true"
         aria-labelledby={titleId}
         onClick={e => e.stopPropagation()}
-        className="panel w-full max-w-sm animate-rise p-5"
+        className="panel w-full max-w-sm animate-rise p-5 ring-1 ring-black/15 dark:ring-white/10"
       >
         <h2 id={titleId} className="text-2xl">{title}</h2>
         {body && <p className="mt-2 text-[15px] text-chalk-dim">{body}</p>}

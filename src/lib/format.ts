@@ -27,3 +27,11 @@ export const parseWholeNumber = (text: string): number | null =>
 /** Today's calendar date on this device, as YYYY-MM-DD for date inputs. */
 export const localDate = (at = new Date()) =>
   [at.getFullYear(), String(at.getMonth() + 1).padStart(2, '0'), String(at.getDate()).padStart(2, '0')].join('-')
+
+/** The number after +234, without the trunk 0: "08031245567" and "+2348031245567" both give "8031245567". */
+export const localPhone = (phone: string | null | undefined) => {
+  const digits = (phone ?? '').replace(/\D/g, '')
+  return digits.startsWith('234') ? digits.slice(3) : digits.replace(/^0/, '')
+}
+
+export const fullPhone = (local: string) => (local.trim() ? '+234' + local.replace(/\D/g, '').replace(/^0/, '') : '')

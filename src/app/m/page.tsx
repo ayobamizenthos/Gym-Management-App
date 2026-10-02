@@ -36,6 +36,13 @@ export default function MemberHome() {
 
   const waiting = !active && (profile?.pending_days ?? 0) > 0
   const state = waiting ? 'ready' : !profile?.expires_at ? 'none' : !active ? 'out' : soon ? 'due' : 'live'
+  // asked for once a payment has gone through, never before
+  const missing = [
+    !profile?.photo_url && 'photo',
+    !profile?.address && 'address',
+    !profile?.date_of_birth && 'date of birth',
+    !profile?.emergency_contact && 'emergency contact',
+  ].filter((item): item is string => Boolean(item))
   const accent = { live: 'text-live', due: 'text-due', out: 'text-out', none: 'text-chalk', ready: 'text-chalk' }[state]
 
   return (
@@ -92,11 +99,11 @@ export default function MemberHome() {
         {state !== 'none' && (
           <span
             className={cn(
-              'absolute right-14 top-[calc(1.125rem+env(safe-area-inset-top))] rounded-full px-3 py-1 text-[12px] font-semibold uppercase tracking-wide backdrop-blur',
-              state === 'live' && 'bg-live-tint text-live',
-              state === 'due' && 'bg-due-tint text-due',
-              state === 'out' && 'bg-out-tint text-out',
-              state === 'ready' && 'bg-base-raised text-chalk'
+              'absolute right-14 top-[calc(1.6rem+env(safe-area-inset-top))] text-[12px] font-bold uppercase tracking-[0.14em]',
+              state === 'live' && 'text-live',
+              state === 'due' && 'text-due',
+              state === 'out' && 'text-out',
+              state === 'ready' && 'text-chalk'
             )}
           >
             {state === 'live' ? 'Active' : state === 'due' ? 'Expiring' : state === 'ready' ? 'Ready' : 'Expired'}
@@ -125,6 +132,16 @@ export default function MemberHome() {
           </>
         )}
       </div>
+
+      {profile && active && missing.length > 0 && (
+        <Link href="/m/account" className="panel mt-8 flex items-center gap-4 p-5 transition-colors hover:bg-base-raised">
+          <span className="min-w-0 flex-1">
+            <span className="block text-[17px] font-semibold">Finish your profile</span>
+            <span className="mt-1 block text-[14px] text-chalk-dim">Add your {missing.join(', ').replace(/, ([^,]*)$/, ' and $1')} so the desk knows who you are.</span>
+          </span>
+          <ArrowRight size={20} className="shrink-0 text-mute" aria-hidden />
+        </Link>
+      )}
 
       <TrainingCard userId={profile?.id} />
 

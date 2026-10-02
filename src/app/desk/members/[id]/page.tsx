@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { KeyRound, Copy, Check, Pencil, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -400,10 +401,8 @@ export default function MemberDetail() {
               </p>
               <ul role="list" className="flex flex-col gap-1.5">
                 {payments.map(row => (
-                  <li
-                    key={row.id}
-                    className="flex items-center justify-between gap-3 rounded-sm bg-base-panel px-3.5 py-2.5"
-                  >
+                  <li key={row.id}>
+                    <Link href={`/receipt/${row.id}`} className="flex items-center justify-between gap-3 rounded-sm bg-base-panel px-3.5 py-2.5 transition-colors active:bg-base-raised">
                     <span className="min-w-0">
                       <span className="block truncate text-[15px]">{row.plan?.name ?? 'Payment'}</span>
                       <span className="block text-xs text-mute">
@@ -416,6 +415,7 @@ export default function MemberDetail() {
                         {STATUS_LABEL[row.status]}
                       </span>
                     </span>
+                    </Link>
                   </li>
                 ))}
               </ul>

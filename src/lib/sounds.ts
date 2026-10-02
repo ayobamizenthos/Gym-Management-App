@@ -293,16 +293,19 @@ export function playDeskAlert(kind: CheckInKind) {
   else playNoMembership()
 }
 
-// Boxing ring bell: a brass bell's overtones sit at inharmonic ratios and each
-// dies away at its own pace, which is what makes it ring rather than beep.
+// Boxing ring bell, tuned to a recorded ring bell: its overtones sit at these
+// inharmonic ratios of a 1,666 Hz strike and each dies away at its own pace,
+// which is what makes it ring rather than beep.
 const BELL_PARTIALS = [
-  { ratio: 1, gain: 0.32, decay: 1.6 },
-  { ratio: 2.32, gain: 0.2, decay: 1.1 },
-  { ratio: 3.17, gain: 0.13, decay: 0.8 },
-  { ratio: 4.41, gain: 0.08, decay: 0.55 },
-  { ratio: 5.6, gain: 0.05, decay: 0.4 },
+  { ratio: 1, gain: 0.3, decay: 1.7 },
+  { ratio: 1.367, gain: 0.2, decay: 1.4 },
+  { ratio: 1.443, gain: 0.14, decay: 1.3 },
+  { ratio: 2.414, gain: 0.2, decay: 0.9 },
+  { ratio: 4.35, gain: 0.3, decay: 0.55 },
+  { ratio: 6.11, gain: 0.15, decay: 0.35 },
 ]
-const RING_BELL_HZ = 1180
+const RING_BELL_HZ = 1666
+const RING_GAP_S = 0.24
 
 function bell(at = 0, pitch = RING_BELL_HZ, level = 1, length = 1) {
   const ac = audio()
@@ -326,14 +329,21 @@ function bell(at = 0, pitch = RING_BELL_HZ, level = 1, length = 1) {
   strike(at, 0.22 * level, 0.03, 5200)
 }
 
-/** Round one: a single ring of the bell as the workout starts. */
+/** The wrestling bell: three quick rings, the last left to ring out. */
+function ringThrice() {
+  bell(0, RING_BELL_HZ, 1, 0.5)
+  bell(RING_GAP_S, RING_BELL_HZ, 1, 0.5)
+  bell(RING_GAP_S * 2, RING_BELL_HZ, 1, 1.15)
+}
+
+/** The match starts: the bell rings three times as the workout begins. */
 export function playWorkoutStart() {
-  bell(0, RING_BELL_HZ, 1, 1.2)
+  ringThrice()
 }
 
 /** A set ticked off: the short clink of a plate going on the bar. */
 export function playSetDone() {
-  bell(0, 2650, 0.45, 0.12)
+  bell(0, 3200, 0.4, 0.12)
   strike(0, 0.1, 0.025, 3800)
 }
 
@@ -342,11 +352,9 @@ export function playCountdown() {
   play([{ freq: 1320, dur: 0.09, gain: 0.22, type: 'square' }])
 }
 
-/** Rest over: the three quick rings that end a round. */
+/** Rest over: the same three rings, back to work. */
 export function playRestOver() {
-  bell(0, RING_BELL_HZ, 1, 0.55)
-  bell(0.2, RING_BELL_HZ, 1, 0.55)
-  bell(0.4, RING_BELL_HZ, 1, 1.1)
+  ringThrice()
 }
 
 /** Workout saved: the bell, then a rising run into a wide, held major chord. */

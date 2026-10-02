@@ -3,16 +3,17 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, Medal, RotateCcw, Share, Trophy } from 'lucide-react'
+import { ChevronLeft, Medal, RotateCcw, Share } from 'lucide-react'
 import { Confetti } from '@/components/workouts/Confetti'
+import { ShareSheet } from '@/components/workouts/ShareSheet'
+import { TrophyMark } from '@/components/workouts/TrophyMark'
 import { ExerciseThumb } from '@/components/workouts/ExerciseThumb'
 import { Dialog } from '@/components/Dialog'
 import { useExercises, isBodyweight } from '@/lib/exercises'
-import { clock, kgLabel, secondsBetween, spoken, volumeLabel } from '@/lib/workouts'
+import { clock, kgLabel, secondsBetween, spoken } from '@/lib/workouts'
 import type { FinishResult, PersonalBest, Workout } from '@/lib/workouts'
 import { startWorkout } from '@/lib/workout-session'
 import { playWorkoutDone } from '@/lib/sounds'
-import { useGymName } from '@/hooks/useSettings'
 import { useWorkout } from '@/stores/workout'
 import { plural } from '@/lib/format'
 import { cn } from '@/lib/cn'
@@ -67,12 +68,12 @@ interface Props {
 
 export function WorkoutSummary({ workout, result }: Props) {
   const router = useRouter()
-  const gymName = useGymName()
   const { byId } = useExercises()
   const session = useWorkout(state => state.session)
   const trophy = useRef<HTMLSpanElement>(null)
   const [origin, setOrigin] = useState<{ x: number; y: number } | null>(null)
   const [replacing, setReplacing] = useState(false)
+  const [sharing, setSharing] = useState(false)
   const celebrate = result !== null
 
   const seconds = secondsBetween(workout.started_at, workout.ended_at)
@@ -96,16 +97,6 @@ export function WorkoutSummary({ workout, result }: Props) {
   // make the done page redirect to the plain summary before this navigation lands
   const done = () => router.replace('/m/workouts')
 
-  const share = async () => {
-    const text = `Just finished ${workout.name} at ${gymName}: ${spoken(seconds)}, ${volumeLabel(Number(workout.volume_kg))} lifted${records.length ? `, ${records.length} new ${plural(records.length, 'personal best')}` : ''}.`
-    try {
-      if (navigator.share) await navigator.share({ text })
-      else await navigator.clipboard.writeText(text)
-    } catch {
-      // the member closed the share sheet
-    }
-  }
-
   const repeat = () => {
     startWorkout(workout.name, workout.routine_id, workout.entries)
     router.push('/m/workouts/live')
@@ -125,9 +116,9 @@ export function WorkoutSummary({ workout, result }: Props) {
           </div>
           <div className="relative flex flex-col items-center pt-12 text-center">
             <span className="relative grid h-24 w-24 place-items-center">
-              <span aria-hidden className="absolute inset-0 animate-ring rounded-full border-2 border-live" />
-              <span ref={trophy} className="grid h-24 w-24 animate-trophy place-items-center rounded-full bg-live text-ink shadow-[0_18px_50px_-10px_rgba(53,208,127,.7)]">
-                <Trophy size={44} strokeWidth={2} aria-hidden />
+              <span aria-hidden className="absolute inset-0 animate-ring rounded-full border-2 border-[#F7B733]" />
+              <span ref={trophy} className="grid h-24 w-24 animate-trophy place-items-center rounded-full bg-[radial-gradient(circle_at_50%_35%,rgba(247,183,51,.28),rgba(247,183,51,.08)_70%)] shadow-[0_0_0_2px_rgba(247,183,51,.45),0_18px_50px_-10px_rgba(247,183,51,.55)]">
+                <TrophyMark size={64} />
               </span>
             </span>
             <h1 className="mt-7 animate-slam text-[54px]">Workout done</h1>
@@ -246,17 +237,23 @@ export function WorkoutSummary({ workout, result }: Props) {
               )
             })}
           </ul>
-          <button type="button" onClick={() => (session ? setReplacing(true) : repeat())} className="btn-quiet mt-4 w-full">
-            <RotateCcw size={18} aria-hidden />
-            Do this workout again
-          </button>
+          <div className="mt-4 flex gap-2.5">
+            <button type="button" onClick={() => setSharing(true)} className="btn-quiet flex-1">
+              <Share size={18} aria-hidden />
+              Share
+            </button>
+            <button type="button" onClick={() => (session ? setReplacing(true) : repeat())} className="btn-quiet flex-[1.6]">
+              <RotateCcw size={18} aria-hidden />
+              Do it again
+            </button>
+          </div>
         </section>
       )}
 
       {celebrate && (
         <div className="fixed inset-x-0 bottom-0 z-30 bg-gradient-to-t from-base via-base/95 to-transparent px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-10">
           <div className="mx-auto flex max-w-md animate-lift-3 gap-2.5">
-            <button type="button" onClick={share} className="btn-quiet flex-1">
+            <button type="button" onClick={() => setSharing(true)} className="btn-quiet flex-1">
               <Share size={18} aria-hidden />
               Share
             </button>
@@ -265,6 +262,15 @@ export function WorkoutSummary({ workout, result }: Props) {
             </button>
           </div>
         </div>
+      )}
+
+      {sharing && (
+        <ShareSheet
+          workout={workout}
+          ordinal={result?.ordinal ?? null}
+          streakWeeks={result?.streak_weeks ?? null}
+          onClose={() => setSharing(false)}
+        />
       )}
 
       {replacing && (

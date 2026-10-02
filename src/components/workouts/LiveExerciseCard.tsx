@@ -13,6 +13,7 @@ import type { Exercise } from '@/lib/exercises'
 import { REST_CHOICES, restLabel } from '@/lib/workouts'
 import type { PlannedSet } from '@/lib/workouts'
 import { playSetDone } from '@/lib/sounds'
+import { useToasts } from '@/stores/toast'
 import { cn } from '@/lib/cn'
 
 // the closing sheet's Back step must land before the next sheet adds its own
@@ -43,6 +44,7 @@ export function LiveExerciseCard({ entry, exercise, previous, first, last, upNex
   const { editSet, toggleDone, addSet, removeSet, setKind, setRest, removeExercise, moveExercise, startRest } = useWorkout()
   const [menu, setMenu] = useState<'exercise' | 'rest' | { set: number } | null>(null)
   const [refused, setRefused] = useState<number | null>(null)
+  const toast = useToasts(state => state.push)
   const repsFields = useRef<(HTMLInputElement | null)[]>([])
   const bodyweight = isBodyweight(exercise)
 
@@ -217,7 +219,11 @@ export function LiveExerciseCard({ entry, exercise, previous, first, last, upNex
           actions={REST_CHOICES.map(seconds => ({
             label: seconds === 0 ? 'No rest timer' : restLabel(seconds),
             chosen: seconds === entry.rest,
-            onSelect: () => setRest(entry.key, seconds),
+            onSelect: () => {
+              setRest(entry.key, seconds)
+              // the rest timer is easy to mistake for a countdown that starts now
+              if (seconds > 0) toast({ tone: 'info', title: `Rest ${restLabel(seconds)}`, message: 'Starts each time you tick a set.' })
+            },
           }))}
           onClose={() => setMenu(null)}
         />

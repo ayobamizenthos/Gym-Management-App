@@ -101,9 +101,9 @@ export default function ExercisePage() {
         <ChevronLeft size={26} aria-hidden />
       </button>
 
-      <ExerciseThumb id={id} size="fill" eager className="mx-auto mt-2 max-w-[300px]" />
+      <ExerciseThumb id={id} size="fill" eager className="mx-auto max-w-[190px]" />
 
-      <h1 className="mt-5 text-[34px]">{exercise?.name ?? ' '}</h1>
+      <h1 className="mt-3 text-[28px] leading-tight">{exercise?.name ?? ' '}</h1>
       {exercise && (
         <div className="mt-2 flex flex-wrap gap-x-1.5 gap-y-1">
           <span className="text-[15px] font-semibold text-live">{muscleLabel(exercise.target)}</span>
@@ -114,7 +114,7 @@ export default function ExercisePage() {
         </div>
       )}
 
-      <div role="tablist" className="mt-6 flex gap-6 border-b border-edge-soft">
+      <div role="tablist" className="mt-4 flex gap-6 border-b border-edge-soft">
         {(
           [
             ['progress', 'Progress'],

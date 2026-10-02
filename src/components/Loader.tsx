@@ -10,7 +10,7 @@ export function Loader({ full, label }: { full?: boolean; label?: string }) {
       aria-label={label ?? 'Loading'}
       className={cn(
         'grid place-items-center',
-        full ? 'fixed inset-0 z-[80] bg-base' : 'py-20'
+        'fixed inset-0', full ? 'z-[80] bg-base' : 'pointer-events-none z-[5]'
       )}
     >
       <div className="flex flex-col items-center gap-5">

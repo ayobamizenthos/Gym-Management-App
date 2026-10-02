@@ -7,10 +7,10 @@ import { useAuth } from '@/stores/auth'
 import { useToasts } from '@/stores/toast'
 import { BackLink } from '@/components/BackLink'
 import { postJson } from '@/lib/post-json'
-import { localDate } from '@/lib/format'
 import { isReachableEmail } from '@/lib/members'
 import { Select } from '@/components/Select'
 import { UsernameField } from '@/components/UsernameField'
+import { DateField } from '@/components/DateField'
 import type { Branch } from '@/lib/types'
 
 export default function RegisterMember() {
@@ -91,17 +91,10 @@ export default function RegisterMember() {
           <span className="label">Email (optional)</span>
           <input type="email" inputMode="email" value={form.email} onChange={bindField('email')} className="field mt-1.5" />
         </label>
-        <label className="block">
+        <div className="relative">
           <span className="label">Date of birth</span>
-          <input
-            required
-            type="date"
-            max={localDate()}
-            value={form.date_of_birth}
-            onChange={bindField('date_of_birth')}
-            className="field mt-1.5"
-          />
-        </label>
+          <DateField required value={form.date_of_birth} onChange={date_of_birth => setForm({ ...form, date_of_birth })} />
+        </div>
         <UsernameField
           required
           value={form.username}

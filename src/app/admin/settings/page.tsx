@@ -139,7 +139,7 @@ export default function AdminSettings() {
           <NotificationToggle />
         </Accordion>
 
-        <Accordion title="Door sounds">
+        <Accordion title="Sounds">
           <SoundPreview />
         </Accordion>
       </div>

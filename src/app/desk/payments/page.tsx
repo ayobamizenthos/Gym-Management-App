@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import Image from 'next/image'
-import { FileText, Check, X } from 'lucide-react'
+import Link from 'next/link'
+import { FileText, Check, X, ReceiptText } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToasts } from '@/stores/toast'
 import { Dialog } from '@/components/Dialog'
@@ -124,7 +125,8 @@ export default function DeskPayments() {
         <ul role="list" className="mt-5 flex flex-col gap-2">
           {rows.map(row => (
             <li key={row.id} className="rounded-lg bg-base-panel p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="relative flex flex-wrap items-start justify-between gap-3">
+                {row.status === 'confirmed' && <Link href={`/receipt/${row.id}`} aria-label={`Receipt for ${row.member?.full_name ?? 'member'}`} className="absolute inset-0" />}
                 <div className="min-w-0">
                   <p className="font-semibold">{row.member?.full_name ?? 'Member'}</p>
                   <p className="text-sm text-mute">
@@ -138,6 +140,11 @@ export default function DeskPayments() {
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
+                {row.status === 'confirmed' && (
+                  <Link href={`/receipt/${row.id}`} className="btn-quiet h-10 px-4 text-sm">
+                    <ReceiptText size={16} aria-hidden /> Receipt
+                  </Link>
+                )}
                 {row.proof_url && (
                   <button onClick={() => void openProof(row.proof_url!)} className="btn-quiet h-10 px-4 text-sm">
                     <FileText size={16} aria-hidden /> View proof

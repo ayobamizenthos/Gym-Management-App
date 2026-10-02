@@ -14,6 +14,7 @@ import { Loader } from '@/components/Loader'
 import { Dialog } from '@/components/Dialog'
 import { BackLink } from '@/components/BackLink'
 import { Select } from '@/components/Select'
+import { DateField } from '@/components/DateField'
 import { asName, daysLeft, naira, plural, shortDate, timeOnly } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { isReachableEmail } from '@/lib/members'
@@ -331,10 +332,10 @@ export default function MemberDetail() {
               <span className="label">Full name</span>
               <input value={edits.full_name} onChange={e => setEdits({ ...edits, full_name: e.target.value })} className="field mt-1.5" />
             </label>
-            <label className="block">
+            <div>
               <span className="label">Date of birth</span>
-              <input type="date" value={edits.date_of_birth} onChange={e => setEdits({ ...edits, date_of_birth: e.target.value })} className="field mt-1.5" />
-            </label>
+              <DateField value={edits.date_of_birth} onChange={date_of_birth => setEdits({ ...edits, date_of_birth })} />
+            </div>
             <label className="block">
               <span className="label">Phone</span>
               <input inputMode="tel" value={edits.phone} onChange={e => setEdits({ ...edits, phone: e.target.value })} className="field mt-1.5" />

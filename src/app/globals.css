@@ -131,3 +131,35 @@
   }
   .print-sheet img { width: 62% !important; }
 }
+
+/* The copy printReceipt lays out off screen at till-roll width, so its length can be measured. */
+#receipt-print {
+  position: fixed;
+  top: 0;
+  left: -200mm;
+  width: 80mm;
+  background: #fff;
+}
+#receipt-print .receipt-paper {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 5mm 4mm 2mm;
+  box-shadow: none;
+  -webkit-mask: none;
+  mask: none;
+}
+
+/* Printing shows that copy alone: nothing else takes paper. */
+@media print {
+  body:has(> #receipt-print) > *:not(#receipt-print) {
+    display: none !important;
+  }
+  #receipt-print {
+    position: static;
+  }
+  #receipt-print * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

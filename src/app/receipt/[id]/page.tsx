@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ChevronLeft, Printer } from 'lucide-react'
 import { RoleGate } from '@/components/RoleGate'
 import { supabase } from '@/lib/supabase'
 import { naira } from '@/lib/format'
+import { printReceipt } from '@/lib/print-receipt'
 import type { Payment } from '@/lib/types'
 
 interface ReceiptRow extends Payment {
@@ -63,6 +64,7 @@ function Receipt() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const [row, setRow] = useState<ReceiptRow | null | undefined>(undefined)
+  const paper = useRef<HTMLElement>(null)
 
   useEffect(() => {
     void supabase
@@ -89,16 +91,16 @@ function Receipt() {
         <button type="button" onClick={() => router.back()} aria-label="Back" className="-ml-2 grid h-11 w-11 place-items-center rounded-full active:bg-base-raised">
           <ChevronLeft size={26} aria-hidden />
         </button>
-        <button type="button" onClick={() => window.print()} className="flex h-10 items-center gap-2 rounded-full bg-chalk px-4 text-[14px] font-semibold text-inverse">
+        <button type="button" onClick={() => paper.current && void printReceipt(paper.current)} className="flex h-10 items-center gap-2 rounded-full bg-chalk px-4 text-[14px] font-semibold text-inverse">
           <Printer size={16} aria-hidden />
           Print
         </button>
       </div>
 
-      <article className="mt-4 bg-white px-6 py-7 font-mono text-[13px] leading-relaxed text-black shadow-lift print:shadow-none">
+      <article ref={paper} className="receipt-paper mt-4 bg-white px-6 py-7 font-mono text-[13px] leading-relaxed text-black shadow-lift print:shadow-none">
         <div className="flex flex-col items-center text-center">
           {/* eslint-disable-next-line @next/next/no-img-element -- prints sharp at any size */}
-          <img src="/logo-dark.png" alt="Zenthos" className="h-5 w-auto" />
+          <img src="/logo-dark.png" alt="Zenthos" className="h-8 w-auto" />
           {row.branch && <p className="mt-2">{row.branch.name} · {row.branch.address}</p>}
         </div>
 

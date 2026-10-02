@@ -2,7 +2,21 @@
 
 import { useState } from 'react'
 import { Play } from 'lucide-react'
-import { playGranted, playExpired, playNoMembership, playRepeat, playPaid, unlockAudio } from '@/lib/sounds'
+import {
+  playGranted,
+  playExpired,
+  playNoMembership,
+  playRepeat,
+  playPaid,
+  playNewMember,
+  playWorkoutStart,
+  playSetDone,
+  playCountdown,
+  playRestOver,
+  playWorkoutDone,
+  playReward,
+  unlockAudio,
+} from '@/lib/sounds'
 import { cn } from '@/lib/cn'
 
 const CUES = [
@@ -11,6 +25,13 @@ const CUES = [
   { label: 'No active subscription', hint: 'Registered, never paid', play: playNoMembership, tone: 'warn' },
   { label: 'Already checked in', hint: 'Second scan today', play: playRepeat, tone: 'plain' },
   { label: 'Payment received', hint: 'Money confirmed', play: playPaid, tone: 'good' },
+  { label: 'New member', hint: 'Someone signed up', play: playNewMember, tone: 'plain' },
+  { label: 'Workout start', hint: 'The bell rings three times', play: playWorkoutStart, tone: 'good' },
+  { label: 'Set done', hint: 'A plate on the bar', play: playSetDone, tone: 'plain' },
+  { label: 'Rest countdown', hint: 'Last three seconds of rest', play: () => [0, 1000, 2000].forEach(at => window.setTimeout(playCountdown, at)), tone: 'warn' },
+  { label: 'Rest over', hint: 'Back to work', play: playRestOver, tone: 'good' },
+  { label: 'Workout finished', hint: 'Bell and fanfare', play: playWorkoutDone, tone: 'good' },
+  { label: 'Free week opened', hint: 'Referral gift unwrapped', play: playReward, tone: 'good' },
 ] as const
 
 const RING = {
@@ -35,7 +56,7 @@ export function SoundPreview() {
   return (
     <>
       <p className="mb-3 text-[15px] text-chalk-dim">
-        Turn your volume up. This is what the floor hears.
+        Turn your volume up. Every sound the app makes.
       </p>
 
       <ul role="list" className="flex flex-col gap-1.5">

@@ -3,15 +3,18 @@
 import { useEffect } from 'react'
 import type { RefObject } from 'react'
 import { useLatest } from '@/hooks/useLatest'
+import { useBackToClose } from '@/hooks/useBackToClose'
 
 const FOCUSABLE = 'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
 
 /**
  * Focus moves into the panel, Tab cycles inside it, Escape closes it, the page
- * behind stops scrolling, and focus returns to the opener on close.
+ * behind stops scrolling, focus returns to the opener on close, and the phone's
+ * Back gesture closes it instead of leaving the page.
  */
 export function useModal(panel: RefObject<HTMLElement | null>, onClose: () => void) {
   const closeRef = useLatest(onClose)
+  useBackToClose(true, onClose)
 
   useEffect(() => {
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null

@@ -293,30 +293,72 @@ export function playDeskAlert(kind: CheckInKind) {
   else playNoMembership()
 }
 
-/** A set ticked off: one quiet wooden tap, small enough to hear twenty times a session. */
+// Boxing ring bell: a brass bell's overtones sit at inharmonic ratios and each
+// dies away at its own pace, which is what makes it ring rather than beep.
+const BELL_PARTIALS = [
+  { ratio: 1, gain: 0.32, decay: 1.6 },
+  { ratio: 2.32, gain: 0.2, decay: 1.1 },
+  { ratio: 3.17, gain: 0.13, decay: 0.8 },
+  { ratio: 4.41, gain: 0.08, decay: 0.55 },
+  { ratio: 5.6, gain: 0.05, decay: 0.4 },
+]
+const RING_BELL_HZ = 1180
+
+function bell(at = 0, pitch = RING_BELL_HZ, level = 1, length = 1) {
+  const ac = audio()
+  if (!ac || !master) return
+  const start = ac.currentTime + 0.01 + at
+  for (const partial of BELL_PARTIALS) {
+    const osc = ac.createOscillator()
+    const amp = ac.createGain()
+    osc.type = 'sine'
+    // a slight beat between the strike and the ring, as on a real hammered bell
+    osc.frequency.setValueAtTime(pitch * partial.ratio * 1.004, start)
+    osc.frequency.exponentialRampToValueAtTime(pitch * partial.ratio, start + 0.08)
+    amp.gain.setValueAtTime(0.0001, start)
+    amp.gain.exponentialRampToValueAtTime(partial.gain * level, start + 0.004)
+    amp.gain.exponentialRampToValueAtTime(0.0001, start + partial.decay * length)
+    osc.connect(amp)
+    amp.connect(master)
+    osc.start(start)
+    osc.stop(start + partial.decay * length + 0.05)
+  }
+  strike(at, 0.22 * level, 0.03, 5200)
+}
+
+/** Round one: a single ring of the bell as the workout starts. */
+export function playWorkoutStart() {
+  bell(0, RING_BELL_HZ, 1, 1.2)
+}
+
+/** A set ticked off: the short clink of a plate going on the bar. */
 export function playSetDone() {
-  play([{ freq: 880, to: 660, dur: 0.07, gain: 0.12, type: 'sine' }])
-  strike(0, 0.05, 0.03, 1800)
+  bell(0, 2650, 0.45, 0.12)
+  strike(0, 0.1, 0.025, 3800)
 }
 
-/** Rest is over: two bright pings that cut through gym music. */
+/** The last three seconds of rest, one pip each, like a gym interval timer. */
+export function playCountdown() {
+  play([{ freq: 1320, dur: 0.09, gain: 0.22, type: 'square' }])
+}
+
+/** Rest over: the three quick rings that end a round. */
 export function playRestOver() {
-  play([
-    { freq: G5, dur: 0.16, gain: 0.28, type: 'triangle', fat: true },
-    { freq: C6, dur: 0.32, gain: 0.3, type: 'triangle', fat: true, at: 0.19 },
-    { freq: C6 * 2, dur: 0.34, gain: 0.05, type: 'sine', at: 0.2 },
-  ])
+  bell(0, RING_BELL_HZ, 1, 0.55)
+  bell(0.2, RING_BELL_HZ, 1, 0.55)
+  bell(0.4, RING_BELL_HZ, 1, 1.1)
 }
 
-/** Workout saved: a rising run into a wide, held major chord. */
+/** Workout saved: the bell, then a rising run into a wide, held major chord. */
 export function playWorkoutDone() {
+  bell(0, RING_BELL_HZ, 0.9, 1)
   play([
-    { freq: C5, dur: 0.09, gain: 0.22, type: 'triangle', fat: true },
-    { freq: E5, dur: 0.09, gain: 0.22, type: 'triangle', fat: true, at: 0.07 },
-    { freq: G5, dur: 0.09, gain: 0.22, type: 'triangle', fat: true, at: 0.14 },
-    { freq: C6, dur: 0.9, gain: 0.26, type: 'triangle', fat: true, at: 0.21 },
-    { freq: E6, dur: 0.9, gain: 0.14, type: 'sine', at: 0.23 },
-    { freq: G6, dur: 0.95, gain: 0.08, type: 'sine', at: 0.25 },
+    { freq: C5, dur: 0.09, gain: 0.22, type: 'triangle', fat: true, at: 0.35 },
+    { freq: E5, dur: 0.09, gain: 0.22, type: 'triangle', fat: true, at: 0.42 },
+    { freq: G5, dur: 0.09, gain: 0.22, type: 'triangle', fat: true, at: 0.49 },
+    { freq: C6, dur: 0.9, gain: 0.26, type: 'triangle', fat: true, at: 0.56 },
+    { freq: E6, dur: 0.9, gain: 0.14, type: 'sine', at: 0.58 },
+    { freq: G6, dur: 0.95, gain: 0.08, type: 'sine', at: 0.6 },
   ])
-  strike(0.21, 0.14, 0.2, 3600)
+  strike(0.56, 0.14, 0.2, 3600)
 }

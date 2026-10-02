@@ -9,9 +9,9 @@ import { useGymName } from '@/hooks/useSettings'
 
 // Offered only while someone is browsing, never over a check-in, a payment or a workout.
 const BROWSING_SCREENS = ['/m', '/m/workouts']
-const ENGAGED_MS = 20_000
+const ENGAGED_MS = 10_000
 const ON_SCREEN_MS = 8_000
-const QUIET_DAYS = 3
+const QUIET_DAYS = 1
 const DAY_MS = 86_400_000
 const DISMISSED_KEY = 'zg:install-dismissed'
 
@@ -59,16 +59,12 @@ export function InstallPrompt() {
       <div className="flex items-center gap-3 rounded-lg bg-base-raised p-3 pr-2 shadow-lift">
         <Image src="/icon-192.png" alt="" width={44} height={44} className="h-11 w-11 shrink-0 rounded-[12px]" />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[14px] font-semibold">Get the {gymName} app</p>
-          <p className="flex items-center gap-1 truncate text-[12px] text-mute">
-            {iosHint ? (
-              <>
-                Tap <Share2 size={12} aria-hidden className="shrink-0" /> then Add to Home Screen
-              </>
-            ) : (
-              'Faster check-in and workout alerts'
-            )}
-          </p>
+          <p className="truncate text-[14px] font-semibold">Install {gymName} app</p>
+          {iosHint && (
+            <p className="flex items-center gap-1 truncate text-[12px] text-mute">
+              Tap <Share2 size={12} aria-hidden className="shrink-0" /> then Add to Home Screen
+            </p>
+          )}
         </div>
         {!iosHint && (
           <button

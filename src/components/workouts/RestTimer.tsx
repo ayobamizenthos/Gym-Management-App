@@ -4,19 +4,29 @@ import { useEffect, useRef } from 'react'
 import { useWorkout } from '@/stores/workout'
 import { useNow } from '@/hooks/useNow'
 import { clock } from '@/lib/workouts'
-import { playRestOver } from '@/lib/sounds'
+import { playCountdown, playRestOver } from '@/lib/sounds'
 
 const NUDGE_SECONDS = 15
 const REST_OVER_BUZZ = [200, 100, 200]
 const TICK_MS = 250
+const COUNTDOWN_FROM = 3
 
 /** Floats over the bottom of the live workout while the member rests. */
 export function RestTimer() {
   const { rest, nudgeRest, endRest } = useWorkout()
   const now = useNow(TICK_MS, rest !== null)
   const rang = useRef<number | null>(null)
+  const pipped = useRef<string | null>(null)
 
   const left = rest ? Math.max(0, Math.ceil((rest.endsAt - now) / 1000)) : 0
+
+  useEffect(() => {
+    if (!rest || left <= 0 || left > COUNTDOWN_FROM || document.visibilityState !== 'visible') return
+    const key = rest.endsAt + ':' + left
+    if (pipped.current === key) return
+    pipped.current = key
+    playCountdown()
+  }, [rest, left])
 
   useEffect(() => {
     if (!rest || left > 0 || rang.current === rest.endsAt) return

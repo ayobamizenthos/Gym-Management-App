@@ -52,6 +52,9 @@ const toEntry = (draft: DraftEntry): RoutineEntry => ({
   sets: draft.sets.map(set => ({ kind: set.kind, kg: toNumber(set.kg), reps: toNumber(set.reps) })),
 })
 
+// the closing sheet's Back step must land before the next sheet adds its own
+const SHEET_HANDOFF_MS = 350
+
 interface Props {
   ownerId: string
   /** Absent for a new routine. */
@@ -292,7 +295,7 @@ export function RoutineEditor({ ownerId, routine, position, onSaved }: Props) {
         <ActionSheet
           title={byId.get(open.exerciseId)?.name}
           actions={[
-            { label: `Rest timer · ${restLabel(open.rest)}`, icon: Timer, onSelect: () => window.setTimeout(() => setMenu({ key: open.key, sheet: 'rest' }), 0) },
+            { label: `Rest timer · ${restLabel(open.rest)}`, icon: Timer, onSelect: () => window.setTimeout(() => setMenu({ key: open.key, sheet: 'rest' }), SHEET_HANDOFF_MS) },
             ...(openIndex > 0 ? [{ label: 'Move up', icon: ArrowUp, onSelect: () => move(open.key, -1) }] : []),
             ...(openIndex < entries.length - 1 ? [{ label: 'Move down', icon: ArrowDown, onSelect: () => move(open.key, 1) }] : []),
             { label: 'Remove exercise', icon: Trash2, tone: 'danger' as const, onSelect: () => setEntries(current => current.filter(entry => entry.key !== open.key)) },

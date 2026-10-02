@@ -15,6 +15,9 @@ import type { PlannedSet } from '@/lib/workouts'
 import { playSetDone } from '@/lib/sounds'
 import { cn } from '@/lib/cn'
 
+// the closing sheet's Back step must land before the next sheet adds its own
+const SHEET_HANDOFF_MS = 350
+
 interface Props {
   entry: LiveEntry
   exercise: Exercise | undefined
@@ -63,7 +66,7 @@ export function LiveExerciseCard({ entry, exercise, previous, first, last, upNex
   }
 
   const exerciseActions: SheetAction[] = [
-    { label: `Rest timer · ${restLabel(entry.rest)}`, icon: Timer, onSelect: () => window.setTimeout(() => setMenu('rest'), 0) },
+    { label: `Rest timer · ${restLabel(entry.rest)}`, icon: Timer, onSelect: () => window.setTimeout(() => setMenu('rest'), SHEET_HANDOFF_MS) },
     { label: 'Replace exercise', icon: Repeat, onSelect: onReplace },
     ...(!first ? [{ label: 'Move up', icon: ArrowUp, onSelect: () => moveExercise(entry.key, -1) }] : []),
     ...(!last ? [{ label: 'Move down', icon: ArrowDown, onSelect: () => moveExercise(entry.key, 1) }] : []),

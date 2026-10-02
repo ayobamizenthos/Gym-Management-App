@@ -88,7 +88,7 @@ export default function JoinScreen() {
             {inviter.charAt(0)}
           </span>
           <p className="text-[14px] leading-snug">
-            <span className="font-semibold text-live">{inviter}</span> invited you. Joining counts towards their free training.
+            <span className="font-semibold text-live">{inviter}</span> invited you
           </p>
         </div>
       )}
@@ -110,17 +110,17 @@ export default function JoinScreen() {
         <PasswordField label="Password" value={password} onChange={setPassword} autoComplete="new-password" minLength={8} />
         {!linked && (
           <label className="block">
-            <span className="label">Invited by a member? (optional)</span>
+            <span className="label">Invite code (optional)</span>
             <input
               value={typedInviter}
               onChange={e => setTypedInviter(e.target.value.slice(0, 30))}
-              placeholder="Their username"
+              placeholder="@"
               autoCapitalize="none"
               autoCorrect="off"
               spellCheck={false}
               className="field mt-1.5"
             />
-            {inviter && <span className="mt-2 block text-sm text-live">{inviter} gets the credit for inviting you.</span>}
+            {inviter && <span className="mt-2 block text-sm text-live">Invited by {inviter}</span>}
             {unknownInviter && <span className="mt-2 block text-sm text-out">No member has that username.</span>}
           </label>
         )}

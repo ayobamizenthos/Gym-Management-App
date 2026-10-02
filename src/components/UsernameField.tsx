@@ -70,7 +70,6 @@ export function UsernameField({
           required={required}
           value={value}
           onChange={e => onChange(e.target.value.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase())}
-          placeholder="yourname"
           maxLength={20}
           autoCapitalize="none"
           autoCorrect="off"

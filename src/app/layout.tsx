@@ -40,6 +40,9 @@ export const viewport: Viewport = {
   themeColor: '#0A0A0B',
   width: 'device-width',
   initialScale: 1,
+  // an installed app does not pinch-zoom; every field is 16px so iOS never zooms on focus either
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: 'cover',
 }
 

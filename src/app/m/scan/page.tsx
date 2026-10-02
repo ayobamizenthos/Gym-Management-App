@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Scanner } from '@/components/Scanner'
-import { BackLink } from '@/components/BackLink'
 import { unlockAudio } from '@/lib/sounds'
 import { useRouter } from 'next/navigation'
 import { useToasts } from '@/stores/toast'
@@ -36,10 +35,7 @@ export default function ScanPage() {
       <Scanner key={attempt} onResult={openCheckIn} />
 
       <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center gap-2 bg-gradient-to-b from-black/70 to-transparent px-3 pb-10 pt-[max(0.75rem,env(safe-area-inset-top))]">
-        <span className="pointer-events-auto">
-          <BackLink fallback="/m" label="Back" />
-        </span>
-        <h1 className="text-xl text-white">Check in</h1>
+        <h1 className="px-2 text-xl text-white">Check in</h1>
       </div>
 
       <p className="pointer-events-none absolute inset-x-0 bottom-[max(1.75rem,calc(env(safe-area-inset-bottom)+1.25rem))] px-20 text-center text-sm text-white/75">

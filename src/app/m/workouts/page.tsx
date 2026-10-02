@@ -19,7 +19,8 @@ import { plural } from '@/lib/format'
 import { cn } from '@/lib/cn'
 
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-const THUMBS = 4
+// three previews and the count leave the Start button room on a 360px phone
+const THUMBS = 3
 
 function lastDone(workouts: Workout[], routineId: string) {
   const latest = workouts.find(workout => workout.routine_id === routineId)
@@ -85,19 +86,21 @@ function RoutineCard({ routine, note, onStart, onMenu }: { routine: Routine; not
           <Ellipsis size={21} aria-hidden />
         </button>
       </div>
-      <div className="mt-3 flex items-center gap-2">
-        {routine.entries.slice(0, THUMBS).map(entry => (
-          <ExerciseThumb key={entry.exercise_id} id={entry.exercise_id} size={46} />
-        ))}
-        {extra > 0 && (
-          <span className="grid h-[46px] w-[46px] place-items-center rounded-[12px] bg-base-raised text-[13px] font-semibold text-mute">+{extra}</span>
-        )}
+      <div className="mt-3 flex items-center gap-3">
+        <div className="flex min-w-0 flex-1 gap-2 overflow-hidden">
+          {routine.entries.slice(0, THUMBS).map(entry => (
+            <ExerciseThumb key={entry.exercise_id} id={entry.exercise_id} size={44} />
+          ))}
+          {extra > 0 && (
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[12px] bg-base-raised text-[13px] font-semibold text-mute">+{extra}</span>
+          )}
+        </div>
         <button
           type="button"
           onClick={onStart}
-          className="ml-auto flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-live pl-4 pr-5 text-[15px] font-semibold text-ink transition-transform active:scale-95"
+          className="flex h-10 shrink-0 items-center gap-1.5 rounded-full bg-live pl-3.5 pr-4 text-[14px] font-semibold text-ink transition-transform active:scale-95"
         >
-          <Play size={15} fill="currentColor" aria-hidden />
+          <Play size={14} fill="currentColor" aria-hidden />
           Start
         </button>
       </div>

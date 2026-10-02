@@ -3,6 +3,7 @@
 import { supabase } from '@/lib/supabase'
 import { useWorkout } from '@/stores/workout'
 import type { PlannedSet, RoutineEntry } from '@/lib/workouts'
+import { playWorkoutStart } from '@/lib/sounds'
 
 async function loadPrevious(ids: string[]) {
   const unique = [...new Set(ids)]
@@ -15,6 +16,7 @@ async function loadPrevious(ids: string[]) {
 /** Opens a session and fetches what the member lifted last time, without holding up the screen. */
 export function startWorkout(name: string, routineId: string | null, entries: RoutineEntry[]) {
   useWorkout.getState().begin(name, routineId, entries)
+  playWorkoutStart()
   void loadPrevious(entries.map(entry => entry.exercise_id))
 }
 

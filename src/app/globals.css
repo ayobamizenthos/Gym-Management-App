@@ -123,17 +123,22 @@
   /* the sheet paints its own colours - do not flatten them */
   .print-sheet, .print-sheet * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   main { padding: 0 !important; }
+  /* the poster takes the whole sheet of paper, centred both ways, whatever the screen was */
   .print-sheet {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 12% !important;
+    aspect-ratio: auto !important;
     box-shadow: none !important;
     border: none !important;
-    margin: 0 !important;
-    max-width: none !important;
-    /* one page, the poster centred on it top to bottom */
-    aspect-ratio: auto !important;
-    height: calc(100vh - 2px);
     page-break-inside: avoid;
   }
-  .print-sheet img { width: 62% !important; }
+  .print-sheet .print-qr { width: 80% !important; }
+  .print-sheet p { font-size: 4.2rem !important; }
 }
 
 /* The copy printReceipt lays out off screen at till-roll width, so its length can be measured. */

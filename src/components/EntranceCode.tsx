@@ -63,20 +63,17 @@ export function EntranceCode({ branchId, back }: Props) {
 
       {/* A4 in proportion, and white so it survives any printer */}
       <div className="print-sheet mx-auto mt-5 flex aspect-[210/297] w-full max-w-[560px] flex-col items-center justify-center bg-white px-[8%] text-center text-black">
-        {/* eslint-disable-next-line @next/next/no-img-element -- a vector that must print sharp */}
-        <img src="/icon.svg" alt="Zenthos" className="h-[clamp(4rem,16vw,6rem)] w-[clamp(4rem,16vw,6rem)]" />
+        {/* the mark sits in the middle of the code; high error correction keeps it scannable */}
+        <div className="print-qr relative w-[84%]">
+          <Image src={png} alt={'Entrance check-in code for ' + branch.name} width={QR_SIZE} height={QR_SIZE} unoptimized className="block h-auto w-full" />
+          <span className="absolute left-1/2 top-1/2 grid w-[22%] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-[22%] bg-white p-[2.5%]">
+            {/* eslint-disable-next-line @next/next/no-img-element -- a vector that must print sharp */}
+            <img src="/icon.svg" alt="Zenthos" className="block aspect-square w-full" />
+          </span>
+        </div>
 
-        <Image
-          src={png}
-          alt={'Entrance check-in code for ' + branch.name}
-          width={QR_SIZE}
-          height={QR_SIZE}
-          unoptimized
-          className="mt-[7%] h-auto w-[78%]"
-        />
-
-        <p className="mt-[7%] font-display text-[clamp(2rem,10vw,3.25rem)] uppercase leading-[0.9] tracking-tightest">
-          Scan before<br />you train
+        <p className="mt-[8%] whitespace-nowrap font-display text-[clamp(2rem,9vw,3.4rem)] uppercase leading-none tracking-tightest">
+          Scan for access
         </p>
       </div>
     </div>

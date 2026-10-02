@@ -292,3 +292,31 @@ export function playDeskAlert(kind: CheckInKind) {
   else if (kind === 'duplicate') playRepeat()
   else playNoMembership()
 }
+
+/** A set ticked off: one quiet wooden tap, small enough to hear twenty times a session. */
+export function playSetDone() {
+  play([{ freq: 880, to: 660, dur: 0.07, gain: 0.12, type: 'sine' }])
+  strike(0, 0.05, 0.03, 1800)
+}
+
+/** Rest is over: two bright pings that cut through gym music. */
+export function playRestOver() {
+  play([
+    { freq: G5, dur: 0.16, gain: 0.28, type: 'triangle', fat: true },
+    { freq: C6, dur: 0.32, gain: 0.3, type: 'triangle', fat: true, at: 0.19 },
+    { freq: C6 * 2, dur: 0.34, gain: 0.05, type: 'sine', at: 0.2 },
+  ])
+}
+
+/** Workout saved: a rising run into a wide, held major chord. */
+export function playWorkoutDone() {
+  play([
+    { freq: C5, dur: 0.09, gain: 0.22, type: 'triangle', fat: true },
+    { freq: E5, dur: 0.09, gain: 0.22, type: 'triangle', fat: true, at: 0.07 },
+    { freq: G5, dur: 0.09, gain: 0.22, type: 'triangle', fat: true, at: 0.14 },
+    { freq: C6, dur: 0.9, gain: 0.26, type: 'triangle', fat: true, at: 0.21 },
+    { freq: E6, dur: 0.9, gain: 0.14, type: 'sine', at: 0.23 },
+    { freq: G6, dur: 0.95, gain: 0.08, type: 'sine', at: 0.25 },
+  ])
+  strike(0.21, 0.14, 0.2, 3600)
+}

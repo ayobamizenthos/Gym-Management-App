@@ -44,19 +44,58 @@ function authorised(request: Request) {
   return timingSafeEqual(Buffer.from(offered), Buffer.from(secret))
 }
 
+interface RestAlarm {
+  user_id: string
+  fire_at: string
+  title: string
+  body: string
+}
+
+// A rest alert that arrives late is worse than none: the member has moved on.
+const REST_TTL_SECONDS = 60
+
+/** Rest timers that ran out while the app was in the background. Never stored in the inbox. */
+async function sendRestAlarms(admin: ReturnType<typeof serviceClient>) {
+  const { data } = await admin.rpc('claim_rest_alarms')
+  const alarms = (data ?? []) as RestAlarm[]
+  if (alarms.length === 0) return 0
+
+  const { data: subscriptions } = await admin
+    .from('push_subscriptions')
+    .select('id, user_id, endpoint, p256dh, auth')
+    .in('user_id', alarms.map(alarm => alarm.user_id))
+  const devices = (subscriptions ?? []) as Device[]
+
+  const deliveries = alarms.flatMap(alarm =>
+    devices
+      .filter(device => device.user_id === alarm.user_id)
+      .map(device =>
+        webpush.sendNotification(
+          { endpoint: device.endpoint, keys: { p256dh: device.p256dh, auth: device.auth } },
+          JSON.stringify({ title: alarm.title, body: alarm.body, type: 'rest_over', url: '/m/workouts/live', at: alarm.fire_at }),
+          { TTL: REST_TTL_SECONDS, urgency: 'high', timeout: SEND_TIMEOUT_MS }
+        )
+      )
+  )
+  const outcomes = await Promise.allSettled(deliveries)
+  return outcomes.filter(outcome => outcome.status === 'fulfilled').length
+}
+
 /**
- * Sends the notifications nobody's phone has received yet. The database calls
- * this on every new notification and every five minutes as a backstop; each
- * run claims its rows, so overlapping runs never deliver the same alert twice.
+ * Sends the notifications nobody's phone has received yet, and any rest timer
+ * that has run out. The database calls this on every new notification, every
+ * five minutes as a backstop, and within seconds of a rest alarm falling due;
+ * each run claims its rows, so overlapping runs never deliver anything twice.
  */
 Deno.serve(async (request: Request) => {
   if (!authorised(request)) return json({ error: 'Not permitted' }, { status: 403 })
   if (!configure()) return json({ error: 'Push is not configured' }, { status: 500 })
 
   const admin = serviceClient()
+  const rested = await sendRestAlarms(admin)
   const { data: claimed } = await admin.rpc('claim_pushes', { p_limit: BATCH })
   const queue = (claimed ?? []) as QueuedAlert[]
-  if (queue.length === 0) return json({ sent: 0, handled: 0 })
+  if (queue.length === 0) return json({ sent: 0, handled: 0, rested })
 
   const recipients = [...new Set(queue.map(alert => alert.user_id))]
   const [{ data: subscriptions }, { data: people }] = await Promise.all([
@@ -120,5 +159,5 @@ Deno.serve(async (request: Request) => {
     await admin.from('push_subscriptions').delete().in('id', [...expired])
   }
 
-  return json({ sent, handled: handled.length, pruned: expired.size })
+  return json({ sent, handled: handled.length, pruned: expired.size, rested })
 })

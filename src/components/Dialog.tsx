@@ -10,6 +10,8 @@ interface Props {
   body?: string
   /** Renders a required text field and passes its value to onConfirm. */
   ask?: string
+  /** What the field holds when it opens. */
+  initial?: string
   /** When set, the confirm button only arms once the field matches this exactly. */
   requireText?: string
   confirmLabel: string
@@ -23,9 +25,9 @@ interface Props {
  * browsers, so every destructive action goes through this instead. Focus is
  * trapped while it is open and returned to whatever opened it on close.
  */
-export function Dialog({ title, body, ask, requireText, confirmLabel, tone = 'normal', onConfirm, onClose }: Props) {
+export function Dialog({ title, body, ask, initial = '', requireText, confirmLabel, tone = 'normal', onConfirm, onClose }: Props) {
   const panel = useRef<HTMLDivElement>(null)
-  const [reply, setReply] = useState('')
+  const [reply, setReply] = useState(initial)
   const [busy, setBusy] = useState(false)
   const titleId = useId()
   useModal(panel, onClose)

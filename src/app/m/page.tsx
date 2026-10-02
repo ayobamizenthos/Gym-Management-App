@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase'
 import { asName, daysLeft, plural, shortDate } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import { useSettings } from '@/hooks/useSettings'
+import { TrainingCard } from '@/components/workouts/TrainingCard'
 
 export default function MemberHome() {
   const { profile } = useAuth()
@@ -125,9 +126,11 @@ export default function MemberHome() {
         )}
       </div>
 
+      <TrainingCard userId={profile?.id} />
+
       <Link
         href="/m/referrals"
-        className="panel mt-8 block p-5 transition-colors hover:bg-base-raised"
+        className="panel mt-2.5 block p-5 transition-colors hover:bg-base-raised"
       >
         <div className="flex items-start justify-between gap-4">
           <div>

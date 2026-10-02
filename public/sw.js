@@ -13,7 +13,11 @@ const TAG_GROUPS = {
   referral_reward: 'rewards',
   referral_joined: 'rewards',
   birthday: 'rewards',
+  rest_over: 'rest',
 }
+
+// A finished rest is one alert that replaces the last, never a stack.
+const SINGLE = new Set(['rest_over'])
 
 self.addEventListener('install', () => self.skipWaiting())
 self.addEventListener('activate', event => event.waitUntil(self.clients.claim()))
@@ -32,7 +36,7 @@ self.addEventListener('push', event => {
 
   event.waitUntil(
     self.registration.getNotifications({ tag }).then(existing => {
-      const stacked = existing.length + 1
+      const stacked = SINGLE.has(type) ? 1 : existing.length + 1
       const body = stacked > 1
         ? stacked + ' new updates. Latest: ' + (payload.body || '')
         : payload.body || ''
@@ -43,7 +47,7 @@ self.addEventListener('push', event => {
         renotify: true,
         icon: '/icon-192.png',
         badge: '/badge.png',
-        vibrate: type === 'payment_rejected' ? [90, 60, 90, 60, 90] : [40, 40, 80],
+        vibrate: type === 'payment_rejected' ? [90, 60, 90, 60, 90] : type === 'rest_over' ? [220, 110, 220] : [40, 40, 80],
         timestamp: payload.at ? Date.parse(payload.at) : Date.now(),
         requireInteraction: type === 'payment_pending',
         data: { url: payload.url || '/m', type },

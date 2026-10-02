@@ -10,7 +10,7 @@ const contentSecurityPolicy = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' https://js.paystack.co",
   "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' data: blob: ${supabase}`,
+  `img-src 'self' data: blob: ${supabase} https://static.exercisedb.dev`,
   "font-src 'self'",
   `connect-src 'self' ${supabase} ${realtime} https://api.paystack.co`,
   'frame-src https://*.paystack.co https://*.paystack.com',

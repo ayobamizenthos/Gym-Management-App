@@ -28,7 +28,7 @@ export function MoreMenu({ title, groups }: { title: string; groups: { heading?:
         <div className="min-w-0">
           <p className="truncate font-semibold">{profile?.full_name ?? 'Signed in'}</p>
           <p className="truncate text-sm text-mute">
-            {profile?.role === 'admin' ? 'Administrator' : profile?.role === 'receptionist' ? 'Front desk' : 'Member'}
+            {profile?.role === 'admin' ? 'Manager' : profile?.role === 'receptionist' ? 'Front desk' : 'Member'}
           </p>
         </div>
       </div>

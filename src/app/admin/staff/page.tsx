@@ -12,7 +12,7 @@ import { Select } from '@/components/Select'
 import type { Branch, Profile, Role } from '@/lib/types'
 
 const ROLE_LABEL: Record<Role, string> = {
-  admin: 'Administrator',
+  admin: 'Manager',
   receptionist: 'Front desk',
   member: 'Member',
 }

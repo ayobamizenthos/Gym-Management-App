@@ -63,7 +63,7 @@ export default function MemberDetail() {
   const [payments, setPayments] = useState<PaymentRow[]>([])
   const [visits, setVisits] = useState<CheckInRow[]>([])
   const [planId, setPlanId] = useState('')
-  const [method, setMethod] = useState<'cash' | 'transfer'>('cash')
+  const [method, setMethod] = useState<'cash' | 'transfer' | ''>('')
   const [busy, setBusy] = useState(false)
   const [edits, setEdits] = useState({ full_name: '', phone: '', address: '', emergency_contact: '', date_of_birth: '' })
   const [editing, setEditing] = useState(false)
@@ -121,7 +121,6 @@ export default function MemberDetail() {
       .then(({ data }) => {
         const list = (data ?? []) as Plan[]
         setPlans(list)
-        setPlanId(list.find(p => !p.is_addon)?.id ?? '')
       })
   }, [])
 
@@ -143,6 +142,8 @@ export default function MemberDetail() {
         title: method === 'cash' ? 'Payment recorded' : 'Logged as pending',
         message: method === 'cash' ? 'Days added immediately.' : 'Confirm once the transfer lands.',
       })
+      setPlanId('')
+      setMethod('')
       await load()
     }
     setBusy(false)
@@ -280,11 +281,11 @@ export default function MemberDetail() {
               </div>
             </div>
             <div className="block">
-              <span className="label">How they paid</span>
+              <span className="label">Payment mode</span>
               <div className="mt-1.5">
                 <Select
                   value={method}
-                  label="How they paid"
+                  label="Payment mode"
                   onChange={value => setMethod(value as 'cash' | 'transfer')}
                   options={[
                     { value: 'cash', label: 'Cash', hint: 'Days added now' },
@@ -296,7 +297,7 @@ export default function MemberDetail() {
             {chosen && chosen.requires_registration && !member.registration_paid && (
               <p className="text-sm text-due">A joining fee will be added to this payment.</p>
             )}
-            <button onClick={() => setRecording(true)} disabled={busy || !planId} className="btn-primary mt-1 w-full">
+            <button onClick={() => setRecording(true)} disabled={busy || !planId || !method} className="btn-primary mt-1 w-full">
               {busy ? <span className="dots">Saving</span> : 'Record payment'}
             </button>
           </div>

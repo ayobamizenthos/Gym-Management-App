@@ -1,5 +1,5 @@
-// Door audio, synthesised so there is nothing to download. The four check-in
-// outcomes differ in shape as well as pitch so they are distinguishable across
+// Door audio: synthesised cues, with the spoken words as short recordings. The four
+// check-in outcomes differ in shape as well as pitch so they are distinguishable across
 // a noisy room.
 
 import type { CheckInKind } from './types'
@@ -30,25 +30,9 @@ function audio(): AudioContext | null {
   return ctx
 }
 
-let speechUnlocked = false
-
-function unlockSpeech() {
-  if (speechUnlocked) return
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
-  try {
-    const silent = new SpeechSynthesisUtterance(' ')
-    silent.volume = 0
-    window.speechSynthesis.speak(silent)
-    speechUnlocked = true
-  } catch {
-    // no engine here; the chime carries the meaning on its own
-  }
-}
-
 /** Browsers keep audio muted until a gesture. Call once on first tap. */
 export function unlockAudio() {
-  primeVoice()
-  unlockSpeech()
+  primeClips()
   const ac = audio()
   if (!ac || !master) return
   const osc = ac.createOscillator()
@@ -128,60 +112,58 @@ function strike(at = 0, level = 0.13, decay = 0.09, colour = 2600) {
   source.start(start)
 }
 
-// Spoken words follow the chime; without a speech engine the chime plays alone.
-let preferred: SpeechSynthesisVoice | null = null
+// The spoken words are recordings of one male voice, so every phone says them the same way.
+// Access granted carries its glass chime inside the clip, timed to the word.
+const CLIPS = {
+  granted: '/sounds/granted.mp3',
+  expired: '/sounds/expired.mp3',
+  repeat: '/sounds/repeat.mp3',
+  none: '/sounds/none.mp3',
+} as const
+type Clip = keyof typeof CLIPS
+const clips = new Map<Clip, HTMLAudioElement>()
+let primed = false
 
-function pickVoice(): SpeechSynthesisVoice | null {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null
-  const all = window.speechSynthesis.getVoices()
-  const english = all.filter(v => /^en(-|_|$)/i.test(v.lang))
-  const pool = english.length > 0 ? english : all
-  // a local engine answers instantly; a network one can arrive after the member
-  const local = pool.filter(v => v.localService)
-  const candidates = local.length > 0 ? local : pool
-  if (candidates.length === 0) return null
-  // prefer a lower, announcer-style voice where the platform has one
-  const wanted = /(daniel|alex|arthur|oliver|google uk english male|guy|david|mark|male|man)/i
-  return candidates.find(v => wanted.test(v.name)) ?? candidates[0]
+function clip(kind: Clip): HTMLAudioElement | null {
+  if (typeof window === 'undefined') return null
+  let element = clips.get(kind)
+  if (!element) {
+    element = new Audio(CLIPS[kind])
+    element.preload = 'auto'
+    clips.set(kind, element)
+  }
+  return element
 }
 
-/** Voices load asynchronously; asking before they arrive returns an empty list. */
-export function primeVoice() {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
-  const attempt = () => { preferred = pickVoice() }
-  attempt()
-  if (!preferred) {
-    window.speechSynthesis.addEventListener('voiceschanged', attempt, { once: true })
-    window.setTimeout(attempt, 1200)
+/** Phones only let a clip play later if it was started once inside a tap, so each is started silently then. */
+function primeClips() {
+  if (primed || typeof window === 'undefined') return
+  primed = true
+  for (const kind of Object.keys(CLIPS) as Clip[]) {
+    const element = clip(kind)
+    if (!element) continue
+    element.muted = true
+    void element
+      .play()
+      .then(() => {
+        element.pause()
+        element.currentTime = 0
+        element.muted = false
+      })
+      .catch(() => {
+        element.muted = false
+      })
   }
 }
 
-let announcing = false
-
-function announce(words: string, delay = 0, { rate = 0.92, pitch = 0.85 } = {}) {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
-  unlockSpeech()
-  if (announcing) window.speechSynthesis.cancel()
-
+function say(kind: Clip, delay = 0) {
   window.setTimeout(() => {
-    try {
-      const line = new SpeechSynthesisUtterance(words)
-      if (!preferred) preferred = pickVoice()
-      if (preferred) {
-        // lang first: assigning it after the voice detaches the voice on iOS
-        line.lang = preferred.lang
-        line.voice = preferred
-      }
-      line.rate = rate
-      line.pitch = pitch
-      line.volume = 1
-      announcing = true
-      line.onend = () => { announcing = false }
-      line.onerror = () => { announcing = false }
-      window.speechSynthesis.speak(line)
-    } catch {
-      // no speech engine on this device - the chime already carried the meaning
-    }
+    for (const other of clips.values()) other.pause()
+    const element = clip(kind)
+    if (!element) return
+    element.muted = false
+    element.currentTime = 0
+    void element.play().catch(() => undefined)
   }, delay)
 }
 
@@ -192,24 +174,9 @@ const C6 = 1046.5
 const E6 = 1318.51
 const G6 = 1567.98
 
-/** Access granted: a C major arpeggio resolving to a held chord. */
+/** Access granted: glass breaking into the spoken words. */
 export function playGranted() {
-  play([
-    { freq: C5, dur: 0.13, gain: 0.3, type: 'triangle', fat: true },
-    { freq: E5, dur: 0.13, gain: 0.3, type: 'triangle', fat: true, at: 0.075 },
-    { freq: G5, dur: 0.15, gain: 0.3, type: 'triangle', fat: true, at: 0.15 },
-
-    { freq: C6, dur: 0.72, gain: 0.34, type: 'triangle', fat: true, at: 0.235 },
-    { freq: E6, dur: 0.72, gain: 0.2, type: 'triangle', at: 0.235 },
-    { freq: G6, dur: 0.72, gain: 0.13, type: 'sine', at: 0.235 },
-    { freq: C5, dur: 0.78, gain: 0.16, type: 'sine', at: 0.235 },
-
-    // bell partial an octave up
-    { freq: C6 * 2, dur: 0.9, gain: 0.075, type: 'sine', at: 0.25 },
-  ])
-  strike(0, 0.1, 0.07, 3200)
-  strike(0.235, 0.15, 0.14, 2400)
-  announce('Access granted', 420)
+  say('granted')
 }
 
 /** Membership expired: a descending two-tone klaxon, three times. */
@@ -223,7 +190,7 @@ export function playExpired() {
   strike(0, 0.1, 0.06, 900)
   strike(0.34, 0.1, 0.06, 900)
   strike(0.68, 0.1, 0.06, 900)
-  announce('Membership expired', 980, { rate: 0.9, pitch: 0.72 })
+  say('expired', 980)
 }
 
 /** Already checked in today: a short rising pair. */
@@ -233,7 +200,7 @@ export function playRepeat() {
     { freq: C6, dur: 0.18, gain: 0.18, type: 'triangle', fat: true, at: 0.1 },
   ])
   strike(0, 0.07, 0.05, 2800)
-  announce('Already checked in', 340, { rate: 1, pitch: 0.9 })
+  say('repeat', 340)
 }
 
 /** No membership on file: a short falling pair. */
@@ -244,7 +211,7 @@ export function playNoMembership() {
     { freq: 196, dur: 0.34, gain: 0.12, type: 'sine', at: 0.17 },
   ])
   strike(0, 0.08, 0.06, 1600)
-  announce('No active subscription', 520)
+  say('none', 520)
 }
 
 /** Payment received: a rising flourish ending on an octave. */

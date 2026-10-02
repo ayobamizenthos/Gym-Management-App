@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import type { LucideIcon } from 'lucide-react'
@@ -46,6 +46,33 @@ const SETTLE_MS = 200
 const SWITCH_DIM_MS = 260
 const SWITCH_BUZZ_MS = 10
 
+// The bar's shape: a full-width sheet with rounded top corners and a pit the raised action sits in.
+const BAR_HEIGHT = 80
+const CORNER = 40
+const BALL = 60
+const PIT_RADIUS = 38
+const PIT_CENTER_Y = 21
+const SHOULDER = 72
+const BALL_RISE = 10
+
+function barPath(width: number): string {
+  const mid = width / 2
+  const h = BAR_HEIGHT + 40
+  return [
+    `M0 ${CORNER}`,
+    `Q0 0 ${CORNER} 0`,
+    `L${mid - SHOULDER} 0`,
+    `C${mid - SHOULDER + 22} 0 ${mid - PIT_RADIUS - 1} 8 ${mid - PIT_RADIUS} ${PIT_CENTER_Y}`,
+    `A${PIT_RADIUS} ${PIT_RADIUS} 0 0 0 ${mid + PIT_RADIUS} ${PIT_CENTER_Y}`,
+    `C${mid + PIT_RADIUS + 1} 8 ${mid + SHOULDER - 22} 0 ${mid + SHOULDER} 0`,
+    `L${width - CORNER} 0`,
+    `Q${width} 0 ${width} ${CORNER}`,
+    `L${width} ${h}`,
+    `L0 ${h}`,
+    'Z',
+  ].join(' ')
+}
+
 /** The release of a swipe is not a tap on whatever it ended over. */
 function ignoreSwipeRelease(dragged: React.MutableRefObject<boolean>, event: React.MouseEvent) {
   if (!dragged.current) return
@@ -70,12 +97,12 @@ function Slot({
       replace
       aria-current={active ? 'page' : undefined}
       onClick={event => ignoreSwipeRelease(dragged, event)}
-      className="group relative flex h-full flex-1 flex-col items-center justify-center gap-1 px-0.5"
+      className="group relative flex h-full flex-1 flex-col items-center px-0.5 pt-4"
     >
       <span className="relative">
         <item.icon
-          size={21}
-          strokeWidth={active ? 2.3 : 1.8}
+          size={26}
+          strokeWidth={active ? 2.2 : 1.6}
           aria-hidden
           className={cn('transition-colors', active ? 'text-live' : 'text-mute group-hover:text-chalk')}
         />
@@ -90,7 +117,7 @@ function Slot({
       </span>
       <span
         className={cn(
-          'max-w-full truncate text-[11px] font-semibold leading-none transition-colors',
+          'mt-1.5 max-w-full truncate text-[12px] font-medium leading-none transition-colors',
           active ? 'text-live' : 'text-mute group-hover:text-chalk'
         )}
       >
@@ -98,7 +125,7 @@ function Slot({
       </span>
       <span
         aria-hidden
-        className={cn('h-1 w-1 rounded-full transition-colors', active ? 'bg-live' : 'bg-transparent')}
+        className={cn('mt-1.5 h-[5px] w-[5px] rounded-full transition-colors', active ? 'bg-live' : 'bg-transparent')}
       />
       {item.badge && unread > 0 && <span className="sr-only">{unread} unread</span>}
     </Link>
@@ -115,6 +142,18 @@ export function BottomNav({ label, left, right, action, swipe }: Props) {
   const dragged = useRef(false)
   const [hint, setHint] = useState<Destination | null>(null)
   const [leaving, setLeaving] = useState(false)
+  const [width, setWidth] = useState(0)
+  const shape = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    const node = shape.current
+    if (!node) return
+    const measure = () => setWidth(node.clientWidth)
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [])
 
   const targetFor = (dx: number) => (dx < 0 ? swipe?.left : swipe?.right)
 
@@ -185,14 +224,14 @@ export function BottomNav({ label, left, right, action, swipe }: Props) {
       {/* dims the screen while the next workspace mounts */}
       {leaving && <div aria-hidden className="pointer-events-none fixed inset-0 z-[60] animate-cross bg-base" />}
 
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex flex-col items-center px-3.5 pb-[max(var(--nav-gap),env(safe-area-inset-bottom))]">
-        {hint && (
-          <span className="pointer-events-none absolute bottom-full mb-2 animate-rise whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.18em] text-live">
-            {swipe?.left === hint ? '← ' : ''}{hint.label}{swipe?.right === hint ? ' →' : ''}
-          </span>
-        )}
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40">
+        <div className="relative mx-auto max-w-2xl">
+          {hint && (
+            <span className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 animate-rise whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.18em] text-live">
+              {swipe?.left === hint ? '← ' : ''}{hint.label}{swipe?.right === hint ? ' →' : ''}
+            </span>
+          )}
 
-        <span className="pointer-events-none relative flex w-full max-w-md justify-center">
           <nav
             ref={bar}
             aria-label={label}
@@ -203,30 +242,41 @@ export function BottomNav({ label, left, right, action, swipe }: Props) {
             // without this the browser claims the horizontal drag for its own
             // back gesture and the swipe never reaches us
             style={swipe ? { touchAction: 'pan-y' } : undefined}
-            className="pointer-events-auto relative flex h-[var(--nav-height)] w-full max-w-md items-stretch rounded-full bg-base-panel shadow-[0_10px_30px_-8px_rgba(0,0,0,.75)] will-change-transform"
+            className="pointer-events-auto relative will-change-transform"
           >
-            <Slot item={left[0]} active={isOn(left[0])} unread={unread} dragged={dragged} />
-            <Slot item={left[1]} active={isOn(left[1])} unread={unread} dragged={dragged} />
-
-            {/* the raised action keeps its own column so the four tabs stay evenly spaced */}
-            <div className="relative w-[74px] shrink-0">
-              <Link
-                href={action.href}
-                aria-label={action.label}
-                onClick={event => ignoreSwipeRelease(dragged, event)}
-                className="absolute left-1/2 top-0 grid h-[58px] w-[58px] -translate-x-1/2 -translate-y-[19px] place-items-center rounded-full border-[5px] border-base bg-live text-ink shadow-[0_8px_20px_-4px_rgba(53,208,127,.45)] transition-transform active:scale-95"
-              >
-                <action.icon size={24} strokeWidth={2.2} aria-hidden />
-              </Link>
-              <span className="pointer-events-none absolute inset-x-0 bottom-3 text-center text-[11px] font-semibold leading-none text-mute">
-                {action.label}
-              </span>
+            <div ref={shape} aria-hidden className="absolute inset-x-0 top-0 h-full drop-shadow-[0_-8px_22px_rgba(0,0,0,.55)]">
+              {width === 0 && <div className="h-full rounded-t-[40px] bg-base-panel" />}
+              {width > 0 && (
+                <svg width={width} height="100%" className="block h-full" preserveAspectRatio="none">
+                  <path d={barPath(width)} fill="#141417" />
+                </svg>
+              )}
             </div>
 
-            <Slot item={right[0]} active={isOn(right[0])} unread={unread} dragged={dragged} />
-            <Slot item={right[1]} active={isOn(right[1])} unread={unread} dragged={dragged} />
+            <div
+              className="relative grid grid-cols-5 items-start pb-[env(safe-area-inset-bottom)]"
+              style={{ height: `calc(${BAR_HEIGHT}px + env(safe-area-inset-bottom))` }}
+            >
+              <Slot item={left[0]} active={isOn(left[0])} unread={unread} dragged={dragged} />
+              <Slot item={left[1]} active={isOn(left[1])} unread={unread} dragged={dragged} />
+
+              <div className="relative flex justify-center">
+                <Link
+                  href={action.href}
+                  aria-label={action.label}
+                  onClick={event => ignoreSwipeRelease(dragged, event)}
+                  style={{ width: BALL, height: BALL, marginTop: -BALL_RISE }}
+                  className="relative grid place-items-center rounded-full bg-gradient-to-b from-[#4BE08F] to-[#27B86A] text-ink shadow-[0_10px_22px_-6px_rgba(53,208,127,.6)] transition-transform active:scale-95"
+                >
+                  <action.icon size={26} strokeWidth={2.2} aria-hidden />
+                </Link>
+              </div>
+
+              <Slot item={right[0]} active={isOn(right[0])} unread={unread} dragged={dragged} />
+              <Slot item={right[1]} active={isOn(right[1])} unread={unread} dragged={dragged} />
+            </div>
           </nav>
-        </span>
+        </div>
       </div>
     </>
   )

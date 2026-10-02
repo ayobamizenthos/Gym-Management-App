@@ -1,93 +1,90 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Share2, X } from 'lucide-react'
-import { cn } from '@/lib/cn'
 import { useInstallPrompt } from '@/hooks/useInstallPrompt'
 import { useGymName } from '@/hooks/useSettings'
-import { initialsOf } from '@/lib/settings'
 
-const REVEAL_DELAY_MS = 2000
-const AUTO_COLLAPSE_MS = 4000
-// A walk-in scanning the door code has come to train, not to install anything.
-const QUIET_ON = ['/checkin']
+// Offered only while someone is browsing, never over a check-in, a payment or a workout.
+const BROWSING_SCREENS = ['/m', '/m/workouts']
+const ENGAGED_MS = 20_000
+const ON_SCREEN_MS = 8_000
+const QUIET_DAYS = 3
+const DAY_MS = 86_400_000
+const DISMISSED_KEY = 'zg:install-dismissed'
 
+function recentlyShown() {
+  try {
+    return Date.now() - Number(localStorage.getItem(DISMISSED_KEY) ?? 0) < QUIET_DAYS * DAY_MS
+  } catch {
+    return true
+  }
+}
+
+function remember() {
+  try {
+    localStorage.setItem(DISMISSED_KEY, String(Date.now()))
+  } catch {}
+}
+
+/** A short-lived card offering the app. The lasting way in is the Install row on Account. */
 export function InstallPrompt() {
   const { available, iosHint, install } = useInstallPrompt()
   const path = usePathname()
   const gymName = useGymName()
-  const [collapsed, setCollapsed] = useState(true)
+  const [visible, setVisible] = useState(false)
+  const browsing = BROWSING_SCREENS.includes(path)
 
-  // Roll out from the mark a beat after it becomes available, then roll back in
-  // on its own so it never sits over the interface.
   useEffect(() => {
-    if (!available) return
-    let collapseTimer: ReturnType<typeof setTimeout>
-    const revealTimer = setTimeout(() => {
-      setCollapsed(false)
-      collapseTimer = setTimeout(() => setCollapsed(true), AUTO_COLLAPSE_MS)
-    }, REVEAL_DELAY_MS)
-    return () => {
-      clearTimeout(revealTimer)
-      clearTimeout(collapseTimer)
-    }
-  }, [available])
+    if (!available || !browsing || recentlyShown()) return
+    const reveal = window.setTimeout(() => {
+      setVisible(true)
+      remember()
+    }, ENGAGED_MS)
+    return () => window.clearTimeout(reveal)
+  }, [available, browsing])
 
-  if (!available || QUIET_ON.includes(path)) return null
+  useEffect(() => {
+    if (!visible) return
+    const leave = window.setTimeout(() => setVisible(false), ON_SCREEN_MS)
+    return () => window.clearTimeout(leave)
+  }, [visible])
+
+  if (!visible || !browsing || !available) return null
 
   return (
-    <div className="no-print animate-rise fixed bottom-[calc(var(--nav-offset)+0.75rem)] left-3 z-50 max-w-[calc(100vw-1.5rem)] md:bottom-6 md:left-6">
-      <div className="flex items-center overflow-hidden rounded-full border border-edge bg-base/95 backdrop-blur-md">
-        <button
-          type="button"
-          onClick={collapsed ? () => setCollapsed(false) : undefined}
-          aria-label={collapsed ? 'Show install option' : gymName}
-          className={cn(
-            'grid h-12 w-12 shrink-0 place-items-center rounded-full font-display text-xl uppercase tracking-tightest text-live',
-            collapsed && 'transition-transform active:scale-95'
-          )}
-        >
-          {initialsOf(gymName)}
-        </button>
-
-        <div
-          className="grid min-w-0 transition-[grid-template-columns] duration-500 ease-out"
-          style={{ gridTemplateColumns: collapsed ? '0fr' : '1fr' }}
-        >
-          <div className="overflow-hidden">
-            <div className="flex items-center gap-2 pr-1.5">
-              {iosHint ? (
-                <p className="flex min-w-0 flex-1 items-center gap-1 truncate text-sm">
-                  Tap
-                  <Share2 size={13} aria-hidden className="shrink-0" />
-                  then <span className="font-semibold">Add to Home Screen</span>
-                </p>
-              ) : (
-                <p className="min-w-0 flex-1 truncate text-sm font-medium">Install {gymName}</p>
-              )}
-
-              {!iosHint && (
-                <button
-                  type="button"
-                  onClick={() => void install()}
-                  className="flex h-11 shrink-0 items-center rounded-full bg-live px-4 text-sm font-bold uppercase text-ink"
-                >
-                  Install
-                </button>
-              )}
-
-              <button
-                type="button"
-                onClick={() => setCollapsed(true)}
-                aria-label="Collapse"
-                className="flex h-11 w-11 shrink-0 items-center justify-center text-mute transition-colors hover:text-chalk"
-              >
-                <X size={16} aria-hidden />
-              </button>
-            </div>
-          </div>
+    <div className="no-print fixed inset-x-3 bottom-[calc(var(--nav-offset)+0.75rem)] z-50 mx-auto max-w-md animate-rise md:bottom-6">
+      <div className="flex items-center gap-3 rounded-lg bg-base-raised p-3 pr-2 shadow-lift">
+        <Image src="/icon-192.png" alt="" width={44} height={44} className="h-11 w-11 shrink-0 rounded-[12px]" />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[14px] font-semibold">Get the {gymName} app</p>
+          <p className="flex items-center gap-1 truncate text-[12px] text-mute">
+            {iosHint ? (
+              <>
+                Tap <Share2 size={12} aria-hidden className="shrink-0" /> then Add to Home Screen
+              </>
+            ) : (
+              'Faster check-in and workout alerts'
+            )}
+          </p>
         </div>
+        {!iosHint && (
+          <button
+            type="button"
+            onClick={() => {
+              setVisible(false)
+              void install()
+            }}
+            className="h-9 shrink-0 rounded-full bg-live px-4 text-[13px] font-bold text-ink"
+          >
+            Install
+          </button>
+        )}
+        <button type="button" onClick={() => setVisible(false)} aria-label="Not now" className="grid h-9 w-9 shrink-0 place-items-center text-mute">
+          <X size={16} aria-hidden />
+        </button>
       </div>
     </div>
   )

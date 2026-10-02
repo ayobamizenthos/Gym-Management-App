@@ -15,6 +15,7 @@ import { cn } from '@/lib/cn'
 import { isReachableEmail } from '@/lib/members'
 import { NotificationToggle } from '@/components/NotificationToggle'
 import { ChangePassword } from '@/components/ChangePassword'
+import { InstallRow } from '@/components/InstallRow'
 
 const SAVED_FEEDBACK_MS = 2000
 
@@ -257,6 +258,8 @@ export function AccountScreen({ workspace }: Props) {
           <ChangePassword email={profile.email} />
         </section>
       )}
+
+      <InstallRow />
 
       <button
         onClick={async () => {

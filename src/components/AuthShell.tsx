@@ -13,7 +13,7 @@ export function AuthShell({ title, subtitle, children }: Props) {
     <main className="min-h-dvh bg-base">
       <div className="relative h-[32dvh] min-h-[200px] overflow-hidden">
         <Image src="/img/rack.jpg" alt="" fill priority sizes="100vw" className="object-cover opacity-55" />
-        <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-base/20 via-base/50 to-base" />
+        <div aria-hidden className="absolute inset-x-0 -bottom-1 top-0 bg-gradient-to-b from-base/20 via-base/55 to-base to-95%" />
         <div className="absolute inset-x-0 top-0 mx-auto max-w-md px-6 pt-[max(1.75rem,env(safe-area-inset-top))]">
           <Logo height={22} />
         </div>

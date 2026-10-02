@@ -117,7 +117,7 @@ export default function ReferralsPage() {
         </section>
       ) : (
         <section className="mt-7">
-          <p className="text-xs uppercase tracking-[0.2em] text-mute">Your link</p>
+          <p className="label">Your link</p>
           <div className="mt-2 flex items-stretch overflow-hidden rounded-md bg-base-panel">
             <span className="min-w-0 flex-1 truncate px-4 py-3.5 text-sm">{link || ' '}</span>
             <button
@@ -139,8 +139,8 @@ export default function ReferralsPage() {
 
       <section className="mt-9">
         <div className="flex items-baseline justify-between">
-          <span className="text-xs uppercase tracking-[0.2em] text-mute">Progress</span>
-          <span className="text-xs uppercase tracking-[0.2em] text-mute">{counted} of {target}</span>
+          <span className="label">Progress</span>
+          <span className="label">{counted} of {target}</span>
         </div>
         <div
           className="mt-3 flex gap-1.5"

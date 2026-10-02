@@ -55,11 +55,11 @@ export default function RegisterMember() {
         <p className="mt-3 text-[15px] text-chalk-dim">Give these sign-in details to the member.</p>
         <dl className="mt-6 overflow-hidden rounded-lg bg-base-panel">
           <div className="flex justify-between border-b border-edge-soft px-4 py-3">
-            <dt className="text-xs uppercase tracking-[0.2em] text-mute">Sign in with</dt>
+            <dt className="label">Sign in with</dt>
             <dd className="truncate pl-3 font-mono text-sm">{created.login}</dd>
           </div>
           <div className="flex justify-between px-4 py-3">
-            <dt className="text-xs uppercase tracking-[0.2em] text-mute">Password</dt>
+            <dt className="label">Password</dt>
             <dd className="font-mono text-sm">{created.password}</dd>
           </div>
         </dl>

@@ -99,7 +99,7 @@ export default function DeskLive() {
         </div>
         <div className="flex items-center gap-6">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-mute">Visits today</p>
+            <p className="label">Visits today</p>
             <p className="figure text-live">{today.length}</p>
           </div>
           <button

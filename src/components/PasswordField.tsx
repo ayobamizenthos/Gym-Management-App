@@ -16,7 +16,7 @@ export function PasswordField({ value, onChange, label, autoComplete, minLength,
   const [shown, setShown] = useState(false)
   return (
     <label className="block">
-      <span className="text-xs uppercase tracking-[0.2em] text-mute">{label}</span>
+      <span className="label">{label}</span>
       <span className="relative mt-2 block">
         <input
           type={shown ? 'text' : 'password'}

@@ -46,7 +46,7 @@ export function RestTimer() {
     <div
       role="timer"
       aria-label={`Rest, ${left} seconds left`}
-      className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 mx-auto max-w-md animate-rise overflow-hidden rounded-xl bg-[#17171B] px-4 pb-3.5 pt-4 shadow-[0_-12px_40px_rgba(0,0,0,.65)]"
+      className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 mx-auto max-w-md animate-rise overflow-hidden rounded-xl bg-base-raised px-4 pb-3.5 pt-4 shadow-[0_-12px_40px_rgba(0,0,0,.25)]"
     >
       <p className="truncate text-[13px] font-medium text-mute">Next · {rest.label}</p>
       <div className="mt-1 flex items-center justify-between gap-3">
@@ -68,7 +68,7 @@ export function RestTimer() {
           >
             +{NUDGE_SECONDS}
           </button>
-          <button type="button" onClick={endRest} className="h-11 rounded-full bg-chalk px-5 text-[14px] font-semibold text-ink active:scale-95">
+          <button type="button" onClick={endRest} className="h-11 rounded-full bg-chalk px-5 text-[14px] font-semibold text-inverse active:scale-95">
             Skip
           </button>
         </div>

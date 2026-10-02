@@ -36,7 +36,7 @@ function Row({ exercise, mode, picked, onToggle }: { exercise: Exercise; mode: P
           aria-hidden
           className={cn(
             'grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full transition-colors',
-            picked ? 'animate-tick bg-live text-ink' : 'shadow-[inset_0_0_0_2px_#3a3a42]'
+            picked ? 'animate-tick bg-live text-ink' : 'shadow-[inset_0_0_0_2px_rgb(var(--edge))]'
           )}
         >
           {picked && <Check size={16} strokeWidth={3} />}

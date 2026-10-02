@@ -3,6 +3,36 @@
 @tailwind utilities;
 
 @layer base {
+  /* colour channels: dark by default, light when the phone is in light mode */
+  :root {
+    --base: 10 10 11;
+    --base-panel: 20 20 23;
+    --base-raised: 28 28 33;
+    --edge: 42 42 49;
+    --edge-soft: 31 31 37;
+    --chalk: 246 246 243;
+    --chalk-dim: 201 201 206;
+    --mute: 138 138 147;
+    --inverse: 10 10 11;
+    --live: 53 208 127;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --base: 244 244 241;
+      --base-panel: 255 255 255;
+      --base-raised: 236 236 232;
+      --edge: 222 222 217;
+      --edge-soft: 233 233 229;
+      --chalk: 17 17 19;
+      --chalk-dim: 72 72 80;
+      --mute: 112 112 120;
+      --inverse: 255 255 255;
+      --live: 31 178 102;
+      color-scheme: light;
+    }
+  }
+
   :root {
     --nav-height: 80px;
     --nav-gap: 0px;
@@ -18,7 +48,7 @@
   /* Anton is a poster face - it carries headings and figures, nothing else. */
   h1, h2 { @apply font-display uppercase tracking-tightest leading-[0.95]; }
   h3 { @apply font-body font-semibold; }
-  ::selection { @apply bg-chalk text-ink; }
+  ::selection { @apply bg-chalk text-inverse; }
 
   /* Keyboard users get a ring in the palette; pointer users get nothing. */
   :focus-visible {
@@ -53,7 +83,7 @@
            font-semibold transition-all active:scale-[.985]
            disabled:opacity-40 disabled:pointer-events-none select-none;
   }
-  .btn-primary { @apply btn bg-chalk text-ink hover:bg-white; }
+  .btn-primary { @apply btn bg-chalk text-inverse hover:opacity-90; }
   .btn-quiet   { @apply btn bg-base-panel text-chalk hover:bg-base-raised; }
 
   .panel { @apply rounded-lg bg-base-panel; }

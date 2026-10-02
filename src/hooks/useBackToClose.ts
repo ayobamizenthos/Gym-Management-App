@@ -4,15 +4,32 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 
 // the router settles its own scroll a frame or two after a history step, so the page is put back more than once
 const RESTORE_AFTER_MS = [0, 60, 180]
-// long enough for a navigation started by the sheet's own button to land
-const ROUTER_SETTLE_MS = 250
+
+// A sheet closed from its own buttons leaves its history step behind, marked spent. Stepping
+// back from it at close time would race any navigation the button started (Finish, Start) and
+// undo it on a slow connection, so instead the next Back that lands on a spent step of the same
+// page passes straight through it, and Back still feels like one press.
+let spentOn: string | null = null
+let watching = false
+
+function watchSpentSteps() {
+  if (watching) return
+  watching = true
+  window.addEventListener('popstate', () => {
+    if (spentOn !== null && window.location.href === spentOn) {
+      spentOn = null
+      window.history.back()
+    } else if (spentOn !== null && window.location.href !== spentOn) {
+      spentOn = null
+    }
+  })
+}
 
 /**
  * Phones close an open sheet with their Back gesture, the way native apps do. Opening adds a
  * history step on the same page, so Back closes the sheet and leaves the page exactly where it
- * was; closing from inside the sheet takes that step away again, so Back still leaves the page.
- * The step is added a tick after opening, so a sheet mounted and unmounted at once (React's
- * development double mount) never leaves a step behind that would close its successor.
+ * was. The step is added a tick after opening, so a sheet mounted and unmounted at once (React's
+ * development double mount) never leaves a step behind.
  */
 export function useBackToClose(open: boolean, onClose: () => void) {
   const closeRef = useRef(onClose)
@@ -22,6 +39,7 @@ export function useBackToClose(open: boolean, onClose: () => void) {
 
   useEffect(() => {
     if (!open) return
+    watchSpentSteps()
     const marker = Math.random().toString(36).slice(2)
     const scrolledTo = window.scrollY
     const putPageBack = () => {
@@ -39,19 +57,11 @@ export function useBackToClose(open: boolean, onClose: () => void) {
       pushed = true
       window.addEventListener('popstate', onPop)
     }, 0)
-    const openedAt = window.location.href
     return () => {
       window.clearTimeout(timer)
       window.removeEventListener('popstate', onPop)
-      if (!pushed || closedByBack) return
-      // a sheet whose button navigates (Finish, Start) closes as the router moves on; taking the
-      // step back then would undo that navigation, so wait for the router and only step back
-      // when the page is still the one the sheet opened on
-      window.setTimeout(() => {
-        if (window.location.href !== openedAt || window.history.state?.sheet !== marker) return
-        window.history.back()
-        putPageBack()
-      }, ROUTER_SETTLE_MS)
+      if (!pushed || closedByBack || window.history.state?.sheet !== marker) return
+      spentOn = window.location.href
     }
   }, [open])
 }
